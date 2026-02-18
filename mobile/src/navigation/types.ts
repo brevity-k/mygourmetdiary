@@ -22,6 +22,7 @@ export type HomeStackParamList = {
   Home: undefined;
   NoteDetail: { noteId: string };
   UserProfile: { userId: string };
+  PinGourmetFriend: { userId: string };
 };
 
 export type BindersStackParamList = {
@@ -30,6 +31,7 @@ export type BindersStackParamList = {
   NoteDetail: { noteId: string };
   FollowedBinders: undefined;
   UserProfile: { userId: string };
+  PinGourmetFriend: { userId: string };
 };
 
 export type SearchStackParamList = {
@@ -38,6 +40,7 @@ export type SearchStackParamList = {
   Explore: undefined;
   Discover: undefined;
   UserProfile: { userId: string };
+  PinGourmetFriend: { userId: string };
 };
 
 export type ProfileStackParamList = {

@@ -42,7 +42,13 @@ export class FollowsService {
 
   async getFollowing(userId: string, cursor?: string, limit = 20) {
     const where: Record<string, unknown> = { followerId: userId };
-    if (cursor) where.createdAt = { lt: new Date(cursor) };
+    if (cursor) {
+      const cursorDate = new Date(cursor);
+      if (isNaN(cursorDate.getTime())) {
+        throw new BadRequestException('Invalid cursor format');
+      }
+      where.createdAt = { lt: cursorDate };
+    }
 
     const follows = await this.prisma.binderFollow.findMany({
       where,

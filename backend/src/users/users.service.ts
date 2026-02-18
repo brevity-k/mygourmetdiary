@@ -1,6 +1,8 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { TasteCategory } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { RedisService } from '../redis/redis.service';
+import { TssCacheService } from '../taste-matching/tss-cache.service';
 import { UpdateUserDto } from './dto/update-user.dto';
 
 @Injectable()
@@ -8,6 +10,7 @@ export class UsersService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly redis: RedisService,
+    private readonly tssCache: TssCacheService,
   ) {}
 
   async findById(id: string) {
@@ -60,19 +63,18 @@ export class UsersService {
       });
       isPinned = !!pin;
 
-      const similarities = await this.prisma.tasteSimilarity.findMany({
-        where: {
-          OR: [
-            { userAId: viewerId, userBId: userId },
-            { userAId: userId, userBId: viewerId },
-          ],
-        },
-      });
-      tasteSimilarity = similarities.map((s) => ({
-        category: s.category,
-        score: s.score,
-        overlapCount: s.overlapCount,
-      }));
+      const categories = [TasteCategory.RESTAURANT, TasteCategory.WINE, TasteCategory.SPIRIT];
+      const scores = await Promise.all(
+        categories.map(async (category) => {
+          const entry = await this.tssCache.getPairScore(viewerId, userId, category);
+          return entry
+            ? { category: category as string, score: entry.score, overlapCount: entry.overlapCount }
+            : null;
+        }),
+      );
+      tasteSimilarity = scores.filter(
+        (s): s is { category: string; score: number; overlapCount: number } => s !== null,
+      );
     }
 
     return {

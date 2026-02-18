@@ -3,6 +3,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { HomeScreen } from '../screens/home/HomeScreen';
 import { NoteDetailScreen } from '../screens/home/NoteDetailScreen';
 import { UserProfileScreen } from '../screens/social/UserProfileScreen';
+import { PinGourmetFriendScreen } from '../screens/social/PinGourmetFriendScreen';
 import { HomeStackParamList } from './types';
 import { colors, typography } from '../theme';
 
@@ -31,6 +32,11 @@ export function HomeStackNavigator() {
         name="UserProfile"
         component={UserProfileScreen}
         options={{ title: 'Profile' }}
+      />
+      <Stack.Screen
+        name="PinGourmetFriend"
+        component={PinGourmetFriendScreen}
+        options={{ title: 'Pin Friend' }}
       />
     </Stack.Navigator>
   );

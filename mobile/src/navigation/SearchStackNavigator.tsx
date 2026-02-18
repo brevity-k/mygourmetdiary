@@ -5,6 +5,7 @@ import { ExploreScreen } from '../screens/search/ExploreScreen';
 import { DiscoverScreen } from '../screens/social/DiscoverScreen';
 import { NoteDetailScreen } from '../screens/home/NoteDetailScreen';
 import { UserProfileScreen } from '../screens/social/UserProfileScreen';
+import { PinGourmetFriendScreen } from '../screens/social/PinGourmetFriendScreen';
 import { SearchStackParamList } from './types';
 import { colors, typography } from '../theme';
 
@@ -43,6 +44,11 @@ export function SearchStackNavigator() {
         name="UserProfile"
         component={UserProfileScreen}
         options={{ title: 'Profile' }}
+      />
+      <Stack.Screen
+        name="PinGourmetFriend"
+        component={PinGourmetFriendScreen}
+        options={{ title: 'Pin Friend' }}
       />
     </Stack.Navigator>
   );
