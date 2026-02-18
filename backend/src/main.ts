@@ -19,6 +19,7 @@ async function bootstrap() {
   } catch (e) {
     const logger = new Logger('Bootstrap');
     logger.warn('Firebase Admin SDK init failed — auth endpoints will not work');
+    logger.warn(`Firebase error: ${e instanceof Error ? e.message : e}`);
     // Initialize without credentials so the app still boots
     if (!admin.apps.length) {
       admin.initializeApp();

@@ -45,3 +45,7 @@ coverage/
 
 # Prisma
 backend/prisma/migrations/**/migration_lock.toml
+
+# Firebase config files
+GoogleService-Info.plist
+google-services.json
