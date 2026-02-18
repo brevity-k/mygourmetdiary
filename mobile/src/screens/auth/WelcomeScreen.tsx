@@ -24,10 +24,9 @@ WebBrowser.maybeCompleteAuthSession();
 export function WelcomeScreen() {
   const [signingIn, setSigningIn] = useState(false);
 
-  // Google OAuth — configure with your Google client IDs
   const [_request, response, promptAsync] = Google.useIdTokenAuthRequest({
-    iosClientId: 'YOUR_IOS_CLIENT_ID',
-    androidClientId: 'YOUR_ANDROID_CLIENT_ID',
+    iosClientId: 'REDACTED_FIREBASE_SENDER_ID-c30jhpr4hmndfgld9vksqqga9jtd84t0.apps.googleusercontent.com',
+    webClientId: 'REDACTED_FIREBASE_SENDER_ID-ce0p012e632uecjgkufemmhlp1q9l6bo.apps.googleusercontent.com',
   });
 
   React.useEffect(() => {
