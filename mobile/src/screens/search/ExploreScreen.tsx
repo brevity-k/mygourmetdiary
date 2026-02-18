@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   StyleSheet,
   RefreshControl,
+  ActivityIndicator,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -107,6 +108,15 @@ export function ExploreScreen() {
             onRefresh={refetch}
             tintColor={colors.primary}
           />
+        }
+        ListFooterComponent={
+          isFetchingNextPage ? (
+            <ActivityIndicator
+              style={{ paddingVertical: spacing.md }}
+              size="small"
+              color={colors.primary}
+            />
+          ) : null
         }
         ListEmptyComponent={
           <EmptyState

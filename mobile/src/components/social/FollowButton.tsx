@@ -1,5 +1,5 @@
-import React from 'react';
-import { TouchableOpacity, Text, StyleSheet, ActivityIndicator } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { TouchableOpacity, Text, StyleSheet, ActivityIndicator, Alert } from 'react-native';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { binderFollowsApi } from '../../api/endpoints';
 import { colors, typography, spacing, borderRadius } from '../../theme';
@@ -11,9 +11,22 @@ interface FollowButtonProps {
 
 export function FollowButton({ binderId, isFollowing }: FollowButtonProps) {
   const queryClient = useQueryClient();
+  const [localFollowing, setLocalFollowing] = useState(isFollowing);
+
+  // Sync local state when prop changes (e.g., after query refetch)
+  useEffect(() => {
+    setLocalFollowing(isFollowing);
+  }, [isFollowing]);
 
   const followMutation = useMutation({
     mutationFn: () => binderFollowsApi.follow(binderId),
+    onMutate: () => {
+      setLocalFollowing(true);
+    },
+    onError: () => {
+      setLocalFollowing(false);
+      Alert.alert('Error', 'Could not follow this binder. Please try again.');
+    },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['following'] });
       queryClient.invalidateQueries({ queryKey: ['profile'] });
@@ -22,6 +35,13 @@ export function FollowButton({ binderId, isFollowing }: FollowButtonProps) {
 
   const unfollowMutation = useMutation({
     mutationFn: () => binderFollowsApi.unfollow(binderId),
+    onMutate: () => {
+      setLocalFollowing(false);
+    },
+    onError: () => {
+      setLocalFollowing(true);
+      Alert.alert('Error', 'Could not unfollow this binder. Please try again.');
+    },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['following'] });
       queryClient.invalidateQueries({ queryKey: ['profile'] });
@@ -31,7 +51,7 @@ export function FollowButton({ binderId, isFollowing }: FollowButtonProps) {
   const isLoading = followMutation.isPending || unfollowMutation.isPending;
 
   const handlePress = () => {
-    if (isFollowing) {
+    if (localFollowing) {
       unfollowMutation.mutate();
     } else {
       followMutation.mutate();
@@ -40,15 +60,15 @@ export function FollowButton({ binderId, isFollowing }: FollowButtonProps) {
 
   return (
     <TouchableOpacity
-      style={[styles.button, isFollowing && styles.buttonFollowing]}
+      style={[styles.button, localFollowing && styles.buttonFollowing]}
       onPress={handlePress}
       disabled={isLoading}
     >
       {isLoading ? (
-        <ActivityIndicator size="small" color={isFollowing ? colors.text : colors.textInverse} />
+        <ActivityIndicator size="small" color={localFollowing ? colors.text : colors.textInverse} />
       ) : (
-        <Text style={[styles.text, isFollowing && styles.textFollowing]}>
-          {isFollowing ? 'Following' : 'Follow'}
+        <Text style={[styles.text, localFollowing && styles.textFollowing]}>
+          {localFollowing ? 'Following' : 'Follow'}
         </Text>
       )}
     </TouchableOpacity>

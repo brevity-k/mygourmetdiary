@@ -47,6 +47,12 @@ export class TssCacheService {
   async getAllScoresForUser(userId: string): Promise<
     Array<{ userId: string; category: TasteCategory; score: number; overlapCount: number }>
   > {
+    const cacheKey = `p2:tss:all:${userId}`;
+    const cached = await this.redis.getJson<
+      Array<{ userId: string; category: TasteCategory; score: number; overlapCount: number }>
+    >(cacheKey);
+    if (cached) return cached;
+
     const rows = await this.prisma.tasteSimilarity.findMany({
       where: {
         OR: [{ userAId: userId }, { userBId: userId }],
@@ -54,12 +60,15 @@ export class TssCacheService {
       orderBy: { score: 'desc' },
     });
 
-    return rows.map((r) => ({
+    const result = rows.map((r) => ({
       userId: r.userAId === userId ? r.userBId : r.userAId,
       category: r.category,
       score: r.score,
       overlapCount: r.overlapCount,
     }));
+
+    await this.redis.setJson(cacheKey, result, 86400); // 24h
+    return result;
   }
 
   async getHighTssUserIds(userId: string, minScore = 0.7): Promise<string[]> {
@@ -121,10 +130,9 @@ export class TssCacheService {
     const keys = [
       `p2:tss:high:${userId}`,
       `p2:tss:moderate:${userId}`,
+      `p2:tss:all:${userId}`,
       `p2:friends:${userId}`,
     ];
-    if (keys.length > 0) {
-      await this.redis.del(...keys);
-    }
+    await this.redis.del(...keys);
   }
 }

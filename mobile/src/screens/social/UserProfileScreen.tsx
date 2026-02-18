@@ -5,8 +5,8 @@ import {
   ScrollView,
   Image,
   TouchableOpacity,
-  FlatList,
   StyleSheet,
+  Alert,
 } from 'react-native';
 import { useRoute, useNavigation, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -16,9 +16,7 @@ import { profilesApi, gourmetFriendsApi } from '../../api/endpoints';
 import { TasteMatchBadge } from '../../components/social/TasteMatchBadge';
 import { FollowButton } from '../../components/social/FollowButton';
 import { LoadingSpinner } from '../../components/common/LoadingSpinner';
-import { EmptyState } from '../../components/common/EmptyState';
 import { HomeStackParamList } from '../../navigation/types';
-import { TasteCategory } from '../../types';
 import { colors, typography, spacing, borderRadius } from '../../theme';
 
 type RouteType = RouteProp<HomeStackParamList, 'UserProfile'>;
@@ -35,33 +33,24 @@ export function UserProfileScreen() {
     queryFn: () => profilesApi.getProfile(userId),
   });
 
-  const pinMutation = useMutation({
-    mutationFn: (categories: TasteCategory[]) =>
-      gourmetFriendsApi.pin(userId, categories),
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ['profile', userId] });
-      queryClient.invalidateQueries({ queryKey: ['friends'] });
-    },
-  });
-
   const unpinMutation = useMutation({
     mutationFn: () => gourmetFriendsApi.unpin(userId),
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['profile', userId] });
       queryClient.invalidateQueries({ queryKey: ['friends'] });
     },
+    onError: () => {
+      Alert.alert('Error', 'Could not unpin this user. Please try again.');
+    },
   });
 
   if (isLoading || !profile) return <LoadingSpinner />;
 
-  const handlePinToggle = async () => {
+  const handlePinToggle = () => {
     if (profile.isPinned) {
       unpinMutation.mutate();
     } else {
-      const result = await gourmetFriendsApi.canPin(userId);
-      if (result.canPin) {
-        pinMutation.mutate(result.eligibleCategories);
-      }
+      navigation.navigate('PinGourmetFriend', { userId });
     }
   };
 

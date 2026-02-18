@@ -6,6 +6,7 @@ import {
   Text,
   StyleSheet,
   RefreshControl,
+  ActivityIndicator,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -147,6 +148,15 @@ export function HomeScreen() {
             onRefresh={activeFeed.refetch}
             tintColor={colors.primary}
           />
+        }
+        ListFooterComponent={
+          activeFeed.isFetchingNextPage ? (
+            <ActivityIndicator
+              style={{ paddingVertical: spacing.md }}
+              size="small"
+              color={colors.primary}
+            />
+          ) : null
         }
         ListEmptyComponent={
           <EmptyState

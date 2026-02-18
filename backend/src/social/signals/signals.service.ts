@@ -66,9 +66,7 @@ export class SignalsService {
     if (dto.signalType === SignalType.ECHOED || dto.signalType === SignalType.DIVERGED) {
       const category = this.tssComputation.noteTypeToCategory(note.type);
       if (category) {
-        this.tssComputation.recomputePair(senderId, note.authorId, category).catch((e) => {
-          this.logger.error(`Incremental TSS recompute failed for ${senderId}/${note.authorId}`, e);
-        });
+        this.recomputeWithRetry(senderId, note.authorId, category);
       }
     }
 
@@ -115,6 +113,20 @@ export class SignalsService {
     }
 
     return { ...counts, mySignals };
+  }
+
+  private recomputeWithRetry(senderId: string, authorId: string, category: any) {
+    this.tssComputation.recomputePair(senderId, authorId, category).catch(() => {
+      // Retry once after 5s delay; nightly batch will correct if this also fails
+      setTimeout(() => {
+        this.tssComputation.recomputePair(senderId, authorId, category).catch((e) => {
+          this.logger.warn(
+            `Incremental TSS recompute permanently failed for ${senderId}/${authorId}/${category}`,
+            e,
+          );
+        });
+      }, 5000);
+    });
   }
 
   private async invalidateSignalCache(noteId: string) {

@@ -92,15 +92,30 @@ export class FriendsService {
       orderBy: { createdAt: 'desc' },
     });
 
-    // Enrich with TSS scores
-    const enriched = await Promise.all(
-      pins.map(async (pin) => {
-        const similarities = await this.getCompatibility(pinnerId, pin.pinnedId);
-        return { ...pin, similarities };
-      }),
-    );
+    // Single cached call instead of N+1 per-friend cache lookups
+    const allScores = await this.tssCache.getAllScoresForUser(pinnerId);
+    const scoreMap = new Map<string, Map<TasteCategory, { score: number; overlapCount: number }>>();
+    for (const entry of allScores) {
+      if (!scoreMap.has(entry.userId)) scoreMap.set(entry.userId, new Map());
+      scoreMap.get(entry.userId)!.set(entry.category, {
+        score: entry.score,
+        overlapCount: entry.overlapCount,
+      });
+    }
 
-    return enriched;
+    const categories = [TasteCategory.RESTAURANT, TasteCategory.WINE, TasteCategory.SPIRIT];
+    return pins.map((pin) => {
+      const userScores = scoreMap.get(pin.pinnedId);
+      const similarities = categories.map((category) => {
+        const entry = userScores?.get(category);
+        return {
+          category,
+          score: entry?.score ?? null,
+          overlapCount: entry?.overlapCount ?? 0,
+        };
+      });
+      return { ...pin, similarities };
+    });
   }
 
   async getCompatibility(userId: string, targetId: string) {

@@ -87,9 +87,16 @@ export class TssBatchJob {
       HAVING COUNT(DISTINCT a.match_key) >= 5
     `;
 
-    this.logger.log(`Category ${category}: found ${pairs.length} pairs to compute`);
+    // Convert BigInt overlap to Number (PostgreSQL COUNT returns bigint)
+    const safePairs = pairs.map((p) => ({
+      user_a_id: p.user_a_id,
+      user_b_id: p.user_b_id,
+      overlap: Number(p.overlap),
+    }));
 
-    for (const pair of pairs) {
+    this.logger.log(`Category ${category}: found ${safePairs.length} pairs to compute`);
+
+    for (const pair of safePairs) {
       try {
         await this.tssComputation.recomputePair(pair.user_a_id, pair.user_b_id, category);
       } catch (error) {
