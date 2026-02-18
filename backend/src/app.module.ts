@@ -17,6 +17,7 @@ import { SearchModule } from './search/search.module';
 import { SocialModule } from './social/social.module';
 import { TasteMatchingModule } from './taste-matching/taste-matching.module';
 import { FirebaseAuthGuard } from './common/guards/firebase-auth.guard';
+import { HealthController } from './health/health.controller';
 
 @Module({
   imports: [
@@ -42,6 +43,7 @@ import { FirebaseAuthGuard } from './common/guards/firebase-auth.guard';
     SocialModule,
     TasteMatchingModule,
   ],
+  controllers: [HealthController],
   providers: [
     {
       provide: APP_GUARD,
