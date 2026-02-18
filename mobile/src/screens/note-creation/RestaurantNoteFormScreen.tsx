@@ -9,7 +9,7 @@ import {
 import { useNavigation } from '@react-navigation/native';
 import { useQuery } from '@tanstack/react-query';
 import { useNoteForm } from '../../hooks/useNoteForm';
-import { NoteType } from '../../types';
+import { NoteType, Visibility } from '../../types';
 import { bindersApi, tagsApi } from '../../api/endpoints';
 import { Input } from '../../components/common/Input';
 import { Button } from '../../components/common/Button';
@@ -18,6 +18,7 @@ import { TagSelector } from '../../components/forms/TagSelector';
 import { PhotoPicker } from '../../components/forms/PhotoPicker';
 import { VenueSearchInput } from '../../components/forms/VenueSearchInput';
 import { BinderSelector } from '../../components/forms/BinderSelector';
+import { DateInput } from '../../components/forms/DateInput';
 import { DISH_CATEGORIES, PORTION_SIZES } from '../../constants/tags.constants';
 import { colors, typography, spacing } from '../../theme';
 
@@ -72,6 +73,9 @@ export function RestaurantNoteFormScreen() {
       contentContainerStyle={styles.content}
       keyboardShouldPersistTaps="handled"
     >
+      {/* ── The Dish ── */}
+      <Text style={styles.sectionHeader}>The Dish</Text>
+
       <VenueSearchInput
         value={
           formData.venueId
@@ -89,13 +93,6 @@ export function RestaurantNoteFormScreen() {
         placeholder="e.g., Spicy Tuna Roll"
         value={formData.extension.dishName || ''}
         onChangeText={(v) => updateExtension('dishName', v)}
-      />
-
-      <Input
-        label="Title *"
-        placeholder="Give your note a title"
-        value={formData.title}
-        onChangeText={(v) => updateField('title', v)}
       />
 
       <View style={styles.row}>
@@ -116,6 +113,25 @@ export function RestaurantNoteFormScreen() {
           ))}
         </View>
       </View>
+
+      {cuisineTags.length > 0 && (
+        <TagSelector
+          label="Cuisine Tags"
+          tags={cuisineTags}
+          selectedIds={formData.extension.cuisineTags || []}
+          onChange={(ids) => updateExtension('cuisineTags', ids)}
+        />
+      )}
+
+      {/* ── Your Experience ── */}
+      <Text style={styles.sectionHeader}>Your Experience</Text>
+
+      <Input
+        label="Title *"
+        placeholder="Give your note a title"
+        value={formData.title}
+        onChangeText={(v) => updateField('title', v)}
+      />
 
       <RatingInput
         label="Rating *"
@@ -161,6 +177,9 @@ export function RestaurantNoteFormScreen() {
         }
       />
 
+      {/* ── Photos & Tags ── */}
+      <Text style={styles.sectionHeader}>Photos & Tags</Text>
+
       <PhotoPicker
         photos={photos}
         onAdd={addPhoto}
@@ -176,20 +195,45 @@ export function RestaurantNoteFormScreen() {
         />
       )}
 
+      {/* ── Your Diary ── */}
+      <Text style={styles.sectionHeader}>Your Diary</Text>
+
       <Input
-        label="Notes"
-        placeholder="Any thoughts about this dish..."
+        label="Your Thoughts"
+        placeholder="Describe the flavors, presentation, atmosphere... What made this dish memorable?"
         multiline
-        numberOfLines={4}
+        numberOfLines={6}
         style={styles.textArea}
         value={formData.freeText}
         onChangeText={(v) => updateField('freeText', v)}
       />
 
+      {/* ── Save ── */}
+      <Text style={styles.sectionHeader}>Save</Text>
+
       <BinderSelector
         binders={binders}
         selectedId={formData.binderId}
         onChange={(id) => updateField('binderId', id)}
+      />
+
+      <View style={styles.switchRow}>
+        <Text style={styles.label}>
+          {formData.visibility === Visibility.PUBLIC ? 'Public' : 'Private'}
+        </Text>
+        <Switch
+          value={formData.visibility === Visibility.PUBLIC}
+          onValueChange={(v) =>
+            updateField('visibility', v ? Visibility.PUBLIC : Visibility.PRIVATE)
+          }
+          trackColor={{ true: colors.primary }}
+        />
+      </View>
+
+      <DateInput
+        label="Date of Experience"
+        value={formData.experiencedAt}
+        onChange={(iso) => updateField('experiencedAt', iso)}
       />
 
       <Button
@@ -215,6 +259,14 @@ const styles = StyleSheet.create({
   cancelButton: {
     ...typography.body,
     color: colors.primary,
+  },
+  sectionHeader: {
+    ...typography.caption,
+    color: colors.textTertiary,
+    textTransform: 'uppercase',
+    letterSpacing: 1.5,
+    marginTop: spacing.lg,
+    marginBottom: spacing.md,
   },
   label: {
     ...typography.label,
@@ -252,7 +304,7 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
   },
   textArea: {
-    height: 100,
+    height: 160,
     textAlignVertical: 'top',
     paddingTop: spacing.sm,
   },
