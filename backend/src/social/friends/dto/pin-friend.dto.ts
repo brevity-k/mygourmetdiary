@@ -3,17 +3,17 @@ import { TasteCategory } from '@prisma/client';
 
 export class PinFriendDto {
   @IsString()
-  pinnedId: string;
+  pinnedId!: string;
 
   @IsArray()
   @ArrayMinSize(1)
   @IsEnum(TasteCategory, { each: true })
-  categories: TasteCategory[];
+  categories!: TasteCategory[];
 }
 
 export class UpdatePinDto {
   @IsArray()
   @ArrayMinSize(1)
   @IsEnum(TasteCategory, { each: true })
-  categories: TasteCategory[];
+  categories!: TasteCategory[];
 }

@@ -10,7 +10,7 @@ import { SignalType } from '@prisma/client';
 
 export class CreateSignalDto {
   @IsEnum(SignalType)
-  signalType: SignalType;
+  signalType!: SignalType;
 
   @ValidateIf((o) => o.signalType === SignalType.ECHOED || o.signalType === SignalType.DIVERGED)
   @IsNotEmpty({ message: 'senderRating is required for ECHOED and DIVERGED signals' })
