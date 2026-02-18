@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, Switch, Alert, StyleSheet } from 'react-native';
 import { useMutation } from '@tanstack/react-query';
-import auth from '@react-native-firebase/auth';
+import { signOut as firebaseSignOut } from '../../auth/firebase';
 import { usersApi } from '../../api/endpoints';
 import { useAuthStore } from '../../store/auth.store';
 import { useUIStore } from '../../store/ui.store';
@@ -33,7 +33,7 @@ export function SettingsScreen() {
         text: 'Sign Out',
         style: 'destructive',
         onPress: async () => {
-          await auth().signOut();
+          await firebaseSignOut();
           logout();
         },
       },
