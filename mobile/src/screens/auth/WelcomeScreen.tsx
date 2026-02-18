@@ -1,55 +1,42 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   TouchableOpacity,
-  Platform,
   Alert,
+  ActivityIndicator,
 } from 'react-native';
-import * as AppleAuthentication from 'expo-apple-authentication';
-import auth from '@react-native-firebase/auth';
+import { devSignIn } from '../../auth/firebase';
 import { colors, typography, spacing } from '../../theme';
 
 export function WelcomeScreen() {
+  const [signingIn, setSigningIn] = useState(false);
+
+  const handleDevSignIn = async () => {
+    setSigningIn(true);
+    try {
+      await devSignIn();
+      // useAuthState will pick up the state change automatically
+    } catch (error: any) {
+      Alert.alert('Sign-in failed', error.message);
+    } finally {
+      setSigningIn(false);
+    }
+  };
+
   const handleGoogleSignIn = async () => {
-    // Google sign-in requires additional native setup
     Alert.alert(
-      'Google Sign-In',
-      'Google Sign-In requires Firebase configuration. Please set up GoogleSignin in your Firebase project.',
+      'Not Available',
+      'Google Sign-In requires Firebase configuration. Use Dev Sign In for local testing.',
     );
   };
 
   const handleAppleSignIn = async () => {
-    try {
-      const credential = await AppleAuthentication.signInAsync({
-        requestedScopes: [
-          AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
-          AppleAuthentication.AppleAuthenticationScope.EMAIL,
-        ],
-      });
-
-      const { identityToken, fullName } = credential;
-      if (!identityToken) throw new Error('No identity token');
-
-      const appleCredential = auth.AppleAuthProvider.credential(
-        identityToken,
-        credential.authorizationCode || '',
-      );
-
-      const userCredential = await auth().signInWithCredential(appleCredential);
-
-      // Update display name from Apple if available
-      if (fullName?.givenName && userCredential.user) {
-        await userCredential.user.updateProfile({
-          displayName: `${fullName.givenName} ${fullName.familyName || ''}`.trim(),
-        });
-      }
-    } catch (error: any) {
-      if (error.code !== 'ERR_REQUEST_CANCELED') {
-        Alert.alert('Sign-in failed', error.message);
-      }
-    }
+    Alert.alert(
+      'Not Available',
+      'Apple Sign-In requires Firebase configuration. Use Dev Sign In for local testing.',
+    );
   };
 
   return (
@@ -69,17 +56,33 @@ export function WelcomeScreen() {
       </View>
 
       <View style={styles.buttons}>
-        {Platform.OS === 'ios' && (
+        {/* Dev sign-in for local development */}
+        {__DEV__ && (
           <TouchableOpacity
-            style={[styles.button, styles.appleButton]}
-            onPress={handleAppleSignIn}
-            accessibilityLabel="Sign in with Apple"
+            style={[styles.button, styles.devButton]}
+            onPress={handleDevSignIn}
+            disabled={signingIn}
+            accessibilityLabel="Sign in as dev user"
           >
-            <Text style={[styles.buttonText, styles.appleButtonText]}>
-              Continue with Apple
-            </Text>
+            {signingIn ? (
+              <ActivityIndicator color={colors.textInverse} />
+            ) : (
+              <Text style={[styles.buttonText, styles.devButtonText]}>
+                Dev Sign In
+              </Text>
+            )}
           </TouchableOpacity>
         )}
+
+        <TouchableOpacity
+          style={[styles.button, styles.appleButton]}
+          onPress={handleAppleSignIn}
+          accessibilityLabel="Sign in with Apple"
+        >
+          <Text style={[styles.buttonText, styles.appleButtonText]}>
+            Continue with Apple
+          </Text>
+        </TouchableOpacity>
 
         <TouchableOpacity
           style={[styles.button, styles.googleButton]}
@@ -137,21 +140,27 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  devButton: {
+    backgroundColor: '#2E7D32',
+  },
+  devButtonText: {
+    color: '#FFFFFF',
+  },
   appleButton: {
     backgroundColor: '#000000',
+  },
+  appleButtonText: {
+    color: '#FFFFFF',
   },
   googleButton: {
     backgroundColor: colors.surface,
     borderWidth: 1,
     borderColor: colors.border,
   },
-  buttonText: {
-    ...typography.button,
-  },
-  appleButtonText: {
-    color: '#FFFFFF',
-  },
   googleButtonText: {
     color: colors.text,
+  },
+  buttonText: {
+    ...typography.button,
   },
 });

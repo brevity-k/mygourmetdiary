@@ -38,8 +38,14 @@ export class FirebaseAuthGuard implements CanActivate {
     const token = authHeader.substring(7);
 
     try {
-      const decoded = await admin.auth().verifyIdToken(token);
-      const firebaseUid = decoded.uid;
+      // Dev bypass: Bearer dev:<firebaseUid>
+      let firebaseUid: string;
+      if (process.env.NODE_ENV === 'development' && token.startsWith('dev:')) {
+        firebaseUid = token.substring(4);
+      } else {
+        const decoded = await admin.auth().verifyIdToken(token);
+        firebaseUid = decoded.uid;
+      }
 
       // Check Redis cache first
       const cacheKey = `user:firebase:${firebaseUid}`;

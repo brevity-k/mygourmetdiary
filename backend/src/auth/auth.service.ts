@@ -21,8 +21,27 @@ export class AuthService {
   ) {}
 
   async register(idToken: string): Promise<User> {
-    const decoded = await admin.auth().verifyIdToken(idToken);
-    const { uid, email, name, picture } = decoded;
+    let uid: string;
+    let email: string | undefined;
+    let name: string | undefined;
+    let picture: string | undefined;
+
+    // Dev bypass: token format is `dev:<firebaseUid>`
+    if (process.env.NODE_ENV === 'development' && idToken.startsWith('dev:')) {
+      uid = idToken.substring(4);
+      // Look up existing user data if available
+      const existing = await this.prisma.user.findUnique({
+        where: { firebaseUid: uid },
+      });
+      email = existing?.email || 'dev@gourmet.local';
+      name = existing?.displayName || 'Dev User';
+    } else {
+      const decoded = await admin.auth().verifyIdToken(idToken);
+      uid = decoded.uid;
+      email = decoded.email;
+      name = decoded.name;
+      picture = decoded.picture;
+    }
 
     // Upsert user — idempotent
     const user = await this.prisma.user.upsert({
