@@ -45,6 +45,12 @@ export const useAuthStore = create<AuthState>()(
       partialize: (state) => ({
         hasOnboarded: state.hasOnboarded,
       }),
+      merge: (persisted, current) => ({
+        ...current,
+        ...(persisted as Partial<AuthState>),
+        // Ensure boolean type after rehydration from AsyncStorage
+        hasOnboarded: Boolean((persisted as any)?.hasOnboarded),
+      }),
     },
   ),
 );
