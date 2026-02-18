@@ -30,36 +30,46 @@ export class NotesSearchService implements OnModuleInit {
     });
   }
 
+  private available = false;
+
   async onModuleInit() {
     try {
       await this.client.createIndex('notes', { primaryKey: 'id' });
     } catch {
-      // Index may already exist
+      // Index may already exist — or Meilisearch is unreachable
     }
 
-    this.index = this.client.index('notes');
+    try {
+      this.index = this.client.index('notes');
 
-    await this.index.updateSearchableAttributes([
-      'title',
-      'freeText',
-      'extensionText',
-      'venueName',
-    ]);
+      await this.index.updateSearchableAttributes([
+        'title',
+        'freeText',
+        'extensionText',
+        'venueName',
+      ]);
 
-    await this.index.updateFilterableAttributes([
-      'authorId',
-      'type',
-      'visibility',
-      'binderId',
-      'rating',
-    ]);
+      await this.index.updateFilterableAttributes([
+        'authorId',
+        'type',
+        'visibility',
+        'binderId',
+        'rating',
+      ]);
 
-    await this.index.updateSortableAttributes(['createdAt', 'rating']);
+      await this.index.updateSortableAttributes(['createdAt', 'rating']);
 
-    this.logger.log('Meilisearch notes index configured');
+      this.available = true;
+      this.logger.log('Meilisearch notes index configured');
+    } catch (e) {
+      this.logger.warn(
+        `Meilisearch unavailable — search features disabled: ${e instanceof Error ? e.message : e}`,
+      );
+    }
   }
 
   async indexNote(note: any): Promise<void> {
+    if (!this.available) return;
     const doc: NoteSearchDocument = {
       id: note.id,
       authorId: note.authorId,
@@ -79,6 +89,7 @@ export class NotesSearchService implements OnModuleInit {
   }
 
   async removeNote(id: string): Promise<void> {
+    if (!this.available) return;
     await this.index.deleteDocument(id);
   }
 
@@ -89,6 +100,7 @@ export class NotesSearchService implements OnModuleInit {
     limit = 20,
     offset = 0,
   ) {
+    if (!this.available) return { hits: [], total: 0, limit, offset };
     const filter = [`authorId = "${authorId}"`];
     if (type) filter.push(`type = "${type}"`);
 
