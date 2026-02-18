@@ -1,5 +1,6 @@
 import { Controller, Get, Param, Query } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiOperation, ApiQuery } from '@nestjs/swagger';
+import { Throttle } from '@nestjs/throttler';
 import { VenuesService } from './venues.service';
 
 @ApiTags('venues')
@@ -9,6 +10,7 @@ export class VenuesController {
   constructor(private readonly venuesService: VenuesService) {}
 
   @Get('search')
+  @Throttle({ default: { ttl: 60000, limit: 10 } })
   @ApiOperation({ summary: 'Search venues via Google Places' })
   @ApiQuery({ name: 'q', required: true })
   @ApiQuery({ name: 'lat', required: false })
