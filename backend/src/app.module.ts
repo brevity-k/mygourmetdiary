@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { ScheduleModule } from '@nestjs/schedule';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
 import configuration from './config/configuration';
 import { PrismaModule } from './prisma/prisma.module';
@@ -22,6 +23,10 @@ import { FirebaseAuthGuard } from './common/guards/firebase-auth.guard';
       load: [configuration],
     }),
     ScheduleModule.forRoot(),
+    ThrottlerModule.forRoot([{
+      ttl: 60000,   // 1 minute window
+      limit: 60,    // 60 requests per minute globally
+    }]),
     PrismaModule,
     RedisModule,
     AuthModule,
@@ -37,6 +42,10 @@ import { FirebaseAuthGuard } from './common/guards/firebase-auth.guard';
     {
       provide: APP_GUARD,
       useClass: FirebaseAuthGuard,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
     },
   ],
 })
