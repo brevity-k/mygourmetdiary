@@ -6,18 +6,52 @@ import {
   TouchableOpacity,
   Alert,
   ActivityIndicator,
+  Platform,
 } from 'react-native';
-import { devSignIn } from '../../auth/firebase';
+import * as AppleAuthentication from 'expo-apple-authentication';
+import * as Crypto from 'expo-crypto';
+import * as Google from 'expo-auth-session/providers/google';
+import * as WebBrowser from 'expo-web-browser';
+import {
+  devSignIn,
+  signInWithGoogle,
+  signInWithApple,
+} from '../../auth/firebase';
 import { colors, typography, spacing } from '../../theme';
+
+WebBrowser.maybeCompleteAuthSession();
 
 export function WelcomeScreen() {
   const [signingIn, setSigningIn] = useState(false);
+
+  // Google OAuth — configure with your Google client IDs
+  const [_request, response, promptAsync] = Google.useIdTokenAuthRequest({
+    iosClientId: 'YOUR_IOS_CLIENT_ID',
+    androidClientId: 'YOUR_ANDROID_CLIENT_ID',
+  });
+
+  React.useEffect(() => {
+    if (response?.type === 'success') {
+      const { id_token } = response.params;
+      handleGoogleToken(id_token);
+    }
+  }, [response]);
+
+  const handleGoogleToken = async (idToken: string) => {
+    setSigningIn(true);
+    try {
+      await signInWithGoogle(idToken);
+    } catch (error: any) {
+      Alert.alert('Sign-in failed', error.message);
+    } finally {
+      setSigningIn(false);
+    }
+  };
 
   const handleDevSignIn = async () => {
     setSigningIn(true);
     try {
       await devSignIn();
-      // useAuthState will pick up the state change automatically
     } catch (error: any) {
       Alert.alert('Sign-in failed', error.message);
     } finally {
@@ -26,17 +60,45 @@ export function WelcomeScreen() {
   };
 
   const handleGoogleSignIn = async () => {
-    Alert.alert(
-      'Not Available',
-      'Google Sign-In requires Firebase configuration. Use Dev Sign In for local testing.',
-    );
+    setSigningIn(true);
+    try {
+      await promptAsync();
+    } catch (error: any) {
+      Alert.alert('Sign-in failed', error.message);
+    } finally {
+      setSigningIn(false);
+    }
   };
 
   const handleAppleSignIn = async () => {
-    Alert.alert(
-      'Not Available',
-      'Apple Sign-In requires Firebase configuration. Use Dev Sign In for local testing.',
-    );
+    setSigningIn(true);
+    try {
+      const nonce = Math.random().toString(36).substring(2, 10);
+      const hashedNonce = await Crypto.digestStringAsync(
+        Crypto.CryptoDigestAlgorithm.SHA256,
+        nonce,
+      );
+
+      const appleCredential = await AppleAuthentication.signInAsync({
+        requestedScopes: [
+          AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
+          AppleAuthentication.AppleAuthenticationScope.EMAIL,
+        ],
+        nonce: hashedNonce,
+      });
+
+      if (!appleCredential.identityToken) {
+        throw new Error('No identity token returned from Apple');
+      }
+
+      await signInWithApple(appleCredential.identityToken, nonce);
+    } catch (error: any) {
+      if (error.code !== 'ERR_REQUEST_CANCELED') {
+        Alert.alert('Sign-in failed', error.message);
+      }
+    } finally {
+      setSigningIn(false);
+    }
   };
 
   return (
@@ -74,24 +136,36 @@ export function WelcomeScreen() {
           </TouchableOpacity>
         )}
 
-        <TouchableOpacity
-          style={[styles.button, styles.appleButton]}
-          onPress={handleAppleSignIn}
-          accessibilityLabel="Sign in with Apple"
-        >
-          <Text style={[styles.buttonText, styles.appleButtonText]}>
-            Continue with Apple
-          </Text>
-        </TouchableOpacity>
+        {Platform.OS === 'ios' && (
+          <TouchableOpacity
+            style={[styles.button, styles.appleButton]}
+            onPress={handleAppleSignIn}
+            disabled={signingIn}
+            accessibilityLabel="Sign in with Apple"
+          >
+            {signingIn ? (
+              <ActivityIndicator color="#FFFFFF" />
+            ) : (
+              <Text style={[styles.buttonText, styles.appleButtonText]}>
+                Continue with Apple
+              </Text>
+            )}
+          </TouchableOpacity>
+        )}
 
         <TouchableOpacity
           style={[styles.button, styles.googleButton]}
           onPress={handleGoogleSignIn}
+          disabled={signingIn}
           accessibilityLabel="Sign in with Google"
         >
-          <Text style={[styles.buttonText, styles.googleButtonText]}>
-            Continue with Google
-          </Text>
+          {signingIn ? (
+            <ActivityIndicator color={colors.text} />
+          ) : (
+            <Text style={[styles.buttonText, styles.googleButtonText]}>
+              Continue with Google
+            </Text>
+          )}
         </TouchableOpacity>
       </View>
     </View>

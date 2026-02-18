@@ -1,78 +1,65 @@
 /**
  * Firebase auth abstraction.
  *
- * In development (__DEV__), this module provides a mock auth layer that
- * bypasses Firebase entirely and uses `dev:<uid>` tokens that the backend
- * accepts in development mode.
+ * In development (__DEV__), provides a mock auth layer that bypasses Firebase
+ * entirely and uses `dev:<uid>` tokens the backend accepts in dev mode.
  *
- * In production, this will be replaced with real Firebase JS SDK calls.
+ * In production, uses the real Firebase JS SDK.
  */
 
-const DEV_AUTH_UID = 'test-firebase-uid';
+import { initializeApp } from 'firebase/app';
+import {
+  getAuth,
+  signInWithCredential,
+  GoogleAuthProvider,
+  OAuthProvider,
+  onAuthStateChanged as firebaseOnAuthStateChanged,
+  signOut as firebaseSignOut,
+  type User as FirebaseUser,
+} from 'firebase/auth';
 
-type AuthStateCallback = (user: DevUser | null) => void;
+// ── Firebase config ──────────────────────────────────────────────────
+const firebaseConfig = {
+  apiKey: 'REDACTED_FIREBASE_API_KEY',
+  authDomain: 'REDACTED_FIREBASE_AUTH_DOMAIN',
+  projectId: 'mygourmetdiary-653f1',
+  storageBucket: 'REDACTED_FIREBASE_STORAGE_BUCKET',
+  messagingSenderId: 'REDACTED_FIREBASE_SENDER_ID',
+  appId: 'REDACTED_FIREBASE_APP_ID',
+};
 
-interface DevUser {
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+
+// ── Shared types ─────────────────────────────────────────────────────
+export interface AuthUser {
   uid: string;
-  email: string;
-  displayName: string;
+  email: string | null;
+  displayName: string | null;
 }
 
-let currentDevUser: DevUser | null = null;
+type AuthStateCallback = (user: AuthUser | null) => void;
+
+// ── Dev-mode mock (unchanged from before) ────────────────────────────
+const DEV_AUTH_UID = 'test-firebase-uid';
+let currentDevUser: AuthUser | null = null;
 let authStateListeners: AuthStateCallback[] = [];
 
-function notifyListeners() {
+function notifyDevListeners() {
   authStateListeners.forEach((cb) => cb(currentDevUser));
 }
 
-/**
- * Sign in as the dev test user. Only works in __DEV__ mode.
- * The backend's FirebaseAuthGuard accepts `Bearer dev:<uid>` tokens.
- */
-export async function devSignIn(): Promise<DevUser> {
-  const user: DevUser = {
+export async function devSignIn(): Promise<AuthUser> {
+  const user: AuthUser = {
     uid: DEV_AUTH_UID,
     email: 'test@gourmet.dev',
     displayName: 'Test Gourmet',
   };
   currentDevUser = user;
-  notifyListeners();
+  notifyDevListeners();
   return user;
 }
 
-export async function signOut(): Promise<void> {
-  currentDevUser = null;
-  notifyListeners();
-}
-
-export function getCurrentUser(): DevUser | null {
-  return currentDevUser;
-}
-
-export async function getIdToken(): Promise<string | null> {
-  if (!currentDevUser) return null;
-  // The backend accepts `dev:<uid>` tokens in development mode
-  return `dev:${currentDevUser.uid}`;
-}
-
-export function onAuthStateChanged(callback: AuthStateCallback): () => void {
-  authStateListeners.push(callback);
-  // Immediately fire with current state
-  callback(currentDevUser);
-  // Return unsubscribe function
-  return () => {
-    authStateListeners = authStateListeners.filter((cb) => cb !== callback);
-  };
-}
-
-/**
- * Auto-sign-in for development. Called from useAuthState when __DEV__ is true.
- * Signs in automatically so developers don't need to tap buttons.
- */
-/**
- * Auto-sign-in for development. Called from useAuthState when __DEV__ is true.
- * Also marks onboarding as complete to skip the carousel.
- */
 export let shouldAutoSkipOnboarding = false;
 
 export function autoDevSignIn(): void {
@@ -82,4 +69,65 @@ export function autoDevSignIn(): void {
       devSignIn();
     }, 500);
   }
+}
+
+// ── Production auth functions ────────────────────────────────────────
+
+export async function signInWithGoogle(idToken: string): Promise<AuthUser> {
+  const credential = GoogleAuthProvider.credential(idToken);
+  const result = await signInWithCredential(auth, credential);
+  return firebaseUserToAuthUser(result.user);
+}
+
+export async function signInWithApple(
+  identityToken: string,
+  nonce: string,
+): Promise<AuthUser> {
+  const provider = new OAuthProvider('apple.com');
+  const credential = provider.credential({ idToken: identityToken, rawNonce: nonce });
+  const result = await signInWithCredential(auth, credential);
+  return firebaseUserToAuthUser(result.user);
+}
+
+export async function signOut(): Promise<void> {
+  if (__DEV__) {
+    currentDevUser = null;
+    notifyDevListeners();
+    return;
+  }
+  await firebaseSignOut(auth);
+}
+
+export async function getIdToken(): Promise<string | null> {
+  if (__DEV__) {
+    if (!currentDevUser) return null;
+    return `dev:${currentDevUser.uid}`;
+  }
+  const user = auth.currentUser;
+  if (!user) return null;
+  return user.getIdToken();
+}
+
+export function onAuthStateChanged(callback: AuthStateCallback): () => void {
+  if (__DEV__) {
+    authStateListeners.push(callback);
+    callback(currentDevUser);
+    return () => {
+      authStateListeners = authStateListeners.filter((cb) => cb !== callback);
+    };
+  }
+
+  return firebaseOnAuthStateChanged(auth, (firebaseUser) => {
+    callback(firebaseUser ? firebaseUserToAuthUser(firebaseUser) : null);
+  });
+}
+
+// ── Helpers ──────────────────────────────────────────────────────────
+
+function firebaseUserToAuthUser(user: FirebaseUser): AuthUser {
+  return {
+    uid: user.uid,
+    email: user.email,
+    displayName: user.displayName,
+  };
 }
