@@ -4,12 +4,14 @@ import {
   Text,
   ScrollView,
   Image,
+  TouchableOpacity,
   StyleSheet,
   Dimensions,
   Alert,
   FlatList,
 } from 'react-native';
 import { useRoute, useNavigation, RouteProp } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { format } from 'date-fns';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -17,18 +19,23 @@ import { notesApi } from '../../api/endpoints';
 import { LoadingSpinner } from '../../components/common/LoadingSpinner';
 import { EmptyState } from '../../components/common/EmptyState';
 import { Button } from '../../components/common/Button';
+import { TasteSignalButtons } from '../../components/social/TasteSignalButtons';
+import { UserCard } from '../../components/social/UserCard';
 import { HomeStackParamList } from '../../navigation/types';
-import { NoteType } from '../../types';
+import { NoteType, SocialNote } from '../../types';
+import { useAuthStore } from '../../store/auth.store';
 import { colors, typography, spacing, borderRadius } from '../../theme';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 type RouteType = RouteProp<HomeStackParamList, 'NoteDetail'>;
+type NavProp = NativeStackNavigationProp<HomeStackParamList>;
 
 export function NoteDetailScreen() {
   const route = useRoute<RouteType>();
-  const navigation = useNavigation();
+  const navigation = useNavigation<NavProp>();
   const queryClient = useQueryClient();
+  const currentUser = useAuthStore((s) => s.user);
 
   const { data: note, isLoading, isError, refetch } = useQuery({
     queryKey: ['notes', route.params.noteId],
@@ -68,9 +75,19 @@ export function NoteDetailScreen() {
   }
 
   const ext = note.extension;
+  const isOwnNote = currentUser?.id === note.authorId;
+  const socialNote = note as SocialNote;
 
   return (
     <ScrollView style={styles.container}>
+      {/* Author bar for other user's notes */}
+      {!isOwnNote && socialNote.author && (
+        <UserCard
+          user={socialNote.author}
+          onPress={() => navigation.navigate('UserProfile', { userId: socialNote.author!.id })}
+        />
+      )}
+
       {/* Photo carousel */}
       {note.photos.length > 0 && (
         <FlatList
@@ -111,6 +128,11 @@ export function NoteDetailScreen() {
           <Text style={styles.ratingNumber}>{note.rating}</Text>
           <Text style={styles.ratingMax}>/10</Text>
         </View>
+
+        {/* Taste signals for other user's notes */}
+        {!isOwnNote && note.visibility === 'PUBLIC' && (
+          <TasteSignalButtons noteId={note.id} />
+        )}
 
         {/* Type-specific details */}
         {note.type === NoteType.RESTAURANT && (
@@ -193,15 +215,17 @@ export function NoteDetailScreen() {
           </View>
         )}
 
-        {/* Actions */}
-        <View style={styles.actions}>
-          <Button
-            title="Delete"
-            variant="outline"
-            onPress={handleDelete}
-            loading={deleteMutation.isPending}
-          />
-        </View>
+        {/* Actions — only for own notes */}
+        {isOwnNote && (
+          <View style={styles.actions}>
+            <Button
+              title="Delete"
+              variant="outline"
+              onPress={handleDelete}
+              loading={deleteMutation.isPending}
+            />
+          </View>
+        )}
       </View>
     </ScrollView>
   );

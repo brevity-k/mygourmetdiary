@@ -174,6 +174,118 @@ export class NotesService {
     });
   }
 
+  async publicFeed(
+    cursor?: string,
+    limit = 20,
+    type?: NoteType,
+  ) {
+    const where: Record<string, unknown> = { visibility: 'PUBLIC' };
+    if (type) where.type = type;
+    if (cursor) where.createdAt = { lt: new Date(cursor) };
+
+    const notes = await this.prisma.note.findMany({
+      where,
+      include: {
+        photos: { orderBy: { sortOrder: 'asc' } },
+        venue: true,
+        author: { select: { id: true, displayName: true, avatarUrl: true } },
+      },
+      orderBy: { createdAt: 'desc' },
+      take: limit + 1,
+    });
+
+    const hasMore = notes.length > limit;
+    const items = hasMore ? notes.slice(0, limit) : notes;
+    const nextCursor = hasMore
+      ? items[items.length - 1].createdAt.toISOString()
+      : null;
+
+    return { items, nextCursor, hasMore };
+  }
+
+  async socialFeed(
+    userId: string,
+    cursor?: string,
+    limit = 20,
+    type?: NoteType,
+  ) {
+    // Get binder IDs the user follows
+    const follows = await this.prisma.binderFollow.findMany({
+      where: { followerId: userId },
+      select: { binderId: true },
+    });
+    const binderIds = follows.map((f) => f.binderId);
+
+    if (binderIds.length === 0) {
+      return { items: [], nextCursor: null, hasMore: false };
+    }
+
+    const where: Record<string, unknown> = {
+      binderId: { in: binderIds },
+      visibility: 'PUBLIC',
+    };
+    if (type) where.type = type;
+    if (cursor) where.createdAt = { lt: new Date(cursor) };
+
+    const notes = await this.prisma.note.findMany({
+      where,
+      include: {
+        photos: { orderBy: { sortOrder: 'asc' } },
+        venue: true,
+        author: { select: { id: true, displayName: true, avatarUrl: true } },
+      },
+      orderBy: { createdAt: 'desc' },
+      take: limit + 1,
+    });
+
+    const hasMore = notes.length > limit;
+    const items = hasMore ? notes.slice(0, limit) : notes;
+    const nextCursor = hasMore
+      ? items[items.length - 1].createdAt.toISOString()
+      : null;
+
+    return { items, nextCursor, hasMore };
+  }
+
+  async findPublicById(id: string) {
+    const note = await this.prisma.note.findUnique({
+      where: { id },
+      include: {
+        photos: { orderBy: { sortOrder: 'asc' } },
+        venue: true,
+        author: { select: { id: true, displayName: true, avatarUrl: true } },
+      },
+    });
+
+    if (!note) throw new NotFoundException('Note not found');
+    if (note.visibility === 'PRIVATE') throw new ForbiddenException();
+
+    return note;
+  }
+
+  async findPublicByAuthor(authorId: string, cursor?: string, limit = 20) {
+    const where: Record<string, unknown> = {
+      authorId,
+      visibility: 'PUBLIC',
+    };
+    if (cursor) where.createdAt = { lt: new Date(cursor) };
+
+    const notes = await this.prisma.note.findMany({
+      where,
+      include: { photos: { orderBy: { sortOrder: 'asc' } }, venue: true },
+      orderBy: { createdAt: 'desc' },
+      take: limit + 1,
+    });
+
+    const hasMore = notes.length > limit;
+    const items = hasMore ? notes.slice(0, limit) : notes;
+    const nextCursor = hasMore
+      ? items[items.length - 1].createdAt.toISOString()
+      : null;
+
+    return { items, nextCursor, hasMore };
+  }
+
   async attachPhotos(noteId: string, userId: string, photoIds: string[]) {
     const note = await this.findById(noteId, userId);
     if (note.authorId !== userId) throw new ForbiddenException();

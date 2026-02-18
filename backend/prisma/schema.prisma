@@ -35,6 +35,18 @@ enum TagCategory {
   CUISINE
 }
 
+enum SignalType {
+  BOOKMARKED
+  ECHOED
+  DIVERGED
+}
+
+enum TasteCategory {
+  RESTAURANT
+  WINE
+  SPIRIT
+}
+
 // ─── Models ─────────────────────────────────────────────
 
 model User {
@@ -46,9 +58,15 @@ model User {
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
 
-  binders Binder[]
-  notes   Note[]
-  photos  Photo[]
+  binders            Binder[]
+  notes              Note[]
+  photos             Photo[]
+  binderFollows      BinderFollow[]     @relation("UserFollows")
+  tasteSignalsSent   TasteSignal[]      @relation("UserSignalsSent")
+  tasteSimilaritiesA TasteSimilarity[]  @relation("TasteSimilarityA")
+  tasteSimilaritiesB TasteSimilarity[]  @relation("TasteSimilarityB")
+  gourmetFriendPins  GourmetFriendPin[] @relation("UserPins")
+  gourmetPinnedBy    GourmetFriendPin[] @relation("UserPinnedBy")
 
   @@map("users")
 }
@@ -65,8 +83,9 @@ model Binder {
   createdAt   DateTime       @default(now()) @map("created_at")
   updatedAt   DateTime       @updatedAt @map("updated_at")
 
-  owner User   @relation(fields: [ownerId], references: [id], onDelete: Cascade)
-  notes Note[]
+  owner     User           @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  notes     Note[]
+  followers BinderFollow[]
 
   @@index([ownerId])
   @@map("binders")
@@ -88,15 +107,18 @@ model Note {
   createdAt     DateTime   @default(now()) @map("created_at")
   updatedAt     DateTime   @updatedAt @map("updated_at")
 
-  author User   @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  binder Binder @relation(fields: [binderId], references: [id], onDelete: Cascade)
-  venue  Venue? @relation(fields: [venueId], references: [id])
-  photos Photo[]
+  author       User          @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  binder       Binder        @relation(fields: [binderId], references: [id], onDelete: Cascade)
+  venue        Venue?        @relation(fields: [venueId], references: [id])
+  photos       Photo[]
+  tasteSignals TasteSignal[]
 
   @@index([authorId, createdAt(sort: Desc)])
   @@index([binderId])
   @@index([venueId])
   @@index([type])
+  @@index([visibility, createdAt(sort: Desc)])
+  @@index([visibility, type, createdAt(sort: Desc)])
   @@map("notes")
 }
 
@@ -151,4 +173,74 @@ model TagTaxonomy {
   @@unique([category, name])
   @@index([category])
   @@map("tag_taxonomy")
+}
+
+// ─── Phase 2: Social Models ────────────────────────────
+
+model BinderFollow {
+  id         String   @id @default(cuid())
+  followerId String   @map("follower_id")
+  binderId   String   @map("binder_id")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  follower User   @relation("UserFollows", fields: [followerId], references: [id], onDelete: Cascade)
+  binder   Binder @relation(fields: [binderId], references: [id], onDelete: Cascade)
+
+  @@unique([followerId, binderId])
+  @@index([followerId])
+  @@index([binderId])
+  @@map("binder_follows")
+}
+
+model TasteSignal {
+  id           String     @id @default(cuid())
+  senderId     String     @map("sender_id")
+  noteId       String     @map("note_id")
+  signalType   SignalType @map("signal_type")
+  senderRating Int?       @map("sender_rating") @db.SmallInt
+  createdAt    DateTime   @default(now()) @map("created_at")
+
+  sender User @relation("UserSignalsSent", fields: [senderId], references: [id], onDelete: Cascade)
+  note   Note @relation(fields: [noteId], references: [id], onDelete: Cascade)
+
+  @@unique([senderId, noteId, signalType])
+  @@index([noteId])
+  @@index([senderId])
+  @@index([noteId, signalType])
+  @@map("taste_signals")
+}
+
+model TasteSimilarity {
+  id             String        @id @default(cuid())
+  userAId        String        @map("user_a_id")
+  userBId        String        @map("user_b_id")
+  category       TasteCategory
+  score          Float
+  overlapCount   Int           @map("overlap_count")
+  lastComputedAt DateTime      @map("last_computed_at")
+
+  userA User @relation("TasteSimilarityA", fields: [userAId], references: [id], onDelete: Cascade)
+  userB User @relation("TasteSimilarityB", fields: [userBId], references: [id], onDelete: Cascade)
+
+  @@unique([userAId, userBId, category])
+  @@index([userAId, score(sort: Desc)])
+  @@index([userBId, score(sort: Desc)])
+  @@index([userAId, category])
+  @@map("taste_similarities")
+}
+
+model GourmetFriendPin {
+  id         String          @id @default(cuid())
+  pinnerId   String          @map("pinner_id")
+  pinnedId   String          @map("pinned_id")
+  categories TasteCategory[]
+  createdAt  DateTime        @default(now()) @map("created_at")
+
+  pinner User @relation("UserPins", fields: [pinnerId], references: [id], onDelete: Cascade)
+  pinned User @relation("UserPinnedBy", fields: [pinnedId], references: [id], onDelete: Cascade)
+
+  @@unique([pinnerId, pinnedId])
+  @@index([pinnerId])
+  @@index([pinnedId])
+  @@map("gourmet_friend_pins")
 }

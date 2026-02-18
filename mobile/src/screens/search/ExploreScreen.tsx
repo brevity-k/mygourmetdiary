@@ -1,31 +1,24 @@
 import React, { useState, useCallback } from 'react';
 import {
   View,
+  Text,
   FlatList,
   TouchableOpacity,
-  Text,
   StyleSheet,
   RefreshControl,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useInfiniteQuery } from '@tanstack/react-query';
-import { notesApi, exploreApi } from '../../api/endpoints';
-import { NoteCard } from '../../components/notes/NoteCard';
+import { exploreApi } from '../../api/endpoints';
 import { SocialNoteCard } from '../../components/notes/SocialNoteCard';
-import { SegmentControl } from '../../components/common/SegmentControl';
 import { EmptyState } from '../../components/common/EmptyState';
 import { NoteCardSkeleton } from '../../components/common/NoteCardSkeleton';
-import { HomeStackParamList } from '../../navigation/types';
-import { NoteType, SocialNote } from '../../types';
+import { SearchStackParamList } from '../../navigation/types';
+import { NoteType } from '../../types';
 import { colors, typography, spacing } from '../../theme';
 
-type NavigationProp = NativeStackNavigationProp<HomeStackParamList>;
-
-const SEGMENTS = [
-  { label: 'My Notes', value: 'mine' },
-  { label: 'Following', value: 'following' },
-];
+type NavProp = NativeStackNavigationProp<SearchStackParamList>;
 
 const FILTER_OPTIONS: { label: string; value: NoteType | undefined }[] = [
   { label: 'All', value: undefined },
@@ -35,63 +28,37 @@ const FILTER_OPTIONS: { label: string; value: NoteType | undefined }[] = [
   { label: 'Visits', value: NoteType.WINERY_VISIT },
 ];
 
-export function HomeScreen() {
-  const navigation = useNavigation<NavigationProp>();
-  const [segment, setSegment] = useState('mine');
+export function ExploreScreen() {
+  const navigation = useNavigation<NavProp>();
   const [typeFilter, setTypeFilter] = useState<NoteType | undefined>();
 
-  // Personal feed
-  const myFeed = useInfiniteQuery({
-    queryKey: ['notes', 'feed', typeFilter],
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isLoading,
+    refetch,
+    isRefetching,
+  } = useInfiniteQuery({
+    queryKey: ['explore', 'public', typeFilter],
     queryFn: ({ pageParam }) =>
-      notesApi.feed({ cursor: pageParam, type: typeFilter, limit: 20 }),
+      exploreApi.publicFeed({ cursor: pageParam, type: typeFilter, limit: 20 }),
     getNextPageParam: (lastPage) =>
       lastPage.hasMore ? lastPage.nextCursor : undefined,
     initialPageParam: undefined as string | undefined,
-    enabled: segment === 'mine',
   });
 
-  // Social feed (followed binders)
-  const socialFeed = useInfiniteQuery({
-    queryKey: ['notes', 'social', typeFilter],
-    queryFn: ({ pageParam }) =>
-      exploreApi.followedFeed({ cursor: pageParam, type: typeFilter, limit: 20 }),
-    getNextPageParam: (lastPage) =>
-      lastPage.hasMore ? lastPage.nextCursor : undefined,
-    initialPageParam: undefined as string | undefined,
-    enabled: segment === 'following',
-  });
-
-  const activeFeed = segment === 'mine' ? myFeed : socialFeed;
-  const notes = activeFeed.data?.pages.flatMap((page) => page.items) || [];
+  const notes = data?.pages.flatMap((page) => page.items) || [];
 
   const handleEndReached = useCallback(() => {
-    if (activeFeed.hasNextPage && !activeFeed.isFetchingNextPage) {
-      activeFeed.fetchNextPage();
-    }
-  }, [activeFeed.hasNextPage, activeFeed.isFetchingNextPage, activeFeed.fetchNextPage]);
+    if (hasNextPage && !isFetchingNextPage) fetchNextPage();
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
-  if (activeFeed.isLoading) return <NoteCardSkeleton />;
-
-  if (activeFeed.isError) {
-    return (
-      <EmptyState
-        title="Something went wrong"
-        description="Pull to refresh or tap to retry."
-        actionLabel="Retry"
-        onAction={() => activeFeed.refetch()}
-      />
-    );
-  }
+  if (isLoading) return <NoteCardSkeleton />;
 
   return (
     <View style={styles.container}>
-      <SegmentControl
-        segments={SEGMENTS}
-        selected={segment}
-        onSelect={setSegment}
-      />
-
       <View style={styles.filters}>
         {FILTER_OPTIONS.map((opt) => (
           <TouchableOpacity
@@ -117,24 +84,17 @@ export function HomeScreen() {
       <FlatList
         data={notes}
         keyExtractor={(item) => item.id}
-        renderItem={({ item }) =>
-          segment === 'following' ? (
-            <SocialNoteCard
-              note={item as SocialNote}
-              onPress={() => navigation.navigate('NoteDetail', { noteId: item.id })}
-              onAuthorPress={
-                (item as SocialNote).author
-                  ? () => navigation.navigate('UserProfile', { userId: (item as SocialNote).author!.id })
-                  : undefined
-              }
-            />
-          ) : (
-            <NoteCard
-              note={item}
-              onPress={() => navigation.navigate('NoteDetail', { noteId: item.id })}
-            />
-          )
-        }
+        renderItem={({ item }) => (
+          <SocialNoteCard
+            note={item}
+            onPress={() => navigation.navigate('NoteDetail', { noteId: item.id })}
+            onAuthorPress={
+              item.author
+                ? () => navigation.navigate('UserProfile', { userId: item.author!.id })
+                : undefined
+            }
+          />
+        )}
         contentContainerStyle={[
           styles.list,
           notes.length === 0 && styles.emptyList,
@@ -143,19 +103,15 @@ export function HomeScreen() {
         onEndReachedThreshold={0.5}
         refreshControl={
           <RefreshControl
-            refreshing={activeFeed.isRefetching}
-            onRefresh={activeFeed.refetch}
+            refreshing={isRefetching}
+            onRefresh={refetch}
             tintColor={colors.primary}
           />
         }
         ListEmptyComponent={
           <EmptyState
-            title={segment === 'mine' ? 'No notes yet' : 'No posts from followed binders'}
-            description={
-              segment === 'mine'
-                ? 'Tap the + button to create your first gourmet note.'
-                : 'Follow binders from other gourmets to see their notes here.'
-            }
+            title="No public notes yet"
+            description="Be the first to share your gourmet experiences!"
           />
         }
       />

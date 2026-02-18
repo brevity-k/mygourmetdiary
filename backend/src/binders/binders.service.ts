@@ -57,4 +57,29 @@ export class BindersService {
     }
     await this.prisma.binder.delete({ where: { id: binder.id } });
   }
+
+  async findPublicById(id: string) {
+    const binder = await this.prisma.binder.findUnique({
+      where: { id },
+      include: {
+        _count: { select: { notes: true, followers: true } },
+        owner: { select: { id: true, displayName: true, avatarUrl: true } },
+      },
+    });
+    if (!binder) throw new NotFoundException('Binder not found');
+    if (binder.visibility !== 'PUBLIC') {
+      throw new ForbiddenException('Binder is private');
+    }
+    return binder;
+  }
+
+  async findPublicByOwner(ownerId: string) {
+    return this.prisma.binder.findMany({
+      where: { ownerId, visibility: 'PUBLIC' },
+      include: {
+        _count: { select: { notes: true, followers: true } },
+      },
+      orderBy: [{ isDefault: 'desc' }, { createdAt: 'asc' }],
+    });
+  }
 }

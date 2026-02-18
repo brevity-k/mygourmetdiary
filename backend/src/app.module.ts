@@ -14,6 +14,8 @@ import { VenuesModule } from './venues/venues.module';
 import { PhotosModule } from './photos/photos.module';
 import { NotesModule } from './notes/notes.module';
 import { SearchModule } from './search/search.module';
+import { SocialModule } from './social/social.module';
+import { TasteMatchingModule } from './taste-matching/taste-matching.module';
 import { FirebaseAuthGuard } from './common/guards/firebase-auth.guard';
 
 @Module({
@@ -37,6 +39,8 @@ import { FirebaseAuthGuard } from './common/guards/firebase-auth.guard';
     PhotosModule,
     NotesModule,
     SearchModule,
+    SocialModule,
+    TasteMatchingModule,
   ],
   providers: [
     {

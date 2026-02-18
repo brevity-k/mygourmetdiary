@@ -21,22 +21,31 @@ export type MainTabParamList = {
 export type HomeStackParamList = {
   Home: undefined;
   NoteDetail: { noteId: string };
+  UserProfile: { userId: string };
 };
 
 export type BindersStackParamList = {
   BindersList: undefined;
   BinderDetail: { binderId: string; binderName: string };
   NoteDetail: { noteId: string };
+  FollowedBinders: undefined;
+  UserProfile: { userId: string };
 };
 
 export type SearchStackParamList = {
   Search: undefined;
   NoteDetail: { noteId: string };
+  Explore: undefined;
+  Discover: undefined;
+  UserProfile: { userId: string };
 };
 
 export type ProfileStackParamList = {
   Profile: undefined;
   Settings: undefined;
+  GourmetFriends: undefined;
+  UserProfile: { userId: string };
+  PinGourmetFriend: { userId: string };
 };
 
 export type NoteCreationStackParamList = {

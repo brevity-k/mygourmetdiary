@@ -125,6 +125,42 @@ export class NotesSearchService implements OnModuleInit {
     };
   }
 
+  async searchPublic(
+    query: string,
+    authorIds?: string[],
+    type?: string,
+    limit = 20,
+    offset = 0,
+  ) {
+    if (!this.available) return { hits: [], total: 0, limit, offset };
+
+    const VALID_TYPES = ['RESTAURANT', 'WINE', 'SPIRIT', 'WINERY_VISIT'];
+    if (type && !VALID_TYPES.includes(type)) {
+      return { hits: [], total: 0, limit, offset };
+    }
+
+    const filter: string[] = ['visibility = "PUBLIC"'];
+    if (type) filter.push(`type = "${type}"`);
+    if (authorIds && authorIds.length > 0) {
+      const authorFilter = authorIds.map((id) => `authorId = "${id}"`).join(' OR ');
+      filter.push(`(${authorFilter})`);
+    }
+
+    const results = await this.index.search(query, {
+      filter,
+      limit,
+      offset,
+      sort: ['createdAt:desc'],
+    });
+
+    return {
+      hits: results.hits,
+      total: results.estimatedTotalHits,
+      limit,
+      offset,
+    };
+  }
+
   private extractExtensionText(type: string, extension: any): string {
     if (!extension) return '';
     const parts: string[] = [];
