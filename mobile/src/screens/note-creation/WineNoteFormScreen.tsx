@@ -1,9 +1,9 @@
 import React from 'react';
-import { ScrollView, View, Text, StyleSheet } from 'react-native';
+import { ScrollView, View, Text, Switch, StyleSheet } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useQuery } from '@tanstack/react-query';
 import { useNoteForm } from '../../hooks/useNoteForm';
-import { NoteType } from '../../types';
+import { NoteType, Visibility } from '../../types';
 import { bindersApi, tagsApi } from '../../api/endpoints';
 import { Input } from '../../components/common/Input';
 import { Button } from '../../components/common/Button';
@@ -11,7 +11,8 @@ import { RatingInput } from '../../components/forms/RatingInput';
 import { TagSelector } from '../../components/forms/TagSelector';
 import { PhotoPicker } from '../../components/forms/PhotoPicker';
 import { BinderSelector } from '../../components/forms/BinderSelector';
-import { WINE_TYPES, WINE_FINISHES } from '../../constants/tags.constants';
+import { DateInput } from '../../components/forms/DateInput';
+import { WINE_TYPES, WINE_FINISHES, PURCHASE_CONTEXTS } from '../../constants/tags.constants';
 import { colors, typography, spacing } from '../../theme';
 
 export function WineNoteFormScreen() {
@@ -60,18 +61,14 @@ export function WineNoteFormScreen() {
       contentContainerStyle={styles.content}
       keyboardShouldPersistTaps="handled"
     >
+      {/* ── The Wine ── */}
+      <Text style={styles.sectionHeader}>The Wine</Text>
+
       <Input
         label="Wine Name *"
         placeholder="e.g., Opus One 2019"
         value={formData.extension.wineName || ''}
         onChangeText={(v) => updateExtension('wineName', v)}
-      />
-
-      <Input
-        label="Title *"
-        placeholder="Give your note a title"
-        value={formData.title}
-        onChangeText={(v) => updateField('title', v)}
       />
 
       <View style={styles.row}>
@@ -124,6 +121,16 @@ export function WineNoteFormScreen() {
         }
       />
 
+      {/* ── Your Tasting ── */}
+      <Text style={styles.sectionHeader}>Your Tasting</Text>
+
+      <Input
+        label="Title *"
+        placeholder="Give your note a title"
+        value={formData.title}
+        onChangeText={(v) => updateField('title', v)}
+      />
+
       <RatingInput
         label="Rating *"
         value={formData.rating}
@@ -149,19 +156,14 @@ export function WineNoteFormScreen() {
       </View>
 
       <Input
-        label="Price Paid"
-        placeholder="$0.00"
-        keyboardType="decimal-pad"
-        value={formData.extension.pricePaid?.toString() || ''}
-        onChangeText={(v) => updateExtension('pricePaid', v ? parseFloat(v) : undefined)}
-      />
-
-      <Input
         label="Pairing Notes"
         placeholder="What did you pair this with?"
         value={formData.extension.pairingNotes || ''}
         onChangeText={(v) => updateExtension('pairingNotes', v)}
       />
+
+      {/* ── Photos & Tags ── */}
+      <Text style={styles.sectionHeader}>Photos & Tags</Text>
 
       <PhotoPicker photos={photos} onAdd={addPhoto} onRemove={removePhoto} />
 
@@ -174,21 +176,72 @@ export function WineNoteFormScreen() {
         />
       )}
 
+      {/* ── Your Diary ── */}
+      <Text style={styles.sectionHeader}>Your Diary</Text>
+
       <Input
-        label="Notes"
-        placeholder="Tasting observations..."
+        label="Your Thoughts"
+        placeholder="Describe the color, aromas, how it evolved in the glass... What was the occasion?"
         multiline
-        numberOfLines={4}
+        numberOfLines={6}
         style={styles.textArea}
         value={formData.freeText}
         onChangeText={(v) => updateField('freeText', v)}
       />
+
+      {/* ── Save ── */}
+      <Text style={styles.sectionHeader}>Save</Text>
 
       <BinderSelector
         binders={binders}
         selectedId={formData.binderId}
         onChange={(id) => updateField('binderId', id)}
       />
+
+      <View style={styles.switchRow}>
+        <Text style={styles.label}>
+          {formData.visibility === Visibility.PUBLIC ? 'Public' : 'Private'}
+        </Text>
+        <Switch
+          value={formData.visibility === Visibility.PUBLIC}
+          onValueChange={(v) =>
+            updateField('visibility', v ? Visibility.PUBLIC : Visibility.PRIVATE)
+          }
+          trackColor={{ true: colors.primary }}
+        />
+      </View>
+
+      <DateInput
+        label="Date of Experience"
+        value={formData.experiencedAt}
+        onChange={(iso) => updateField('experiencedAt', iso)}
+      />
+
+      <Input
+        label="Price Paid"
+        placeholder="$0.00"
+        keyboardType="decimal-pad"
+        value={formData.extension.pricePaid?.toString() || ''}
+        onChangeText={(v) => updateExtension('pricePaid', v ? parseFloat(v) : undefined)}
+      />
+
+      <View style={styles.row}>
+        <Text style={styles.label}>Purchase Context</Text>
+        <View style={styles.chipRow}>
+          {PURCHASE_CONTEXTS.map((ctx) => (
+            <Text
+              key={ctx.value}
+              style={[
+                styles.chipOption,
+                formData.extension.purchaseContext === ctx.value && styles.chipOptionSelected,
+              ]}
+              onPress={() => updateExtension('purchaseContext', ctx.value)}
+            >
+              {ctx.label}
+            </Text>
+          ))}
+        </View>
+      </View>
 
       <Button
         title="Save Note"
@@ -205,6 +258,14 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
   content: { padding: spacing.lg, paddingBottom: spacing.xxl },
   cancelButton: { ...typography.body, color: colors.primary },
+  sectionHeader: {
+    ...typography.caption,
+    color: colors.textTertiary,
+    textTransform: 'uppercase',
+    letterSpacing: 1.5,
+    marginTop: spacing.lg,
+    marginBottom: spacing.md,
+  },
   label: { ...typography.label, color: colors.text, marginBottom: spacing.xs },
   row: { marginBottom: spacing.md },
   chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
@@ -224,8 +285,14 @@ const styles = StyleSheet.create({
     borderColor: colors.primary,
     color: colors.textInverse,
   },
+  switchRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: spacing.md,
+  },
   inlineRow: { flexDirection: 'row', gap: spacing.md },
   half: { flex: 1 },
-  textArea: { height: 100, textAlignVertical: 'top', paddingTop: spacing.sm },
+  textArea: { height: 160, textAlignVertical: 'top', paddingTop: spacing.sm },
   saveButton: { marginTop: spacing.md },
 });

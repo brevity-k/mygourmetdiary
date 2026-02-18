@@ -62,3 +62,10 @@ export const SERVING_METHODS = [
   { value: 'WARM', label: 'Warm' },
   { value: 'OTHER', label: 'Other' },
 ];
+
+export const PURCHASE_CONTEXTS = [
+  { value: 'RESTAURANT', label: 'Restaurant' },
+  { value: 'WINE_SHOP', label: 'Wine Shop' },
+  { value: 'WINERY', label: 'Winery' },
+  { value: 'ONLINE', label: 'Online' },
+];

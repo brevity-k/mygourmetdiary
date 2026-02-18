@@ -34,7 +34,8 @@
           "photosPermission": "MyGourmetDiary needs access to your photos to add images to your notes.",
           "cameraPermission": "MyGourmetDiary needs access to your camera to take photos of food and drinks."
         }
-      ]
+      ],
+      "@react-native-community/datetimepicker"
     ],
     "extra": {
       "eas": {
