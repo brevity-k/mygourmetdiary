@@ -1,0 +1,44 @@
+{
+  "expo": {
+    "name": "MyGourmetDiary",
+    "slug": "mygourmetdiary",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#FDF8F0"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.mygourmetdiary.app",
+      "usesAppleSignIn": true
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#FDF8F0"
+      },
+      "package": "com.mygourmetdiary.app",
+      "edgeToEdgeEnabled": true
+    },
+    "plugins": [
+      "expo-apple-authentication",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "MyGourmetDiary needs access to your photos to add images to your notes.",
+          "cameraPermission": "MyGourmetDiary needs access to your camera to take photos of food and drinks."
+        }
+      ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "your-eas-project-id"
+      }
+    }
+  }
+}
