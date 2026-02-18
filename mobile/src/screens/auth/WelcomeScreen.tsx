@@ -25,10 +25,8 @@ export function WelcomeScreen() {
   const [signingIn, setSigningIn] = useState(false);
 
   const [_request, response, promptAsync] = Google.useAuthRequest({
-    iosClientId:
-      'REDACTED_FIREBASE_SENDER_ID-c30jhpr4hmndfgld9vksqqga9jtd84t0.apps.googleusercontent.com',
-    webClientId:
-      'REDACTED_FIREBASE_SENDER_ID-ce0p012e632uecjgkufemmhlp1q9l6bo.apps.googleusercontent.com',
+    iosClientId: process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID,
+    webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
   });
 
   React.useEffect(() => {
@@ -61,7 +59,10 @@ export function WelcomeScreen() {
   const handleAppleSignIn = async () => {
     setSigningIn(true);
     try {
-      const nonce = Math.random().toString(36).substring(2, 10);
+      const nonceBytes = await Crypto.getRandomBytesAsync(16);
+      const nonce = Array.from(new Uint8Array(nonceBytes))
+        .map((b) => b.toString(16).padStart(2, '0'))
+        .join('');
       const hashedNonce = await Crypto.digestStringAsync(
         Crypto.CryptoDigestAlgorithm.SHA256,
         nonce,
