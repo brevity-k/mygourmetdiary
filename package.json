@@ -1,0 +1,11 @@
+{
+  "name": "mygourmetdiary",
+  "private": true,
+  "workspaces": [
+    "backend",
+    "mobile"
+  ],
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}
