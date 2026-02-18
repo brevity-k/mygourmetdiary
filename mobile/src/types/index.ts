@@ -75,6 +75,18 @@ export enum PurchaseContext {
   ONLINE = 'ONLINE',
 }
 
+export enum TasteSignalType {
+  BOOKMARKED = 'BOOKMARKED',
+  ECHOED = 'ECHOED',
+  DIVERGED = 'DIVERGED',
+}
+
+export enum TasteCategory {
+  RESTAURANT = 'RESTAURANT',
+  WINE = 'WINE',
+  SPIRIT = 'SPIRIT',
+}
+
 // ─── Models ─────────────────────────────────────────────
 
 export interface User {
@@ -85,6 +97,13 @@ export interface User {
   avatarUrl: string | null;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface PublicUser {
+  id: string;
+  displayName: string;
+  avatarUrl: string | null;
+  createdAt: string;
 }
 
 export interface Binder {
@@ -99,6 +118,12 @@ export interface Binder {
   createdAt: string;
   updatedAt: string;
   _count?: { notes: number };
+}
+
+export interface PublicBinder extends Binder {
+  owner?: PublicUser;
+  _count?: { notes: number; followers: number };
+  isFollowing?: boolean;
 }
 
 export interface Photo {
@@ -142,12 +167,81 @@ export interface Note {
   venue: Venue | null;
 }
 
+export interface SocialNote extends Note {
+  author?: PublicUser;
+  signalSummary?: TasteSignalSummary;
+  tier?: number;
+}
+
 export interface Tag {
   id: string;
   category: string;
   name: string;
   group: string;
   emoji: string | null;
+}
+
+export interface TasteSimilarity {
+  category: TasteCategory;
+  score: number | null;
+  overlapCount: number;
+}
+
+export interface GourmetFriend {
+  id: string;
+  pinnedId: string;
+  pinned: PublicUser;
+  categories: TasteCategory[];
+  createdAt: string;
+  similarities: TasteSimilarity[];
+}
+
+export interface TasteSignal {
+  id: string;
+  senderId: string;
+  noteId: string;
+  signalType: TasteSignalType;
+  senderRating: number | null;
+  createdAt: string;
+}
+
+export interface TasteSignalSummary {
+  bookmarkCount: number;
+  echoCount: number;
+  divergeCount: number;
+  mySignals: TasteSignalType[];
+}
+
+export interface UserSuggestion {
+  user: PublicUser;
+  bestCategory: TasteCategory;
+  bestScore: number;
+  sharedItemCount: number;
+  similarities: TasteSimilarity[];
+}
+
+export interface PublicProfile {
+  id: string;
+  displayName: string;
+  avatarUrl: string | null;
+  createdAt: string;
+  stats: { publicNoteCount: number; publicBinderCount: number };
+  publicBinders: PublicBinder[];
+  tasteSimilarity: TasteSimilarity[];
+  isPinned: boolean;
+}
+
+export interface CanPinResult {
+  canPin: boolean;
+  eligibleCategories: TasteCategory[];
+  compatibility: TasteSimilarity[];
+}
+
+export interface TieredSearchResult {
+  tier1: (SocialNote & { tier: number })[];
+  tier2: (SocialNote & { tier: number })[];
+  tier3: (SocialNote & { tier: number })[];
+  tier4: (SocialNote & { tier: number })[];
 }
 
 // ─── Extensions ─────────────────────────────────────────

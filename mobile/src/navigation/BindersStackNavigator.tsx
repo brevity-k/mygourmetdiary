@@ -2,7 +2,9 @@ import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { BindersScreen } from '../screens/binders/BindersScreen';
 import { BinderDetailScreen } from '../screens/binders/BinderDetailScreen';
+import { FollowedBindersScreen } from '../screens/binders/FollowedBindersScreen';
 import { NoteDetailScreen } from '../screens/home/NoteDetailScreen';
+import { UserProfileScreen } from '../screens/social/UserProfileScreen';
 import { BindersStackParamList } from './types';
 import { colors, typography } from '../theme';
 
@@ -31,6 +33,16 @@ export function BindersStackNavigator() {
         name="NoteDetail"
         component={NoteDetailScreen}
         options={{ title: 'Note' }}
+      />
+      <Stack.Screen
+        name="FollowedBinders"
+        component={FollowedBindersScreen}
+        options={{ title: 'Following' }}
+      />
+      <Stack.Screen
+        name="UserProfile"
+        component={UserProfileScreen}
+        options={{ title: 'Profile' }}
       />
     </Stack.Navigator>
   );

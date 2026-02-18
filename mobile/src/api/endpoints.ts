@@ -2,13 +2,25 @@ import { apiClient } from './client';
 import {
   ApiResponse,
   Binder,
+  CanPinResult,
+  GourmetFriend,
   Note,
+  NoteType,
   PaginatedResponse,
   PresignResponse,
+  PublicBinder,
+  PublicProfile,
   SearchResult,
+  SocialNote,
   Tag,
+  TasteCategory,
+  TasteSignal,
+  TasteSignalSummary,
+  TasteSignalType,
+  TasteSimilarity,
+  TieredSearchResult,
   User,
-  NoteType,
+  UserSuggestion,
 } from '../types';
 
 // ─── Auth ───────────────────────────────────────────────
@@ -134,6 +146,129 @@ export const searchApi = {
     if (offset) params.set('offset', String(offset));
     return apiClient
       .get<ApiResponse<SearchResult>>(`/search?${params}`)
+      .then((r) => r.data.data);
+  },
+};
+
+// ─── Phase 2: Social APIs ──────────────────────────────
+
+export const exploreApi = {
+  publicFeed: (params: { cursor?: string; limit?: number; type?: NoteType }) => {
+    const searchParams = new URLSearchParams();
+    if (params.cursor) searchParams.set('cursor', params.cursor);
+    if (params.limit) searchParams.set('limit', String(params.limit));
+    if (params.type) searchParams.set('type', params.type);
+    return apiClient
+      .get<ApiResponse<PaginatedResponse<SocialNote>>>(`/notes/public/feed?${searchParams}`)
+      .then((r) => r.data.data);
+  },
+  followedFeed: (params: { cursor?: string; limit?: number; type?: NoteType }) => {
+    const searchParams = new URLSearchParams();
+    if (params.cursor) searchParams.set('cursor', params.cursor);
+    if (params.limit) searchParams.set('limit', String(params.limit));
+    if (params.type) searchParams.set('type', params.type);
+    return apiClient
+      .get<ApiResponse<PaginatedResponse<SocialNote>>>(`/notes/social/feed?${searchParams}`)
+      .then((r) => r.data.data);
+  },
+};
+
+export const socialSearchApi = {
+  search: (q: string, type?: string, limit?: number) => {
+    const params = new URLSearchParams({ q });
+    if (type) params.set('type', type);
+    if (limit) params.set('limit', String(limit));
+    return apiClient
+      .get<ApiResponse<TieredSearchResult>>(`/search/public?${params}`)
+      .then((r) => r.data.data);
+  },
+};
+
+export const profilesApi = {
+  getProfile: (userId: string) =>
+    apiClient
+      .get<ApiResponse<PublicProfile>>(`/users/${userId}/profile`)
+      .then((r) => r.data.data),
+  getPublicBinders: (userId: string) =>
+    apiClient
+      .get<ApiResponse<PublicBinder[]>>(`/users/${userId}/binders`)
+      .then((r) => r.data.data),
+  getPublicNotes: (userId: string, cursor?: string, limit?: number) => {
+    const params = new URLSearchParams();
+    if (cursor) params.set('cursor', cursor);
+    if (limit) params.set('limit', String(limit));
+    return apiClient
+      .get<ApiResponse<PaginatedResponse<Note>>>(`/notes/public/feed?authorId=${userId}&${params}`)
+      .then((r) => r.data.data);
+  },
+  getTasteSimilarity: (userId: string) =>
+    apiClient
+      .get<ApiResponse<TasteSimilarity[]>>(`/friends/${userId}/compatibility`)
+      .then((r) => r.data.data),
+};
+
+export const binderFollowsApi = {
+  follow: (binderId: string) =>
+    apiClient
+      .post<ApiResponse<any>>(`/binders/${binderId}/follow`)
+      .then((r) => r.data.data),
+  unfollow: (binderId: string) =>
+    apiClient.delete(`/binders/${binderId}/follow`),
+  listFollowed: (cursor?: string, limit?: number) => {
+    const params = new URLSearchParams();
+    if (cursor) params.set('cursor', cursor);
+    if (limit) params.set('limit', String(limit));
+    return apiClient
+      .get<ApiResponse<PaginatedResponse<{ binder: PublicBinder }>>>(`/users/me/following?${params}`)
+      .then((r) => r.data.data);
+  },
+};
+
+export const tasteSignalsApi = {
+  send: (noteId: string, signalType: TasteSignalType, senderRating?: number) =>
+    apiClient
+      .post<ApiResponse<TasteSignal>>(`/notes/${noteId}/signals`, {
+        signalType,
+        senderRating,
+      })
+      .then((r) => r.data.data),
+  remove: (noteId: string, signalType: TasteSignalType) =>
+    apiClient.delete(`/notes/${noteId}/signals/${signalType}`),
+  getSummary: (noteId: string) =>
+    apiClient
+      .get<ApiResponse<TasteSignalSummary>>(`/notes/${noteId}/signals`)
+      .then((r) => r.data.data),
+};
+
+export const gourmetFriendsApi = {
+  list: () =>
+    apiClient
+      .get<ApiResponse<GourmetFriend[]>>('/friends')
+      .then((r) => r.data.data),
+  pin: (pinnedId: string, categories: TasteCategory[]) =>
+    apiClient
+      .post<ApiResponse<any>>('/friends/pin', { pinnedId, categories })
+      .then((r) => r.data.data),
+  unpin: (pinnedId: string) =>
+    apiClient.delete(`/friends/pin/${pinnedId}`),
+  updateCategories: (pinnedId: string, categories: TasteCategory[]) =>
+    apiClient
+      .patch<ApiResponse<any>>(`/friends/pin/${pinnedId}`, { categories })
+      .then((r) => r.data.data),
+  canPin: (userId: string) =>
+    apiClient
+      .get<ApiResponse<CanPinResult>>(`/friends/${userId}/can-pin`)
+      .then((r) => r.data.data),
+};
+
+export const discoveryApi = {
+  getSimilarUsers: (category?: TasteCategory, limit?: number, offset?: number) => {
+    const params = new URLSearchParams();
+    if (category) params.set('category', category);
+    if (limit) params.set('limit', String(limit));
+    if (offset) params.set('offset', String(offset));
+    return apiClient
+      .get<ApiResponse<{ items: UserSuggestion[]; total: number }>>(`/discover/similar-users?${params}`)
       .then((r) => r.data.data);
   },
 };

@@ -5,17 +5,16 @@ import {
   Image,
   TouchableOpacity,
   StyleSheet,
-  FlatList,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useQuery } from '@tanstack/react-query';
 import { MaterialIcons } from '@expo/vector-icons';
-import { bindersApi } from '../../api/endpoints';
+import { bindersApi, gourmetFriendsApi } from '../../api/endpoints';
 import { useAuthStore } from '../../store/auth.store';
 import { EmptyState } from '../../components/common/EmptyState';
 import { ProfileStackParamList } from '../../navigation/types';
-import { colors, typography, spacing, borderRadius } from '../../theme';
+import { colors, typography, spacing } from '../../theme';
 
 type NavigationProp = NativeStackNavigationProp<ProfileStackParamList>;
 
@@ -26,6 +25,11 @@ export function ProfileScreen() {
   const { data: binders = [], isError, refetch } = useQuery({
     queryKey: ['binders'],
     queryFn: bindersApi.list,
+  });
+
+  const { data: friends = [] } = useQuery({
+    queryKey: ['friends'],
+    queryFn: gourmetFriendsApi.list,
   });
 
   const totalNotes = binders.reduce((sum, b) => sum + (b._count?.notes || 0), 0);
@@ -66,10 +70,24 @@ export function ProfileScreen() {
           <Text style={styles.statValue}>{binders.length}</Text>
           <Text style={styles.statLabel}>Binders</Text>
         </View>
+        <View style={styles.stat}>
+          <Text style={styles.statValue}>{friends.length}</Text>
+          <Text style={styles.statLabel}>Friends</Text>
+        </View>
       </View>
 
       {/* Menu */}
       <View style={styles.menu}>
+        <TouchableOpacity
+          style={styles.menuItem}
+          onPress={() => navigation.navigate('GourmetFriends')}
+        >
+          <MaterialIcons name="star" size={22} color={colors.primary} />
+          <Text style={styles.menuText}>Gourmet Friends</Text>
+          <Text style={styles.menuBadge}>{friends.length}</Text>
+          <MaterialIcons name="chevron-right" size={22} color={colors.textTertiary} />
+        </TouchableOpacity>
+
         <TouchableOpacity
           style={styles.menuItem}
           onPress={() => navigation.navigate('Settings')}
@@ -122,4 +140,9 @@ const styles = StyleSheet.create({
     borderBottomColor: colors.borderLight,
   },
   menuText: { ...typography.body, color: colors.text, flex: 1 },
+  menuBadge: {
+    ...typography.bodySmall,
+    color: colors.primary,
+    fontWeight: '600',
+  },
 });

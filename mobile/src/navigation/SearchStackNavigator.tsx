@@ -1,7 +1,10 @@
 import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { SearchScreen } from '../screens/search/SearchScreen';
+import { ExploreScreen } from '../screens/search/ExploreScreen';
+import { DiscoverScreen } from '../screens/social/DiscoverScreen';
 import { NoteDetailScreen } from '../screens/home/NoteDetailScreen';
+import { UserProfileScreen } from '../screens/social/UserProfileScreen';
 import { SearchStackParamList } from './types';
 import { colors, typography } from '../theme';
 
@@ -19,12 +22,27 @@ export function SearchStackNavigator() {
       <Stack.Screen
         name="Search"
         component={SearchScreen}
-        options={{ title: 'Search Notes' }}
+        options={{ title: 'Search' }}
+      />
+      <Stack.Screen
+        name="Explore"
+        component={ExploreScreen}
+        options={{ title: 'Explore' }}
+      />
+      <Stack.Screen
+        name="Discover"
+        component={DiscoverScreen}
+        options={{ title: 'Discover Gourmets' }}
       />
       <Stack.Screen
         name="NoteDetail"
         component={NoteDetailScreen}
         options={{ title: 'Note' }}
+      />
+      <Stack.Screen
+        name="UserProfile"
+        component={UserProfileScreen}
+        options={{ title: 'Profile' }}
       />
     </Stack.Navigator>
   );

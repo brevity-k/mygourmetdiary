@@ -40,6 +40,41 @@ export class NotesController {
     return this.notesService.feed(user.id, cursor, safeLimit, type, binderId);
   }
 
+  @Get('public/feed')
+  @ApiOperation({ summary: 'Public notes from all users (cursor-paginated)' })
+  @ApiQuery({ name: 'cursor', required: false })
+  @ApiQuery({ name: 'limit', required: false })
+  @ApiQuery({ name: 'type', enum: NoteType, required: false })
+  async publicFeed(
+    @Query('cursor') cursor?: string,
+    @Query('limit') limit?: number,
+    @Query('type') type?: NoteType,
+  ) {
+    const safeLimit = Math.min(Math.max(limit || 20, 1), 100);
+    return this.notesService.publicFeed(cursor, safeLimit, type);
+  }
+
+  @Get('social/feed')
+  @ApiOperation({ summary: 'Notes from followed binders' })
+  @ApiQuery({ name: 'cursor', required: false })
+  @ApiQuery({ name: 'limit', required: false })
+  @ApiQuery({ name: 'type', enum: NoteType, required: false })
+  async socialFeed(
+    @CurrentUser() user: User,
+    @Query('cursor') cursor?: string,
+    @Query('limit') limit?: number,
+    @Query('type') type?: NoteType,
+  ) {
+    const safeLimit = Math.min(Math.max(limit || 20, 1), 100);
+    return this.notesService.socialFeed(user.id, cursor, safeLimit, type);
+  }
+
+  @Get('public/:id')
+  @ApiOperation({ summary: 'View a specific public note' })
+  async findPublic(@Param('id') id: string) {
+    return this.notesService.findPublicById(id);
+  }
+
   @Post()
   @ApiOperation({ summary: 'Create a new note' })
   async create(@CurrentUser() user: User, @Body() dto: CreateNoteDto) {
