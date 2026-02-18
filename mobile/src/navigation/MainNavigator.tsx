@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, TouchableOpacity, StyleSheet } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { NavigationIndependentTree, NavigationContainer } from '@react-navigation/native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { HomeStackNavigator } from './HomeStackNavigator';
 import { BindersStackNavigator } from './BindersStackNavigator';
@@ -103,7 +104,11 @@ export function MainNavigator() {
             activeOpacity={1}
             onPress={() => setShowCreate(false)}
           />
-          <NoteCreationNavigator />
+          <NavigationIndependentTree>
+            <NavigationContainer>
+              <NoteCreationNavigator onClose={() => setShowCreate(false)} />
+            </NavigationContainer>
+          </NavigationIndependentTree>
         </View>
       )}
     </>

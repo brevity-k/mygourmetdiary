@@ -1,5 +1,7 @@
 import React from 'react';
+import { TouchableOpacity } from 'react-native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { MaterialIcons } from '@expo/vector-icons';
 import { NoteTypeSelectScreen } from '../screens/note-creation/NoteTypeSelectScreen';
 import { RestaurantNoteFormScreen } from '../screens/note-creation/RestaurantNoteFormScreen';
 import { WineNoteFormScreen } from '../screens/note-creation/WineNoteFormScreen';
@@ -10,7 +12,11 @@ import { colors, typography } from '../theme';
 
 const Stack = createNativeStackNavigator<NoteCreationStackParamList>();
 
-export function NoteCreationNavigator() {
+interface Props {
+  onClose: () => void;
+}
+
+export function NoteCreationNavigator({ onClose }: Props) {
   return (
     <Stack.Navigator
       screenOptions={{
@@ -18,6 +24,11 @@ export function NoteCreationNavigator() {
         headerTintColor: colors.text,
         headerTitleStyle: { ...typography.h3 },
         presentation: 'modal',
+        headerLeft: () => (
+          <TouchableOpacity onPress={onClose} accessibilityLabel="Close">
+            <MaterialIcons name="close" size={24} color={colors.text} />
+          </TouchableOpacity>
+        ),
       }}
     >
       <Stack.Screen
