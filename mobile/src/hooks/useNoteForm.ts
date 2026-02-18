@@ -6,6 +6,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { notesApi, photosApi } from '../api/endpoints';
 import { NoteType, Visibility } from '../types';
 import { useUIStore } from '../store/ui.store';
+import { useToast } from '../components/common/Toast';
 
 interface PhotoAsset {
   uri: string;
@@ -32,6 +33,7 @@ const DRAFT_KEY_PREFIX = 'note_draft_';
 
 export function useNoteForm(type: NoteType, onSuccess: () => void) {
   const queryClient = useQueryClient();
+  const { showToast } = useToast();
   const defaultVisibility = useUIStore((s) => s.defaultVisibility);
   const autoSaveRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -135,12 +137,13 @@ export function useNoteForm(type: NoteType, onSuccess: () => void) {
       AsyncStorage.removeItem(draftKey);
       queryClient.invalidateQueries({ queryKey: ['notes'] });
       queryClient.invalidateQueries({ queryKey: ['binders'] });
+      showToast('Note saved!', 'success');
       onSuccess();
     },
     onError: (error: any) => {
-      Alert.alert(
-        'Error',
+      showToast(
         error?.response?.data?.message || 'Failed to save note',
+        'error',
       );
     },
   });

@@ -15,6 +15,7 @@ import { format } from 'date-fns';
 import { MaterialIcons } from '@expo/vector-icons';
 import { notesApi } from '../../api/endpoints';
 import { LoadingSpinner } from '../../components/common/LoadingSpinner';
+import { EmptyState } from '../../components/common/EmptyState';
 import { Button } from '../../components/common/Button';
 import { HomeStackParamList } from '../../navigation/types';
 import { NoteType } from '../../types';
@@ -29,7 +30,7 @@ export function NoteDetailScreen() {
   const navigation = useNavigation();
   const queryClient = useQueryClient();
 
-  const { data: note, isLoading } = useQuery({
+  const { data: note, isLoading, isError, refetch } = useQuery({
     queryKey: ['notes', route.params.noteId],
     queryFn: () => notesApi.get(route.params.noteId),
   });
@@ -54,6 +55,17 @@ export function NoteDetailScreen() {
   };
 
   if (isLoading || !note) return <LoadingSpinner />;
+
+  if (isError) {
+    return (
+      <EmptyState
+        title="Something went wrong"
+        description="Could not load this note. Tap to retry."
+        actionLabel="Retry"
+        onAction={() => refetch()}
+      />
+    );
+  }
 
   const ext = note.extension;
 

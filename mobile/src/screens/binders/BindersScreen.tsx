@@ -12,7 +12,8 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useQuery } from '@tanstack/react-query';
 import { MaterialIcons } from '@expo/vector-icons';
 import { bindersApi } from '../../api/endpoints';
-import { LoadingSpinner } from '../../components/common/LoadingSpinner';
+import { BinderCardSkeleton } from '../../components/common/BinderCardSkeleton';
+import { EmptyState } from '../../components/common/EmptyState';
 import { BindersStackParamList } from '../../navigation/types';
 import { Binder, BinderCategory } from '../../types';
 import { colors, typography, spacing, borderRadius } from '../../theme';
@@ -29,12 +30,23 @@ const CATEGORY_ICONS: Record<BinderCategory, keyof typeof MaterialIcons.glyphMap
 export function BindersScreen() {
   const navigation = useNavigation<NavigationProp>();
 
-  const { data: binders = [], isLoading, refetch, isRefetching } = useQuery({
+  const { data: binders = [], isLoading, isError, refetch, isRefetching } = useQuery({
     queryKey: ['binders'],
     queryFn: bindersApi.list,
   });
 
-  if (isLoading) return <LoadingSpinner />;
+  if (isLoading) return <BinderCardSkeleton />;
+
+  if (isError) {
+    return (
+      <EmptyState
+        title="Something went wrong"
+        description="Pull to refresh or tap to retry."
+        actionLabel="Retry"
+        onAction={() => refetch()}
+      />
+    );
+  }
 
   return (
     <FlatList
@@ -48,6 +60,12 @@ export function BindersScreen() {
           refreshing={isRefetching}
           onRefresh={refetch}
           tintColor={colors.primary}
+        />
+      }
+      ListEmptyComponent={
+        <EmptyState
+          title="No binders yet"
+          description="Your binders will appear here."
         />
       }
       renderItem={({ item }: { item: Binder }) => (
