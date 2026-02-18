@@ -36,7 +36,8 @@ export class NotesController {
     @Query('type') type?: NoteType,
     @Query('binderId') binderId?: string,
   ) {
-    return this.notesService.feed(user.id, cursor, limit || 20, type, binderId);
+    const safeLimit = Math.min(Math.max(limit || 20, 1), 100);
+    return this.notesService.feed(user.id, cursor, safeLimit, type, binderId);
   }
 
   @Post()

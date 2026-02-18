@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { createHash } from 'crypto';
 import { PrismaService } from '../prisma/prisma.service';
 import { RedisService } from '../redis/redis.service';
 import { GooglePlacesClient } from './google-places.client';
@@ -18,7 +19,8 @@ export class VenuesService {
   ) {}
 
   async search(query: string, lat?: number, lng?: number) {
-    const cacheKey = `venues:search:${query}:${lat}:${lng}`;
+    const hash = createHash('sha256').update(`${query}:${lat}:${lng}`).digest('hex').slice(0, 16);
+    const cacheKey = `venues:search:${hash}`;
     const cached = await this.redis.getJson<any[]>(cacheKey);
     if (cached) return cached;
 

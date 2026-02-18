@@ -101,6 +101,12 @@ export class NotesSearchService implements OnModuleInit {
     offset = 0,
   ) {
     if (!this.available) return { hits: [], total: 0, limit, offset };
+
+    const VALID_TYPES = ['RESTAURANT', 'WINE', 'SPIRIT', 'WINERY_VISIT'];
+    if (type && !VALID_TYPES.includes(type)) {
+      return { hits: [], total: 0, limit, offset };
+    }
+
     const filter = [`authorId = "${authorId}"`];
     if (type) filter.push(`type = "${type}"`);
 

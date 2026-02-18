@@ -23,12 +23,14 @@ export class SearchController {
     @Query('limit') limit?: number,
     @Query('offset') offset?: number,
   ) {
+    const safeLimit = Math.min(Math.max(limit || 20, 1), 100);
+    const safeOffset = Math.max(offset || 0, 0);
     return this.searchService.search(
       user.id,
-      q,
+      q?.slice(0, 500) || '',
       type,
-      limit || 20,
-      offset || 0,
+      safeLimit,
+      safeOffset,
     );
   }
 }
