@@ -13,6 +13,7 @@ import { useQuery } from '@tanstack/react-query';
 import { MaterialIcons } from '@expo/vector-icons';
 import { bindersApi } from '../../api/endpoints';
 import { useAuthStore } from '../../store/auth.store';
+import { EmptyState } from '../../components/common/EmptyState';
 import { ProfileStackParamList } from '../../navigation/types';
 import { colors, typography, spacing, borderRadius } from '../../theme';
 
@@ -22,12 +23,23 @@ export function ProfileScreen() {
   const navigation = useNavigation<NavigationProp>();
   const user = useAuthStore((s) => s.user);
 
-  const { data: binders = [] } = useQuery({
+  const { data: binders = [], isError, refetch } = useQuery({
     queryKey: ['binders'],
     queryFn: bindersApi.list,
   });
 
   const totalNotes = binders.reduce((sum, b) => sum + (b._count?.notes || 0), 0);
+
+  if (isError) {
+    return (
+      <EmptyState
+        title="Something went wrong"
+        description="Could not load profile data. Tap to retry."
+        actionLabel="Retry"
+        onAction={() => refetch()}
+      />
+    );
+  }
 
   return (
     <View style={styles.container}>

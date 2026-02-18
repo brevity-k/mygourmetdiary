@@ -13,7 +13,7 @@ import { useInfiniteQuery } from '@tanstack/react-query';
 import { notesApi } from '../../api/endpoints';
 import { NoteCard } from '../../components/notes/NoteCard';
 import { EmptyState } from '../../components/common/EmptyState';
-import { LoadingSpinner } from '../../components/common/LoadingSpinner';
+import { NoteCardSkeleton } from '../../components/common/NoteCardSkeleton';
 import { HomeStackParamList } from '../../navigation/types';
 import { NoteType } from '../../types';
 import { colors, typography, spacing } from '../../theme';
@@ -38,6 +38,7 @@ export function HomeScreen() {
     hasNextPage,
     isFetchingNextPage,
     isLoading,
+    isError,
     refetch,
     isRefetching,
   } = useInfiniteQuery({
@@ -57,7 +58,18 @@ export function HomeScreen() {
     }
   }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
-  if (isLoading) return <LoadingSpinner />;
+  if (isLoading) return <NoteCardSkeleton />;
+
+  if (isError) {
+    return (
+      <EmptyState
+        title="Something went wrong"
+        description="Pull to refresh or tap to retry."
+        actionLabel="Retry"
+        onAction={() => refetch()}
+      />
+    );
+  }
 
   return (
     <View style={styles.container}>

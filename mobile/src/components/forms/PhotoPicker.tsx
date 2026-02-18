@@ -82,6 +82,7 @@ export function PhotoPicker({
               style={styles.removeButton}
               onPress={() => onRemove(index)}
               accessibilityLabel={`Remove photo ${index + 1}`}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
             >
               <MaterialIcons name="close" size={16} color={colors.textInverse} />
             </TouchableOpacity>
@@ -126,11 +127,11 @@ const styles = StyleSheet.create({
   },
   removeButton: {
     position: 'absolute',
-    top: -6,
-    right: -6,
-    width: 22,
-    height: 22,
-    borderRadius: 11,
+    top: -8,
+    right: -8,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
     backgroundColor: colors.error,
     justifyContent: 'center',
     alignItems: 'center',

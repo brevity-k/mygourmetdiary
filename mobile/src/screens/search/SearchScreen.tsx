@@ -31,7 +31,7 @@ export function SearchScreen() {
     }, 400);
   }, []);
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ['search', debouncedQuery],
     queryFn: () => searchApi.search(debouncedQuery),
     enabled: debouncedQuery.length >= 2,
@@ -60,6 +60,7 @@ export function SearchScreen() {
               setQuery('');
               setDebouncedQuery('');
             }}
+            accessibilityLabel="Clear search"
           />
         )}
       </View>
@@ -78,7 +79,14 @@ export function SearchScreen() {
           hits.length === 0 && debouncedQuery.length >= 2 && styles.emptyList,
         ]}
         ListEmptyComponent={
-          debouncedQuery.length >= 2 ? (
+          isError ? (
+            <EmptyState
+              title="Search failed"
+              description="Something went wrong. Tap to retry."
+              actionLabel="Retry"
+              onAction={() => refetch()}
+            />
+          ) : debouncedQuery.length >= 2 ? (
             <EmptyState
               title="No results"
               description={`No notes matching "${debouncedQuery}"`}
