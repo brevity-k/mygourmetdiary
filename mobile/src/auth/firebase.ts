@@ -7,9 +7,11 @@
  * In production, uses the real Firebase JS SDK.
  */
 
-import { initializeApp } from 'firebase/app';
+import { initializeApp, getApps, getApp } from 'firebase/app';
 import {
+  initializeAuth,
   getAuth,
+  getReactNativePersistence,
   signInWithCredential,
   GoogleAuthProvider,
   OAuthProvider,
@@ -17,6 +19,7 @@ import {
   signOut as firebaseSignOut,
   type User as FirebaseUser,
 } from 'firebase/auth';
+import ReactNativeAsyncStorage from '@react-native-async-storage/async-storage';
 
 // ── Firebase config ──────────────────────────────────────────────────
 const firebaseConfig = {
@@ -28,8 +31,17 @@ const firebaseConfig = {
   appId: 'REDACTED_FIREBASE_APP_ID',
 };
 
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
+const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
+
+// Use initializeAuth on first load, getAuth on hot reload
+let auth: ReturnType<typeof initializeAuth>;
+try {
+  auth = initializeAuth(app, {
+    persistence: getReactNativePersistence(ReactNativeAsyncStorage),
+  });
+} catch {
+  auth = getAuth(app) as ReturnType<typeof initializeAuth>;
+}
 
 // ── Shared types ─────────────────────────────────────────────────────
 export interface AuthUser {

@@ -1,7 +1,7 @@
 import React from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { NavigationContainer } from '@react-navigation/native';
+import { NavigationContainer, DefaultTheme } from '@react-navigation/native';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { RootNavigator } from './src/navigation/RootNavigator';
@@ -27,20 +27,16 @@ export default function App() {
             <ErrorBoundary>
               <NavigationContainer
                 theme={{
+                  ...DefaultTheme,
                   dark: false,
                   colors: {
+                    ...DefaultTheme.colors,
                     primary: colors.primary,
                     background: colors.background,
                     card: colors.surface,
                     text: colors.text,
                     border: colors.border,
                     notification: colors.accent,
-                  },
-                  fonts: {
-                    regular: { fontFamily: 'System', fontWeight: '400' },
-                    medium: { fontFamily: 'System', fontWeight: '500' },
-                    bold: { fontFamily: 'System', fontWeight: '700' },
-                    heavy: { fontFamily: 'System', fontWeight: '800' },
                   },
                 }}
               >

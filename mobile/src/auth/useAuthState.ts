@@ -40,5 +40,10 @@ export function useAuthState() {
     return unsubscribe;
   }, [setUser, setFirebaseToken, setLoading]);
 
-  return { isAuthenticated, isLoading, user, hasOnboarded };
+  return {
+    isAuthenticated: !!isAuthenticated,
+    isLoading: !!isLoading,
+    user,
+    hasOnboarded: !!hasOnboarded,
+  };
 }

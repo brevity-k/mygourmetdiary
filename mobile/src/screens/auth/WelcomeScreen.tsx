@@ -24,28 +24,24 @@ WebBrowser.maybeCompleteAuthSession();
 export function WelcomeScreen() {
   const [signingIn, setSigningIn] = useState(false);
 
-  const [_request, response, promptAsync] = Google.useIdTokenAuthRequest({
-    iosClientId: 'REDACTED_FIREBASE_SENDER_ID-c30jhpr4hmndfgld9vksqqga9jtd84t0.apps.googleusercontent.com',
-    webClientId: 'REDACTED_FIREBASE_SENDER_ID-ce0p012e632uecjgkufemmhlp1q9l6bo.apps.googleusercontent.com',
+  const [_request, response, promptAsync] = Google.useAuthRequest({
+    iosClientId:
+      'REDACTED_FIREBASE_SENDER_ID-c30jhpr4hmndfgld9vksqqga9jtd84t0.apps.googleusercontent.com',
+    webClientId:
+      'REDACTED_FIREBASE_SENDER_ID-ce0p012e632uecjgkufemmhlp1q9l6bo.apps.googleusercontent.com',
   });
 
   React.useEffect(() => {
     if (response?.type === 'success') {
       const { id_token } = response.params;
-      handleGoogleToken(id_token);
+      if (id_token) {
+        setSigningIn(true);
+        signInWithGoogle(id_token)
+          .catch((error: any) => Alert.alert('Sign-in failed', error.message))
+          .finally(() => setSigningIn(false));
+      }
     }
   }, [response]);
-
-  const handleGoogleToken = async (idToken: string) => {
-    setSigningIn(true);
-    try {
-      await signInWithGoogle(idToken);
-    } catch (error: any) {
-      Alert.alert('Sign-in failed', error.message);
-    } finally {
-      setSigningIn(false);
-    }
-  };
 
   const handleDevSignIn = async () => {
     setSigningIn(true);
@@ -59,14 +55,7 @@ export function WelcomeScreen() {
   };
 
   const handleGoogleSignIn = async () => {
-    setSigningIn(true);
-    try {
-      await promptAsync();
-    } catch (error: any) {
-      Alert.alert('Sign-in failed', error.message);
-    } finally {
-      setSigningIn(false);
-    }
+    await promptAsync();
   };
 
   const handleAppleSignIn = async () => {
