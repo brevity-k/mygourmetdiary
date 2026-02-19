@@ -9,6 +9,7 @@ import { SignalsService } from './signals.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { RedisService } from '../../redis/redis.service';
 import { TssComputationService } from '../../taste-matching/tss-computation.service';
+import { NotificationsService } from '../../notifications/notifications.service';
 
 describe('SignalsService', () => {
   let service: SignalsService;
@@ -18,6 +19,7 @@ describe('SignalsService', () => {
 
   beforeEach(async () => {
     prisma = {
+      user: { findUnique: jest.fn().mockResolvedValue({ displayName: 'Tester' }) },
       note: { findUnique: jest.fn() },
       tasteSignal: {
         deleteMany: jest.fn(),
@@ -44,6 +46,7 @@ describe('SignalsService', () => {
         { provide: PrismaService, useValue: prisma },
         { provide: RedisService, useValue: redis },
         { provide: TssComputationService, useValue: tssComputation },
+        { provide: NotificationsService, useValue: { notifySignalOnNote: jest.fn().mockResolvedValue(undefined) } },
       ],
     }).compile();
 

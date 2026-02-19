@@ -19,7 +19,7 @@ export class UserDiscoveryService {
     const allScores = await this.tssCache.getAllScoresForUser(userId);
 
     // Filter by category if specified
-    let filtered = category
+    const filtered = category
       ? allScores.filter((s) => s.category === category)
       : allScores;
 
