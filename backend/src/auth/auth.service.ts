@@ -33,7 +33,7 @@ export class AuthService {
       const existing = await this.prisma.user.findUnique({
         where: { firebaseUid: uid },
       });
-      email = existing?.email || 'dev@gourmet.local';
+      email = existing?.email || `${uid}@gourmet.local`;
       name = existing?.displayName || 'Dev User';
     } else {
       const decoded = await admin.auth().verifyIdToken(idToken);
