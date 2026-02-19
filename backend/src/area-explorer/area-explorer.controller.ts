@@ -3,7 +3,6 @@ import { ApiTags, ApiBearerAuth, ApiOperation, ApiQuery } from '@nestjs/swagger'
 import { User } from '@prisma/client';
 import { AreaExplorerService } from './area-explorer.service';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
-import { Premium } from '../common/decorators/premium.decorator';
 
 @ApiTags('explore')
 @ApiBearerAuth()

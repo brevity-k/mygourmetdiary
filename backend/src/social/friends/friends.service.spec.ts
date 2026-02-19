@@ -4,6 +4,7 @@ import { TasteCategory } from '@prisma/client';
 import { FriendsService } from './friends.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { TssCacheService } from '../../taste-matching/tss-cache.service';
+import { NotificationsService } from '../../notifications/notifications.service';
 
 describe('FriendsService', () => {
   let service: FriendsService;
@@ -19,6 +20,7 @@ describe('FriendsService', () => {
         findUnique: jest.fn(),
         findMany: jest.fn(),
         update: jest.fn(),
+        count: jest.fn().mockResolvedValue(0),
       },
     };
 
@@ -33,6 +35,7 @@ describe('FriendsService', () => {
         FriendsService,
         { provide: PrismaService, useValue: prisma },
         { provide: TssCacheService, useValue: tssCache },
+        { provide: NotificationsService, useValue: { notifyNewGourmetFriend: jest.fn().mockResolvedValue(undefined) } },
       ],
     }).compile();
 
