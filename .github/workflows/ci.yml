@@ -9,54 +9,42 @@ on:
 jobs:
   backend-lint:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: backend
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: npm
-          cache-dependency-path: backend/package-lock.json
       - run: npm ci
       - run: npm run lint:check
+        working-directory: backend
 
   backend-typecheck:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: backend
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: npm
-          cache-dependency-path: backend/package-lock.json
       - run: npm ci
       - run: npm run typecheck
+        working-directory: backend
 
   backend-unit-tests:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: backend
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: npm
-          cache-dependency-path: backend/package-lock.json
       - run: npm ci
       - run: npm test -- --coverage
+        working-directory: backend
 
   backend-e2e-tests:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: backend
     services:
       postgres:
         image: postgres:16
@@ -80,22 +68,20 @@ jobs:
         with:
           node-version: 20
           cache: npm
-          cache-dependency-path: backend/package-lock.json
       - run: npm ci
       - run: npx prisma migrate deploy
+        working-directory: backend
       - run: npm run test:e2e
+        working-directory: backend
 
   mobile-typecheck:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: mobile
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: npm
-          cache-dependency-path: mobile/package-lock.json
       - run: npm ci
       - run: npx tsc --noEmit
+        working-directory: mobile
