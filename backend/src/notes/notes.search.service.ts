@@ -15,6 +15,10 @@ interface NoteSearchDocument {
   venueName: string | null;
   extensionText: string;
   createdAt: number;
+  pricePaid: number | null;
+  cuisineTags: string[];
+  wineType: string | null;
+  spiritType: string | null;
 }
 
 @Injectable()
@@ -55,6 +59,11 @@ export class NotesSearchService implements OnModuleInit {
         'visibility',
         'binderId',
         'rating',
+        'pricePaid',
+        'cuisineTags',
+        'wineType',
+        'spiritType',
+        'createdAt',
       ]);
 
       await this.index.updateSortableAttributes(['createdAt', 'rating']);
@@ -70,6 +79,7 @@ export class NotesSearchService implements OnModuleInit {
 
   async indexNote(note: any): Promise<void> {
     if (!this.available) return;
+    const ext = note.extension as any;
     const doc: NoteSearchDocument = {
       id: note.id,
       authorId: note.authorId,
@@ -83,6 +93,10 @@ export class NotesSearchService implements OnModuleInit {
       venueName: note.venue?.name || null,
       extensionText: this.extractExtensionText(note.type, note.extension),
       createdAt: new Date(note.createdAt).getTime(),
+      pricePaid: ext?.pricePaid ?? null,
+      cuisineTags: ext?.cuisineTags ?? [],
+      wineType: ext?.wineType ?? null,
+      spiritType: ext?.spiritType ?? null,
     };
 
     await this.index.addDocuments([doc]);
@@ -131,6 +145,15 @@ export class NotesSearchService implements OnModuleInit {
     type?: string,
     limit = 20,
     offset = 0,
+    filters?: {
+      minRating?: number;
+      maxPrice?: number;
+      cuisineTags?: string[];
+      wineType?: string;
+      spiritType?: string;
+      dateFrom?: string;
+      dateTo?: string;
+    },
   ) {
     if (!this.available) return { hits: [], total: 0, limit, offset };
 
@@ -144,6 +167,34 @@ export class NotesSearchService implements OnModuleInit {
     if (authorIds && authorIds.length > 0) {
       const authorFilter = authorIds.map((id) => `authorId = "${id}"`).join(' OR ');
       filter.push(`(${authorFilter})`);
+    }
+
+    // Advanced filters
+    if (filters) {
+      if (filters.minRating !== undefined) {
+        filter.push(`rating >= ${filters.minRating}`);
+      }
+      if (filters.maxPrice !== undefined) {
+        filter.push(`pricePaid <= ${filters.maxPrice}`);
+      }
+      if (filters.cuisineTags && filters.cuisineTags.length > 0) {
+        const tagFilter = filters.cuisineTags
+          .map((t) => `cuisineTags = "${t}"`)
+          .join(' OR ');
+        filter.push(`(${tagFilter})`);
+      }
+      if (filters.wineType) {
+        filter.push(`wineType = "${filters.wineType}"`);
+      }
+      if (filters.spiritType) {
+        filter.push(`spiritType = "${filters.spiritType}"`);
+      }
+      if (filters.dateFrom) {
+        filter.push(`createdAt >= ${new Date(filters.dateFrom).getTime()}`);
+      }
+      if (filters.dateTo) {
+        filter.push(`createdAt <= ${new Date(filters.dateTo).getTime()}`);
+      }
     }
 
     const results = await this.index.search(query, {

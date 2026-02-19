@@ -7,6 +7,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { RootNavigator } from './src/navigation/RootNavigator';
 import { ErrorBoundary } from './src/components/common/ErrorBoundary';
 import { ToastProvider } from './src/components/common/Toast';
+import { NotificationHandler } from './src/components/common/NotificationHandler';
 import { colors } from './src/theme';
 
 const queryClient = new QueryClient({
@@ -41,6 +42,7 @@ export default function App() {
                 }}
               >
                 <RootNavigator />
+                <NotificationHandler />
                 <StatusBar style="dark" />
               </NavigationContainer>
             </ErrorBoundary>

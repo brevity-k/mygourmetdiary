@@ -47,26 +47,37 @@ enum TasteCategory {
   SPIRIT
 }
 
+enum SubscriptionTier {
+  FREE
+  CONNOISSEUR
+}
+
 // ─── Models ─────────────────────────────────────────────
 
 model User {
-  id          String   @id @default(cuid())
-  firebaseUid String   @unique @map("firebase_uid")
-  email       String   @unique
-  displayName String   @map("display_name")
-  avatarUrl   String?  @map("avatar_url")
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
+  id                    String           @id @default(cuid())
+  firebaseUid           String           @unique @map("firebase_uid")
+  email                 String           @unique
+  displayName           String           @map("display_name")
+  avatarUrl             String?          @map("avatar_url")
+  subscriptionTier      SubscriptionTier @default(FREE) @map("subscription_tier")
+  rcCustomerId          String?          @map("rc_customer_id")
+  subscriptionExpiresAt DateTime?        @map("subscription_expires_at")
+  createdAt             DateTime         @default(now()) @map("created_at")
+  updatedAt             DateTime         @updatedAt @map("updated_at")
 
-  binders            Binder[]
-  notes              Note[]
-  photos             Photo[]
-  binderFollows      BinderFollow[]     @relation("UserFollows")
-  tasteSignalsSent   TasteSignal[]      @relation("UserSignalsSent")
-  tasteSimilaritiesA TasteSimilarity[]  @relation("TasteSimilarityA")
-  tasteSimilaritiesB TasteSimilarity[]  @relation("TasteSimilarityB")
-  gourmetFriendPins  GourmetFriendPin[] @relation("UserPins")
-  gourmetPinnedBy    GourmetFriendPin[] @relation("UserPinnedBy")
+  binders                Binder[]
+  notes                  Note[]
+  photos                 Photo[]
+  binderFollows          BinderFollow[]          @relation("UserFollows")
+  tasteSignalsSent       TasteSignal[]           @relation("UserSignalsSent")
+  tasteSimilaritiesA     TasteSimilarity[]       @relation("TasteSimilarityA")
+  tasteSimilaritiesB     TasteSimilarity[]       @relation("TasteSimilarityB")
+  gourmetFriendPins      GourmetFriendPin[]      @relation("UserPins")
+  gourmetPinnedBy        GourmetFriendPin[]      @relation("UserPinnedBy")
+  pushTokens             PushToken[]
+  notificationPreference NotificationPreference?
+  pioneerBadges          PioneerBadge[]
 
   @@map("users")
 }
@@ -158,7 +169,8 @@ model Venue {
   createdAt     DateTime @default(now()) @map("created_at")
   updatedAt     DateTime @updatedAt @map("updated_at")
 
-  notes Note[]
+  notes         Note[]
+  pioneerBadges PioneerBadge[]
 
   @@map("venues")
 }
@@ -243,4 +255,46 @@ model GourmetFriendPin {
   @@index([pinnerId])
   @@index([pinnedId])
   @@map("gourmet_friend_pins")
+}
+
+// ─── Phase 3: Advisor Models ──────────────────────────
+
+model PushToken {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  token     String   @unique
+  platform  String   // 'ios' | 'android'
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("push_tokens")
+}
+
+model NotificationPreference {
+  id                String  @id @default(cuid())
+  userId            String  @unique @map("user_id")
+  newNoteInFollowed Boolean @default(true) @map("new_note_in_followed")
+  signalOnMyNote    Boolean @default(true) @map("signal_on_my_note")
+  newGourmetFriend  Boolean @default(true) @map("new_gourmet_friend")
+  pioneerAlert      Boolean @default(true) @map("pioneer_alert")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("notification_preferences")
+}
+
+model PioneerBadge {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  venueId   String   @map("venue_id")
+  awardedAt DateTime @default(now()) @map("awarded_at")
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  venue Venue @relation(fields: [venueId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, venueId])
+  @@index([userId])
+  @@map("pioneer_badges")
 }

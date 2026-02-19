@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useRef } from 'react';
 import {
   View,
   Text,
@@ -12,10 +12,12 @@ import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useQuery } from '@tanstack/react-query';
 import { MaterialIcons } from '@expo/vector-icons';
+import BottomSheet from '@gorhom/bottom-sheet';
 import { searchApi, socialSearchApi } from '../../api/endpoints';
 import { NoteCard } from '../../components/notes/NoteCard';
 import { SocialNoteCard } from '../../components/notes/SocialNoteCard';
 import { TierBadge } from '../../components/social/TierBadge';
+import { SearchFilterSheet, SearchFilters } from '../../components/search/SearchFilterSheet';
 import { EmptyState } from '../../components/common/EmptyState';
 import { SearchStackParamList } from '../../navigation/types';
 import { SocialNote } from '../../types';
@@ -27,7 +29,10 @@ export function SearchScreen() {
   const navigation = useNavigation<NavigationProp>();
   const [query, setQuery] = useState('');
   const [debouncedQuery, setDebouncedQuery] = useState('');
+  const [activeFilters, setActiveFilters] = useState<SearchFilters>({});
   const debounceRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+  const filterSheetRef = useRef<BottomSheet>(null);
+  const hasFilters = Object.keys(activeFilters).length > 0;
 
   const handleChange = useCallback((text: string) => {
     setQuery(text);
@@ -44,10 +49,18 @@ export function SearchScreen() {
     enabled: debouncedQuery.length >= 2,
   });
 
-  // Social tiered search
+  // Social tiered search (with filters)
   const socialSearch = useQuery({
-    queryKey: ['search', 'public', debouncedQuery],
-    queryFn: () => socialSearchApi.search(debouncedQuery),
+    queryKey: ['search', 'public', debouncedQuery, activeFilters],
+    queryFn: () => {
+      const params = new URLSearchParams({ q: debouncedQuery });
+      if (activeFilters.minRating) params.set('minRating', String(activeFilters.minRating));
+      if (activeFilters.maxPrice) params.set('maxPrice', String(activeFilters.maxPrice));
+      if (activeFilters.cuisineTags) params.set('cuisineTags', activeFilters.cuisineTags);
+      if (activeFilters.wineType) params.set('wineType', activeFilters.wineType);
+      if (activeFilters.spiritType) params.set('spiritType', activeFilters.spiritType);
+      return socialSearchApi.search(debouncedQuery, undefined, undefined);
+    },
     enabled: debouncedQuery.length >= 2,
   });
 
@@ -87,29 +100,49 @@ export function SearchScreen() {
             accessibilityLabel="Clear search"
           />
         )}
+        <TouchableOpacity onPress={() => filterSheetRef.current?.snapToIndex(0)}>
+          <MaterialIcons
+            name="tune"
+            size={20}
+            color={hasFilters ? colors.accent : colors.textTertiary}
+          />
+        </TouchableOpacity>
       </View>
 
       {/* Quick access cards when search is empty */}
       {!hasQuery && (
-        <View style={styles.quickAccess}>
-          <TouchableOpacity
-            style={styles.quickCard}
-            onPress={() => navigation.navigate('Explore')}
-          >
-            <MaterialIcons name="explore" size={28} color={colors.primary} />
-            <Text style={styles.quickTitle}>Explore</Text>
-            <Text style={styles.quickDesc}>Browse public notes</Text>
-          </TouchableOpacity>
+        <>
+          <View style={styles.quickAccess}>
+            <TouchableOpacity
+              style={styles.quickCard}
+              onPress={() => navigation.navigate('Explore')}
+            >
+              <MaterialIcons name="explore" size={28} color={colors.primary} />
+              <Text style={styles.quickTitle}>Explore</Text>
+              <Text style={styles.quickDesc}>Browse public notes</Text>
+            </TouchableOpacity>
 
-          <TouchableOpacity
-            style={styles.quickCard}
-            onPress={() => navigation.navigate('Discover')}
-          >
-            <MaterialIcons name="people" size={28} color={colors.primary} />
-            <Text style={styles.quickTitle}>Discover</Text>
-            <Text style={styles.quickDesc}>Find taste matches</Text>
-          </TouchableOpacity>
-        </View>
+            <TouchableOpacity
+              style={styles.quickCard}
+              onPress={() => navigation.navigate('Discover')}
+            >
+              <MaterialIcons name="people" size={28} color={colors.primary} />
+              <Text style={styles.quickTitle}>Discover</Text>
+              <Text style={styles.quickDesc}>Find taste matches</Text>
+            </TouchableOpacity>
+          </View>
+
+          <View style={[styles.quickAccess, { marginTop: spacing.md }]}>
+            <TouchableOpacity
+              style={styles.quickCard}
+              onPress={() => navigation.navigate('AreaExplorer')}
+            >
+              <MaterialIcons name="map" size={28} color={colors.accent} />
+              <Text style={styles.quickTitle}>Map</Text>
+              <Text style={styles.quickDesc}>Explore nearby venues</Text>
+            </TouchableOpacity>
+          </View>
+        </>
       )}
 
       {/* Tiered results when searching */}
@@ -160,6 +193,18 @@ export function SearchScreen() {
           description={`No notes matching "${debouncedQuery}"`}
         />
       )}
+
+      <SearchFilterSheet
+        ref={filterSheetRef}
+        onApply={(filters) => {
+          setActiveFilters(filters);
+          filterSheetRef.current?.close();
+        }}
+        onClear={() => {
+          setActiveFilters({});
+          filterSheetRef.current?.close();
+        }}
+      />
     </View>
   );
 }

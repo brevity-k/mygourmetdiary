@@ -4,14 +4,20 @@ import {
   Binder,
   CanPinResult,
   GourmetFriend,
+  MapPin,
+  MenuDeciderResponse,
   Note,
   NoteType,
+  NotificationPreferences,
   PaginatedResponse,
+  PioneerBadge,
+  PioneerZone,
   PresignResponse,
   PublicBinder,
   PublicProfile,
   SearchResult,
   SocialNote,
+  SubscriptionStatus,
   Tag,
   TasteCategory,
   TasteSignal,
@@ -269,6 +275,88 @@ export const discoveryApi = {
     if (offset) params.set('offset', String(offset));
     return apiClient
       .get<ApiResponse<{ items: UserSuggestion[]; total: number }>>(`/discover/similar-users?${params}`)
+      .then((r) => r.data.data);
+  },
+};
+
+// ─── Phase 3: Advisor APIs ──────────────────────────────
+
+export const subscriptionsApi = {
+  getStatus: () =>
+    apiClient
+      .get<ApiResponse<SubscriptionStatus>>('/subscriptions/status')
+      .then((r) => r.data.data),
+};
+
+export const menuDeciderApi = {
+  getRecommendations: (venueId: string) =>
+    apiClient
+      .get<ApiResponse<MenuDeciderResponse>>(`/menu-decider/${venueId}`)
+      .then((r) => r.data.data),
+};
+
+export const areaExplorerApi = {
+  getMapPins: (params: {
+    lat: number;
+    lng: number;
+    radiusKm?: number;
+    category?: string;
+    friendsOnly?: boolean;
+  }) => {
+    const searchParams = new URLSearchParams({
+      lat: String(params.lat),
+      lng: String(params.lng),
+    });
+    if (params.radiusKm) searchParams.set('radiusKm', String(params.radiusKm));
+    if (params.category) searchParams.set('category', params.category);
+    if (params.friendsOnly) searchParams.set('friendsOnly', 'true');
+    return apiClient
+      .get<ApiResponse<MapPin[]>>(`/explore/map?${searchParams}`)
+      .then((r) => r.data.data);
+  },
+};
+
+export const notificationsApi = {
+  registerToken: (token: string, platform: string) =>
+    apiClient
+      .post('/notifications/token', { token, platform })
+      .then((r) => r.data.data),
+  removeToken: () =>
+    apiClient.delete('/notifications/token'),
+  getPreferences: () =>
+    apiClient
+      .get<ApiResponse<NotificationPreferences>>('/notifications/preferences')
+      .then((r) => r.data.data),
+  updatePreferences: (prefs: Partial<NotificationPreferences>) =>
+    apiClient
+      .patch<ApiResponse<NotificationPreferences>>('/notifications/preferences', prefs)
+      .then((r) => r.data.data),
+};
+
+export const pioneersApi = {
+  getZones: (lat: number, lng: number, radiusKm?: number) => {
+    const params = new URLSearchParams({
+      lat: String(lat),
+      lng: String(lng),
+    });
+    if (radiusKm) params.set('radiusKm', String(radiusKm));
+    return apiClient
+      .get<ApiResponse<PioneerZone[]>>(`/pioneers/zones?${params}`)
+      .then((r) => r.data.data);
+  },
+  getBadges: () =>
+    apiClient
+      .get<ApiResponse<PioneerBadge[]>>('/pioneers/badges')
+      .then((r) => r.data.data),
+};
+
+export const syncApi = {
+  exportNotes: (since?: string, cursor?: string) => {
+    const params = new URLSearchParams();
+    if (since) params.set('since', since);
+    if (cursor) params.set('cursor', cursor);
+    return apiClient
+      .get<ApiResponse<any>>(`/sync/export?${params}`)
       .then((r) => r.data.data);
   },
 };

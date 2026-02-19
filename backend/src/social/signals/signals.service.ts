@@ -9,6 +9,7 @@ import { SignalType } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { RedisService } from '../../redis/redis.service';
 import { TssComputationService } from '../../taste-matching/tss-computation.service';
+import { NotificationsService } from '../../notifications/notifications.service';
 import { CreateSignalDto } from './dto/create-signal.dto';
 
 @Injectable()
@@ -19,6 +20,7 @@ export class SignalsService {
     private readonly prisma: PrismaService,
     private readonly redis: RedisService,
     private readonly tssComputation: TssComputationService,
+    private readonly notificationsService: NotificationsService,
   ) {}
 
   async sendSignal(senderId: string, noteId: string, dto: CreateSignalDto) {
@@ -61,6 +63,21 @@ export class SignalsService {
     });
 
     await this.invalidateSignalCache(noteId);
+
+    // Notify note author (fire-and-forget)
+    const sender = await this.prisma.user.findUnique({
+      where: { id: senderId },
+      select: { displayName: true },
+    });
+    this.notificationsService
+      .notifySignalOnNote(
+        sender?.displayName ?? 'Someone',
+        dto.signalType,
+        note.type === 'RESTAURANT' ? ((await this.prisma.note.findUnique({ where: { id: noteId } }))?.extension as any)?.dishName ?? 'a dish' : 'your note',
+        note.authorId,
+        noteId,
+      )
+      .catch(() => {});
 
     // Trigger incremental TSS recomputation for ECHOED/DIVERGED signals
     if (dto.signalType === SignalType.ECHOED || dto.signalType === SignalType.DIVERGED) {

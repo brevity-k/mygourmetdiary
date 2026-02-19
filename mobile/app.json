@@ -35,7 +35,20 @@
           "cameraPermission": "MyGourmetDiary needs access to your camera to take photos of food and drinks."
         }
       ],
-      "@react-native-community/datetimepicker"
+      "@react-native-community/datetimepicker",
+      [
+        "expo-notifications",
+        {
+          "color": "#8B4513"
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "MyGourmetDiary needs your location to show nearby venues on the map."
+        }
+      ],
+      "expo-sqlite"
     ],
     "extra": {
       "eas": {

@@ -1,21 +1,25 @@
 import {
   Injectable,
   BadRequestException,
+  ForbiddenException,
   NotFoundException,
 } from '@nestjs/common';
 import { TasteCategory } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { TssCacheService } from '../../taste-matching/tss-cache.service';
+import { NotificationsService } from '../../notifications/notifications.service';
 import { PinFriendDto, UpdatePinDto } from './dto/pin-friend.dto';
 
 const MIN_TSS = 0.7;
 const MIN_OVERLAP = 5;
+const FREE_PIN_LIMIT = 3;
 
 @Injectable()
 export class FriendsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly tssCache: TssCacheService,
+    private readonly notificationsService: NotificationsService,
   ) {}
 
   async pinFriend(pinnerId: string, dto: PinFriendDto) {
@@ -28,6 +32,27 @@ export class FriendsService {
       where: { id: dto.pinnedId },
     });
     if (!pinnedUser) throw new NotFoundException('User not found');
+
+    // Enforce pin limit for free users
+    const pinner = await this.prisma.user.findUnique({
+      where: { id: pinnerId },
+      select: { subscriptionTier: true },
+    });
+    if (pinner?.subscriptionTier !== 'CONNOISSEUR') {
+      const existing = await this.prisma.gourmetFriendPin.findUnique({
+        where: { pinnerId_pinnedId: { pinnerId, pinnedId: dto.pinnedId } },
+      });
+      if (!existing) {
+        const count = await this.prisma.gourmetFriendPin.count({
+          where: { pinnerId },
+        });
+        if (count >= FREE_PIN_LIMIT) {
+          throw new ForbiddenException(
+            `Free tier limited to ${FREE_PIN_LIMIT} Gourmet Friend pins. Upgrade to Connoisseur for unlimited.`,
+          );
+        }
+      }
+    }
 
     // Validate TSS requirements for each requested category
     await this.validatePinCategories(pinnerId, dto.pinnedId, dto.categories);
@@ -52,6 +77,20 @@ export class FriendsService {
     });
 
     await this.tssCache.invalidateUserCaches(pinnerId);
+
+    // Notify pinned user (fire-and-forget)
+    const pinnerUser = await this.prisma.user.findUnique({
+      where: { id: pinnerId },
+      select: { displayName: true },
+    });
+    this.notificationsService
+      .notifyNewGourmetFriend(
+        pinnerUser?.displayName ?? 'Someone',
+        dto.pinnedId,
+        pinnerId,
+      )
+      .catch(() => {});
+
     return pin;
   }
 
