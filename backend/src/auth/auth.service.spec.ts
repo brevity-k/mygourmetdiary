@@ -81,7 +81,7 @@ describe('AuthService', () => {
     const newUser = {
       id: 'u-new',
       firebaseUid: 'dev-uid-2',
-      email: 'dev@gourmet.local',
+      email: 'dev-uid-2@gourmet.local',
       displayName: 'Dev User',
     };
     prisma.user.upsert.mockResolvedValue(newUser);
@@ -94,7 +94,7 @@ describe('AuthService', () => {
     expect(prisma.user.upsert).toHaveBeenCalledWith(
       expect.objectContaining({
         create: expect.objectContaining({
-          email: 'dev@gourmet.local',
+          email: 'dev-uid-2@gourmet.local',
           displayName: 'Dev User',
         }),
       }),
