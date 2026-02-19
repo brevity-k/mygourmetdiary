@@ -6,6 +6,8 @@ import {
 import { PrismaService } from '../../prisma/prisma.service';
 import { BindersService } from '../../binders/binders.service';
 
+const FREE_FOLLOW_LIMIT = 5;
+
 @Injectable()
 export class FollowsService {
   constructor(
@@ -17,6 +19,22 @@ export class FollowsService {
     const binder = await this.bindersService.findPublicById(binderId);
     if (binder.ownerId === userId) {
       throw new BadRequestException('Cannot follow your own binder');
+    }
+
+    // Enforce follow limit for free users
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { subscriptionTier: true },
+    });
+    if (user?.subscriptionTier !== 'CONNOISSEUR') {
+      const count = await this.prisma.binderFollow.count({
+        where: { followerId: userId },
+      });
+      if (count >= FREE_FOLLOW_LIMIT) {
+        throw new ForbiddenException(
+          `Free tier limited to ${FREE_FOLLOW_LIMIT} binder follows. Upgrade to Connoisseur for unlimited.`,
+        );
+      }
     }
 
     return this.prisma.binderFollow.upsert({

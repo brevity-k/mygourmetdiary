@@ -6,6 +6,8 @@ import { DiscoverScreen } from '../screens/social/DiscoverScreen';
 import { NoteDetailScreen } from '../screens/home/NoteDetailScreen';
 import { UserProfileScreen } from '../screens/social/UserProfileScreen';
 import { PinGourmetFriendScreen } from '../screens/social/PinGourmetFriendScreen';
+import { MenuDeciderScreen } from '../screens/menu-decider/MenuDeciderScreen';
+import { AreaExplorerScreen } from '../screens/map/AreaExplorerScreen';
 import { SearchStackParamList } from './types';
 import { colors, typography } from '../theme';
 
@@ -49,6 +51,16 @@ export function SearchStackNavigator() {
         name="PinGourmetFriend"
         component={PinGourmetFriendScreen}
         options={{ title: 'Pin Friend' }}
+      />
+      <Stack.Screen
+        name="AreaExplorer"
+        component={AreaExplorerScreen}
+        options={{ title: 'Area Explorer' }}
+      />
+      <Stack.Screen
+        name="MenuDecider"
+        component={MenuDeciderScreen}
+        options={{ title: 'Menu Decider' }}
       />
     </Stack.Navigator>
   );

@@ -87,6 +87,11 @@ export enum TasteCategory {
   SPIRIT = 'SPIRIT',
 }
 
+export enum SubscriptionTier {
+  FREE = 'FREE',
+  CONNOISSEUR = 'CONNOISSEUR',
+}
+
 // ─── Models ─────────────────────────────────────────────
 
 export interface User {
@@ -95,6 +100,8 @@ export interface User {
   email: string;
   displayName: string;
   avatarUrl: string | null;
+  subscriptionTier: SubscriptionTier;
+  subscriptionExpiresAt: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -315,4 +322,65 @@ export interface SearchResult {
   total: number;
   limit: number;
   offset: number;
+}
+
+// ─── Phase 3: Advisor Types ────────────────────────────
+
+export interface SubscriptionStatus {
+  tier: SubscriptionTier;
+  expiresAt: string | null;
+  isActive: boolean;
+}
+
+export interface MenuDeciderDish {
+  dishName: string;
+  dishCategory: string;
+  friendCount: number;
+  matchedCount: number;
+  totalCount: number;
+  avgFriendRating: number | null;
+  avgOverallRating: number;
+  wouldOrderAgainPct: number;
+  topFriendNotes: Array<{
+    authorName: string;
+    authorAvatar: string | null;
+    rating: number;
+    freeText: string | null;
+    tier: 1 | 2;
+  }>;
+}
+
+export interface MenuDeciderResponse {
+  venue: { id: string; name: string; address: string | null };
+  dishes: MenuDeciderDish[];
+  hasFriendData: boolean;
+}
+
+export interface MapPin {
+  venue: Venue;
+  noteCount: number;
+  friendNoteCount: number;
+  avgRating: number | null;
+  avgFriendRating: number | null;
+  topFriendNames: string[];
+  category: 'RESTAURANT' | 'WINERY_VISIT';
+}
+
+export interface NotificationPreferences {
+  newNoteInFollowed: boolean;
+  signalOnMyNote: boolean;
+  newGourmetFriend: boolean;
+  pioneerAlert: boolean;
+}
+
+export interface PioneerBadge {
+  id: string;
+  venueId: string;
+  venue?: Venue;
+  awardedAt: string;
+}
+
+export interface PioneerZone {
+  venue: Venue;
+  noteCount: number;
 }

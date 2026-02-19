@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { BindersModule } from '../binders/binders.module';
 import { TasteMatchingModule } from '../taste-matching/taste-matching.module';
+import { NotificationsModule } from '../notifications/notifications.module';
 import { FollowsController } from './follows/follows.controller';
 import { FollowsService } from './follows/follows.service';
 import { SignalsController } from './signals/signals.controller';
@@ -9,7 +10,7 @@ import { FriendsController } from './friends/friends.controller';
 import { FriendsService } from './friends/friends.service';
 
 @Module({
-  imports: [BindersModule, TasteMatchingModule],
+  imports: [BindersModule, TasteMatchingModule, NotificationsModule],
   controllers: [FollowsController, SignalsController, FriendsController],
   providers: [FollowsService, SignalsService, FriendsService],
   exports: [FollowsService, SignalsService, FriendsService],

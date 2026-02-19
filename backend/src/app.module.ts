@@ -17,7 +17,14 @@ import { SearchModule } from './search/search.module';
 import { SocialModule } from './social/social.module';
 import { TasteMatchingModule } from './taste-matching/taste-matching.module';
 import { FirebaseAuthGuard } from './common/guards/firebase-auth.guard';
+import { PremiumGuard } from './common/guards/premium.guard';
 import { HealthController } from './health/health.controller';
+import { SubscriptionsModule } from './subscriptions/subscriptions.module';
+import { MenuDeciderModule } from './menu-decider/menu-decider.module';
+import { AreaExplorerModule } from './area-explorer/area-explorer.module';
+import { NotificationsModule } from './notifications/notifications.module';
+import { PioneersModule } from './pioneers/pioneers.module';
+import { SyncModule } from './sync/sync.module';
 
 @Module({
   imports: [
@@ -42,12 +49,22 @@ import { HealthController } from './health/health.controller';
     SearchModule,
     SocialModule,
     TasteMatchingModule,
+    SubscriptionsModule,
+    MenuDeciderModule,
+    AreaExplorerModule,
+    NotificationsModule,
+    PioneersModule,
+    SyncModule,
   ],
   controllers: [HealthController],
   providers: [
     {
       provide: APP_GUARD,
       useClass: FirebaseAuthGuard,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: PremiumGuard,
     },
     {
       provide: APP_GUARD,

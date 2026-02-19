@@ -1,4 +1,4 @@
-import { Controller, Get, Query } from '@nestjs/common';
+import { Controller, Get, Query, ForbiddenException } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiOperation, ApiQuery } from '@nestjs/swagger';
 import { User } from '@prisma/client';
 import { NotesSearchService } from '../notes/notes.search.service';
@@ -43,12 +43,43 @@ export class SearchController {
   @ApiQuery({ name: 'q', required: true })
   @ApiQuery({ name: 'type', required: false })
   @ApiQuery({ name: 'limit', required: false })
+  @ApiQuery({ name: 'minRating', required: false, description: 'Premium filter' })
+  @ApiQuery({ name: 'maxPrice', required: false, description: 'Premium filter' })
+  @ApiQuery({ name: 'cuisineTags', required: false, description: 'Premium filter (comma-separated)' })
+  @ApiQuery({ name: 'wineType', required: false, description: 'Premium filter' })
+  @ApiQuery({ name: 'spiritType', required: false, description: 'Premium filter' })
+  @ApiQuery({ name: 'dateFrom', required: false, description: 'Premium filter (ISO date)' })
+  @ApiQuery({ name: 'dateTo', required: false, description: 'Premium filter (ISO date)' })
   async searchPublic(
     @CurrentUser() user: User,
     @Query('q') q: string,
     @Query('type') type?: string,
     @Query('limit') limit?: number,
+    @Query('minRating') minRating?: string,
+    @Query('maxPrice') maxPrice?: string,
+    @Query('cuisineTags') cuisineTags?: string,
+    @Query('wineType') wineType?: string,
+    @Query('spiritType') spiritType?: string,
+    @Query('dateFrom') dateFrom?: string,
+    @Query('dateTo') dateTo?: string,
   ) {
+    // Check if any premium filters are used
+    const hasPremiumFilters = minRating || maxPrice || cuisineTags || wineType || spiritType || dateFrom || dateTo;
+    if (hasPremiumFilters && user.subscriptionTier !== 'CONNOISSEUR') {
+      throw new ForbiddenException('Advanced filters require a Connoisseur subscription');
+    }
+
+    const filters = hasPremiumFilters
+      ? {
+          minRating: minRating ? parseInt(minRating) : undefined,
+          maxPrice: maxPrice ? parseFloat(maxPrice) : undefined,
+          cuisineTags: cuisineTags ? cuisineTags.split(',').map((t) => t.trim()) : undefined,
+          wineType: wineType || undefined,
+          spiritType: spiritType || undefined,
+          dateFrom: dateFrom || undefined,
+          dateTo: dateTo || undefined,
+        }
+      : undefined;
     const query = q?.slice(0, 500) || '';
     const perTier = Math.min(Math.max(limit || 10, 1), 50);
 
@@ -67,15 +98,15 @@ export class SearchController {
 
     const [tier1, tier2, tier3, tier4] = await Promise.all([
       friendIds.length > 0
-        ? this.searchService.searchPublic(query, friendIds, type, perTier)
+        ? this.searchService.searchPublic(query, friendIds, type, perTier, 0, filters)
         : Promise.resolve({ hits: [], total: 0, limit: perTier, offset: 0 }),
       highOnly.length > 0
-        ? this.searchService.searchPublic(query, highOnly, type, perTier)
+        ? this.searchService.searchPublic(query, highOnly, type, perTier, 0, filters)
         : Promise.resolve({ hits: [], total: 0, limit: perTier, offset: 0 }),
       moderateOnly.length > 0
-        ? this.searchService.searchPublic(query, moderateOnly, type, perTier)
+        ? this.searchService.searchPublic(query, moderateOnly, type, perTier, 0, filters)
         : Promise.resolve({ hits: [], total: 0, limit: perTier, offset: 0 }),
-      this.searchService.searchPublic(query, undefined, type, perTier),
+      this.searchService.searchPublic(query, undefined, type, perTier, 0, filters),
     ]);
 
     // Deduplicate across tiers

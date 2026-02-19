@@ -2,6 +2,7 @@ import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { ProfileScreen } from '../screens/profile/ProfileScreen';
 import { SettingsScreen } from '../screens/profile/SettingsScreen';
+import { PaywallScreen } from '../screens/profile/PaywallScreen';
 import { GourmetFriendsScreen } from '../screens/social/GourmetFriendsScreen';
 import { UserProfileScreen } from '../screens/social/UserProfileScreen';
 import { PinGourmetFriendScreen } from '../screens/social/PinGourmetFriendScreen';
@@ -28,6 +29,11 @@ export function ProfileStackNavigator() {
         name="Settings"
         component={SettingsScreen}
         options={{ title: 'Settings' }}
+      />
+      <Stack.Screen
+        name="Paywall"
+        component={PaywallScreen}
+        options={{ title: 'Connoisseur' }}
       />
       <Stack.Screen
         name="GourmetFriends"

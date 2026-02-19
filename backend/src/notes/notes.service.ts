@@ -7,6 +7,8 @@ import {
 } from '@nestjs/common';
 import { NoteType } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import { NotificationsService } from '../notifications/notifications.service';
+import { PioneersService } from '../pioneers/pioneers.service';
 import { CreateNoteDto } from './dto/create-note.dto';
 import { UpdateNoteDto } from './dto/update-note.dto';
 import { NoteExtensionFactory } from './factory/note-extension.factory';
@@ -19,6 +21,8 @@ export class NotesService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly searchService: NotesSearchService,
+    private readonly notificationsService: NotificationsService,
+    private readonly pioneersService: PioneersService,
   ) {}
 
   async feed(
@@ -123,6 +127,33 @@ export class NotesService {
     this.searchService.indexNote(note).catch((e) => {
       this.logger.error(`Search index failed for note ${note.id}`, e);
     });
+
+    // Notify binder followers (fire-and-forget, public notes only)
+    if (dto.visibility === 'PUBLIC' || (!dto.visibility && binder.visibility === 'PUBLIC')) {
+      const author = await this.prisma.user.findUnique({
+        where: { id: userId },
+        select: { displayName: true },
+      });
+      this.notificationsService
+        .notifyNewNoteInBinder(
+          author?.displayName ?? 'A gourmet',
+          binder.name,
+          binder.id,
+          userId,
+        )
+        .catch((e) => {
+          this.logger.error(`Notification failed for note ${note.id}`, e);
+        });
+    }
+
+    // Check pioneer badge eligibility (fire-and-forget)
+    if (resolvedVenueId && (dto.visibility === 'PUBLIC' || (!dto.visibility && binder.visibility === 'PUBLIC'))) {
+      this.pioneersService
+        .checkAndAwardPioneerBadge(userId, note.id)
+        .catch((e) => {
+          this.logger.error(`Pioneer check failed for note ${note.id}`, e);
+        });
+    }
 
     return this.findById(note.id, userId);
   }

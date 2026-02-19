@@ -10,8 +10,9 @@ import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useQuery } from '@tanstack/react-query';
 import { MaterialIcons } from '@expo/vector-icons';
-import { bindersApi, gourmetFriendsApi } from '../../api/endpoints';
+import { bindersApi, gourmetFriendsApi, pioneersApi } from '../../api/endpoints';
 import { useAuthStore } from '../../store/auth.store';
+import { useSubscriptionStore } from '../../store/subscription.store';
 import { EmptyState } from '../../components/common/EmptyState';
 import { ProfileStackParamList } from '../../navigation/types';
 import { colors, typography, spacing } from '../../theme';
@@ -22,6 +23,8 @@ export function ProfileScreen() {
   const navigation = useNavigation<NavigationProp>();
   const user = useAuthStore((s) => s.user);
 
+  const isConnoisseur = useSubscriptionStore((s) => s.isActive);
+
   const { data: binders = [], isError, refetch } = useQuery({
     queryKey: ['binders'],
     queryFn: bindersApi.list,
@@ -30,6 +33,11 @@ export function ProfileScreen() {
   const { data: friends = [] } = useQuery({
     queryKey: ['friends'],
     queryFn: gourmetFriendsApi.list,
+  });
+
+  const { data: pioneerBadges = [] } = useQuery({
+    queryKey: ['pioneerBadges'],
+    queryFn: pioneersApi.getBadges,
   });
 
   const totalNotes = binders.reduce((sum, b) => sum + (b._count?.notes || 0), 0);
@@ -56,7 +64,15 @@ export function ProfileScreen() {
             <MaterialIcons name="person" size={32} color={colors.textTertiary} />
           </View>
         )}
-        <Text style={styles.name}>{user?.displayName}</Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm }}>
+          <Text style={styles.name}>{user?.displayName}</Text>
+          {isConnoisseur && (
+            <View style={styles.premiumBadge}>
+              <MaterialIcons name="workspace-premium" size={14} color={colors.accent} />
+              <Text style={styles.premiumText}>Connoisseur</Text>
+            </View>
+          )}
+        </View>
         <Text style={styles.email}>{user?.email}</Text>
       </View>
 
@@ -74,10 +90,29 @@ export function ProfileScreen() {
           <Text style={styles.statValue}>{friends.length}</Text>
           <Text style={styles.statLabel}>Friends</Text>
         </View>
+        {pioneerBadges.length > 0 && (
+          <View style={styles.stat}>
+            <Text style={styles.statValue}>{pioneerBadges.length}</Text>
+            <Text style={styles.statLabel}>Pioneer</Text>
+          </View>
+        )}
       </View>
 
       {/* Menu */}
       <View style={styles.menu}>
+        {!isConnoisseur && (
+          <TouchableOpacity
+            style={styles.menuItem}
+            onPress={() => navigation.navigate('Paywall')}
+          >
+            <MaterialIcons name="workspace-premium" size={22} color={colors.accent} />
+            <Text style={[styles.menuText, { color: colors.accent }]}>
+              Upgrade to Connoisseur
+            </Text>
+            <MaterialIcons name="chevron-right" size={22} color={colors.textTertiary} />
+          </TouchableOpacity>
+        )}
+
         <TouchableOpacity
           style={styles.menuItem}
           onPress={() => navigation.navigate('GourmetFriends')}
@@ -143,6 +178,22 @@ const styles = StyleSheet.create({
   menuBadge: {
     ...typography.bodySmall,
     color: colors.primary,
+    fontWeight: '600',
+  },
+  premiumBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 2,
+    backgroundColor: colors.surfaceElevated,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: colors.accent,
+  },
+  premiumText: {
+    ...typography.caption,
+    color: colors.accent,
     fontWeight: '600',
   },
 });

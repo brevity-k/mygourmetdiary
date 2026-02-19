@@ -23,6 +23,7 @@ export type HomeStackParamList = {
   NoteDetail: { noteId: string };
   UserProfile: { userId: string };
   PinGourmetFriend: { userId: string };
+  MenuDecider: { venueId: string; venueName: string };
 };
 
 export type BindersStackParamList = {
@@ -30,6 +31,7 @@ export type BindersStackParamList = {
   BinderDetail: { binderId: string; binderName: string };
   NoteDetail: { noteId: string };
   FollowedBinders: undefined;
+  MenuDecider: { venueId: string; venueName: string };
   UserProfile: { userId: string };
   PinGourmetFriend: { userId: string };
 };
@@ -39,6 +41,8 @@ export type SearchStackParamList = {
   NoteDetail: { noteId: string };
   Explore: undefined;
   Discover: undefined;
+  AreaExplorer: undefined;
+  MenuDecider: { venueId: string; venueName: string };
   UserProfile: { userId: string };
   PinGourmetFriend: { userId: string };
 };
@@ -46,6 +50,7 @@ export type SearchStackParamList = {
 export type ProfileStackParamList = {
   Profile: undefined;
   Settings: undefined;
+  Paywall: undefined;
   GourmetFriends: undefined;
   UserProfile: { userId: string };
   PinGourmetFriend: { userId: string };

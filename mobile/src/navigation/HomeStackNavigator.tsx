@@ -4,6 +4,7 @@ import { HomeScreen } from '../screens/home/HomeScreen';
 import { NoteDetailScreen } from '../screens/home/NoteDetailScreen';
 import { UserProfileScreen } from '../screens/social/UserProfileScreen';
 import { PinGourmetFriendScreen } from '../screens/social/PinGourmetFriendScreen';
+import { MenuDeciderScreen } from '../screens/menu-decider/MenuDeciderScreen';
 import { HomeStackParamList } from './types';
 import { colors, typography } from '../theme';
 
@@ -37,6 +38,11 @@ export function HomeStackNavigator() {
         name="PinGourmetFriend"
         component={PinGourmetFriendScreen}
         options={{ title: 'Pin Friend' }}
+      />
+      <Stack.Screen
+        name="MenuDecider"
+        component={MenuDeciderScreen}
+        options={{ title: 'Menu Decider' }}
       />
     </Stack.Navigator>
   );
