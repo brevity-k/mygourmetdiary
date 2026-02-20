@@ -25,6 +25,7 @@ build/
 Thumbs.db
 
 # Expo
+.expo/
 mobile/.expo/
 mobile/ios/
 mobile/android/
