@@ -1,7 +1,7 @@
 # MyGourmetDiary — Service Specification v1.0
 
-> **Last updated:** 2026-02-17
-> **Status:** Planning phase — pre-implementation
+> **Last updated:** 2026-02-19
+> **Status:** Active development — Phase 1 + Phase 3 map features in progress
 
 ---
 
@@ -449,3 +449,143 @@ Maps:      Google Places API (venue data) + react-native-maps
 Payments:  Stripe (Phase 3)
 Hosting:   Railway or Render (MVP) → AWS (scale)
 ```
+
+---
+
+## 12. Next Up — Feature Roadmap (2026-02-19)
+
+### 12.1 Wine & Spirit Search (External Database Integration)
+
+**Goal:** Make wine and spirit notes searchable with auto-fill from external data, so users don't have to manually type every bottle detail.
+
+**Strategy:** Seed a reference database from free open sources, then grow via community contributions.
+
+#### Seed Data Sources (All Free)
+
+| Source | Records | Data Provided | Action |
+|--------|---------|---------------|--------|
+| **LWIN (Liv-ex)** | ~200K wines & spirits | Name, color, region, sub-region, classification, vintage | Download CSV, import as `beverage_reference` table |
+| **Kaggle Whisky Datasets** | ~500 whiskies + 2,200 reviews | Distillery, flavor profiles (body, sweetness, smoky, etc.), reviews | Import distillery data + flavor profiles for tasting tag seed |
+| **sake_dataset (GitHub)** | ~1K sake brands | Brand, ABV, rice polishing ratio, sake meter value | Import as sake reference data |
+| **Open Food Facts** | ~37K alcoholic beverages | Barcode, name, brand, ABV, photos | Build barcode lookup integration |
+| **OpenWines (GitHub)** | French wine reference | Appellations, varietals, regions | Import for French wine dropdown/tag data |
+| **BottleDB** | Growing whisky DB | Whisky bottle metadata, distillery | Live API integration for whisky search |
+
+**Implementation plan:**
+1. Create `beverage_reference` table in PostgreSQL (fields: name, type, region, producer, vintage, varietal, flavor_tags, source)
+2. Write import scripts for LWIN CSV + Kaggle datasets + sake_dataset
+3. Build fuzzy search endpoint (`/api/v1/beverages/search?q=...&type=wine|spirit`)
+4. Wire into wine/spirit note forms — user types, gets autocomplete suggestions from reference DB
+5. If no match found, user enters manually → their entry becomes a new reference record (community-contributed)
+6. Add barcode scanner using Open Food Facts API as lookup
+
+**Estimated seed database: ~200K+ records** from LWIN alone.
+
+#### Live API Integrations (Phase 2-3)
+
+| Source | Cost | Use |
+|--------|------|-----|
+| **BottleDB API** | Free | Live whisky search supplement |
+| **WineVybe API (RapidAPI)** | Free tier available | Additional wine metadata |
+| **Wine-Searcher API** | Paid (enterprise) | Phase 3-4: "Where to buy" affiliate links (revenue source) |
+
+---
+
+### 12.2 Calendar Feature
+
+**Goal:** A visual diary experience showing your gourmet history, upcoming plans, and activity patterns.
+
+#### 12.2.1 Timeline View
+- Monthly calendar grid showing dots/thumbnails on dates with notes
+- Tap a date → see all notes from that day (dishes, wines, spirits)
+- Swipe between months
+- Color-coded dots by note type (restaurant = brown, wine = red, spirit = amber)
+
+#### 12.2.2 Planning & Logging
+- Bookmark future dates for planned reservations, wine tastings, distillery visits
+- "Upcoming" section at the top showing next planned experiences
+- After the date passes, prompt to convert plan → note ("How was your visit to X?")
+- Integration with note creation — pre-fill date and venue from planned events
+
+#### 12.2.3 Stats & Streaks
+- Heatmap (GitHub-style) showing note frequency over time
+- Monthly summary: total notes, new venues tried, top-rated items
+- Streaks: "You've logged notes 7 days in a row!" (gamification nudge)
+- Category breakdown: % restaurant vs wine vs spirit notes this month
+- "Taste Journey" report: how your average ratings and preferences evolved over time
+
+**Implementation plan:**
+1. New `CalendarScreen` in Home tab or as a dedicated tab
+2. Use `react-native-calendars` for calendar grid with custom day markers
+3. Query notes by date range (`/api/v1/notes/feed?startDate=...&endDate=...`)
+4. New `planned_event` table for future bookmarks (date, venue, type, notes)
+5. Stats computed from existing note data — batch job or on-demand aggregation
+
+---
+
+### 12.3 Wine Label Scanner
+
+**Goal:** Point camera at a wine or spirit label, auto-fill note fields.
+
+**Phased approach (cheapest first):**
+
+| Phase | Technology | Cost | What It Does |
+|-------|-----------|------|--------------|
+| **Step 1** | Apple Vision (on-device OCR) | Free | Extract text from label photo, no network needed |
+| **Step 2** | Google Cloud Vision API | Free (1K/mo), then $1.50/1K | Fallback OCR with higher accuracy |
+| **Step 3** | API4AI Alcohol Label Recognition | Paid (RapidAPI tiers) | Auto-match label to known wines/spirits |
+| **Step 4** | TinEye WineEngine | $200+/mo | Premium label matching (only if revenue justifies) |
+
+**Implementation plan:**
+1. Camera screen with live OCR overlay using `expo-camera` + Apple Vision framework
+2. Extract text → parse for wine name, vintage, producer, region, ABV
+3. Fuzzy match extracted text against `beverage_reference` table
+4. If match found, auto-fill note form fields
+5. If no match, pre-fill what was extracted, let user complete the rest
+6. User corrections feed back into the reference DB (improving future matches)
+
+---
+
+### 12.4 Offline Mode
+
+**Goal:** Premium users can access their notes and followed binder notes without internet.
+
+**Implementation plan:**
+1. Use `expo-sqlite` (already in plugins) for local cache
+2. Sync strategy: download notes on-demand when online, cache locally
+3. Background sync job: when back online, push locally-created notes to server
+4. Scope: own notes (always cached), followed binder notes (cached on view), map pins (cached for last-viewed region)
+5. Conflict resolution: server wins for remote notes, client wins for local drafts
+
+---
+
+### 12.5 Push Notifications
+
+**Goal:** Keep users engaged with timely alerts about content they care about.
+
+**Notification types:**
+- New note in a followed binder → "X posted a new wine note in 'California Pinot Noirs'"
+- Taste signal on your note → "Someone echoed your note on Sushi Gen"
+- New Gourmet Friend eligible → "You and X have 70% taste overlap in restaurants"
+- Pioneer zone alert → "Be the first to review [new venue] near you"
+
+**Implementation plan:**
+1. `expo-notifications` already configured (plugin in app.json)
+2. Backend: `NotificationsModule` already scaffolded with token registration + preferences
+3. Wire up event triggers in NestJS services (on note create, signal send, TSS compute)
+4. APNs (iOS) + FCM (Android) via Firebase Cloud Messaging
+5. Respect user preferences (already have `NotificationPreferences` type)
+
+---
+
+### 12.6 Priority Order
+
+| Priority | Feature | Estimated Effort | Dependencies |
+|----------|---------|-----------------|--------------|
+| **P0** | Wine & Spirit Search (seed DB + autocomplete) | 2-3 weeks | LWIN CSV download, import scripts |
+| **P1** | Calendar (timeline view) | 1-2 weeks | None |
+| **P1** | Push Notifications | 1-2 weeks | Firebase Cloud Messaging setup |
+| **P2** | Calendar (planning + stats) | 2-3 weeks | Calendar timeline |
+| **P2** | Wine Label Scanner (on-device OCR) | 2-3 weeks | Beverage reference DB |
+| **P3** | Offline Mode | 2-3 weeks | expo-sqlite schema design |
+| **P3** | Label Scanner (Cloud Vision + API4AI) | 1-2 weeks | On-device scanner |
