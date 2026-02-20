@@ -22,19 +22,26 @@ export function NoteCreationNavigator({ onClose }: Props) {
       screenOptions={{
         headerStyle: { backgroundColor: colors.background },
         headerTintColor: colors.text,
-        headerTitleStyle: { ...typography.h3 },
-        presentation: 'modal',
-        headerLeft: () => (
-          <TouchableOpacity onPress={onClose} accessibilityLabel="Close">
-            <MaterialIcons name="close" size={24} color={colors.text} />
-          </TouchableOpacity>
-        ),
+        headerTitleStyle: { ...typography.bodySmall, fontWeight: '600' },
+        headerBackTitle: '',
       }}
     >
       <Stack.Screen
         name="NoteTypeSelect"
         component={NoteTypeSelectScreen}
-        options={{ title: 'New Note' }}
+        options={{
+          title: 'MyGourmetDiary',
+          headerLeft: () => (
+            <TouchableOpacity
+              onPress={onClose}
+              accessibilityLabel="Back"
+              hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+              style={{ padding: 8 }}
+            >
+              <MaterialIcons name="arrow-back" size={24} color={colors.text} />
+            </TouchableOpacity>
+          ),
+        }}
       />
       <Stack.Screen
         name="RestaurantNoteForm"

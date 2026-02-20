@@ -53,22 +53,32 @@ export function useNoteForm(type: NoteType, onSuccess: () => void) {
   const [photos, setPhotos] = useState<PhotoAsset[]>([]);
   const [isDirty, setIsDirty] = useState(false);
 
+  const pendingVenue = useUIStore((s) => s.pendingVenue);
   const draftKey = `${DRAFT_KEY_PREFIX}${type}`;
 
-  // Load draft on mount
+  // Pre-fill venue from map selection (takes priority over draft)
   useEffect(() => {
+    if (pendingVenue) {
+      setFormData((prev) => ({
+        ...prev,
+        venueId: pendingVenue.placeId,
+        extension: { ...prev.extension, venueName: pendingVenue.name },
+      }));
+      return; // skip draft restoration when venue is pre-selected
+    }
+
+    // Load draft on mount (only when no pending venue)
     AsyncStorage.getItem(draftKey).then((draft) => {
       if (draft) {
         try {
           const parsed = JSON.parse(draft);
           setFormData(parsed.formData);
-          // Photos can't be restored from draft (temporary URIs)
         } catch {
           // Ignore invalid draft
         }
       }
     });
-  }, [draftKey]);
+  }, [draftKey, pendingVenue]);
 
   // Auto-save draft every 30 seconds
   useEffect(() => {

@@ -2,6 +2,7 @@ import React, { useState, useCallback } from 'react';
 import {
   View,
   FlatList,
+  ScrollView,
   TouchableOpacity,
   Text,
   StyleSheet,
@@ -93,26 +94,32 @@ export function HomeScreen() {
         onSelect={setSegment}
       />
 
-      <View style={styles.filters}>
-        {FILTER_OPTIONS.map((opt) => (
-          <TouchableOpacity
-            key={opt.label}
-            style={[
-              styles.filterChip,
-              typeFilter === opt.value && styles.filterChipActive,
-            ]}
-            onPress={() => setTypeFilter(opt.value)}
-          >
-            <Text
+      <View style={styles.filterWrapper}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.filters}
+        >
+          {FILTER_OPTIONS.map((opt) => (
+            <TouchableOpacity
+              key={opt.label}
               style={[
-                styles.filterText,
-                typeFilter === opt.value && styles.filterTextActive,
+                styles.filterChip,
+                typeFilter === opt.value && styles.filterChipActive,
               ]}
+              onPress={() => setTypeFilter(opt.value)}
             >
-              {opt.label}
-            </Text>
-          </TouchableOpacity>
-        ))}
+              <Text
+                style={[
+                  styles.filterText,
+                  typeFilter === opt.value && styles.filterTextActive,
+                ]}
+              >
+                {opt.label}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
       </View>
 
       <FlatList
@@ -178,15 +185,18 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background,
   },
+  filterWrapper: {
+    paddingVertical: spacing.sm,
+  },
   filters: {
     flexDirection: 'row',
     paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
     gap: spacing.sm,
+    alignItems: 'center',
   },
   filterChip: {
     paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
+    paddingVertical: spacing.sm + 2,
     borderRadius: 20,
     backgroundColor: colors.surface,
     borderWidth: 1,

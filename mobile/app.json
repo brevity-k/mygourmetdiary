@@ -48,7 +48,13 @@
           "locationWhenInUsePermission": "MyGourmetDiary needs your location to show nearby venues on the map."
         }
       ],
-      "expo-sqlite"
+      "expo-sqlite",
+      [
+        "react-native-maps",
+        {
+          "googleMapsApiKey": "AIzaSyAzxDPSZXpn3WhsnNODzhrigLWexEzGfis"
+        }
+      ]
     ],
     "extra": {
       "eas": {}

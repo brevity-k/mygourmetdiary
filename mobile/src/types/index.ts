@@ -359,6 +359,7 @@ export interface MenuDeciderResponse {
 export interface MapPin {
   venue: Venue;
   noteCount: number;
+  myNoteCount: number;
   friendNoteCount: number;
   avgRating: number | null;
   avgFriendRating: number | null;

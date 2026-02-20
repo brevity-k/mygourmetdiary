@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { View, TouchableOpacity, StyleSheet } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { NavigationIndependentTree, NavigationContainer } from '@react-navigation/native';
@@ -9,6 +9,7 @@ import { SearchStackNavigator } from './SearchStackNavigator';
 import { ProfileStackNavigator } from './ProfileStackNavigator';
 import { NoteCreationNavigator } from './NoteCreationNavigator';
 import { MainTabParamList } from './types';
+import { useUIStore } from '../store/ui.store';
 import { colors } from '../theme';
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
@@ -18,7 +19,9 @@ function EmptyScreen() {
 }
 
 export function MainNavigator() {
-  const [showCreate, setShowCreate] = useState(false);
+  const showCreate = useUIStore((s) => s.showNoteCreation);
+  const openCreate = useUIStore((s) => s.openNoteCreation);
+  const closeCreate = useUIStore((s) => s.closeNoteCreation);
 
   return (
     <>
@@ -71,7 +74,7 @@ export function MainNavigator() {
           listeners={{
             tabPress: (e) => {
               e.preventDefault();
-              setShowCreate(true);
+              openCreate();
             },
           }}
         />
@@ -102,11 +105,11 @@ export function MainNavigator() {
           <TouchableOpacity
             style={styles.overlay}
             activeOpacity={1}
-            onPress={() => setShowCreate(false)}
+            onPress={closeCreate}
           />
           <NavigationIndependentTree>
             <NavigationContainer>
-              <NoteCreationNavigator onClose={() => setShowCreate(false)} />
+              <NoteCreationNavigator onClose={closeCreate} />
             </NavigationContainer>
           </NavigationIndependentTree>
         </View>
