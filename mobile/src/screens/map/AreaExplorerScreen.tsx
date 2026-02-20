@@ -1,6 +1,6 @@
-import React, { useState, useRef, useCallback, useEffect } from 'react';
-import { View, Text, TouchableOpacity, ActivityIndicator, StyleSheet, Dimensions } from 'react-native';
-import MapView, { Marker, Region } from 'react-native-maps';
+import React, { useState, useRef, useCallback } from 'react';
+import { View, Text, TouchableOpacity, ActivityIndicator, StyleSheet, Dimensions, Platform } from 'react-native';
+import MapView, { Marker, Region, PROVIDER_GOOGLE, PoiClickEvent } from 'react-native-maps';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useQuery } from '@tanstack/react-query';
@@ -8,7 +8,9 @@ import { MaterialIcons } from '@expo/vector-icons';
 import BottomSheet, { BottomSheetView } from '@gorhom/bottom-sheet';
 import { areaExplorerApi } from '../../api/endpoints';
 import { VenuePreviewCard } from '../../components/map/VenuePreviewCard';
+import { MapSearchBar } from '../../components/map/MapSearchBar';
 import { useSubscriptionStore } from '../../store/subscription.store';
+import { useUIStore, VenueSelection } from '../../store/ui.store';
 import { SearchStackParamList } from '../../navigation/types';
 import { MapPin } from '../../types';
 import { colors, typography, spacing, borderRadius } from '../../theme';
@@ -25,14 +27,23 @@ const DEFAULT_REGION: Region = {
   longitudeDelta: 0.05,
 };
 
+function getMarkerColor(pin: MapPin): string {
+  if (pin.myNoteCount > 0) return colors.primary; // brown — "I've been here"
+  if (pin.friendNoteCount > 0) return '#D4A017'; // gold — "Friends visited"
+  return colors.textTertiary; // gray — general notes
+}
+
 export function AreaExplorerScreen() {
   const navigation = useNavigation<NavigationProp>();
   const isConnoisseur = useSubscriptionStore((s) => s.isActive);
+  const openNoteCreation = useUIStore((s) => s.openNoteCreation);
 
+  const mapRef = useRef<MapView>(null);
   const [region, setRegion] = useState<Region>(DEFAULT_REGION);
   const [friendsOnly, setFriendsOnly] = useState(false);
   const [category, setCategory] = useState<string | undefined>();
   const [selectedPin, setSelectedPin] = useState<MapPin | null>(null);
+  const [selectedPoi, setSelectedPoi] = useState<VenueSelection | null>(null);
   const bottomSheetRef = useRef<BottomSheet>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [queryRegion, setQueryRegion] = useState(DEFAULT_REGION);
@@ -71,20 +82,55 @@ export function AreaExplorerScreen() {
 
   const handleMarkerPress = useCallback((pin: MapPin) => {
     setSelectedPin(pin);
+    setSelectedPoi(null);
     bottomSheetRef.current?.snapToIndex(0);
   }, []);
 
+  const handlePoiClick = useCallback((event: PoiClickEvent) => {
+    const { placeId, name, coordinate } = event.nativeEvent;
+    // Check if this POI already has a DB marker
+    const existingPin = pins.find((p) => p.venue.placeId === placeId);
+    if (existingPin) {
+      handleMarkerPress(existingPin);
+      return;
+    }
+    // Show as POI venue (no notes in our DB)
+    setSelectedPoi({
+      placeId,
+      name,
+      coordinate: { latitude: coordinate.latitude, longitude: coordinate.longitude },
+    });
+    setSelectedPin(null);
+    bottomSheetRef.current?.snapToIndex(0);
+  }, [pins, handleMarkerPress]);
+
+  const handleVenueFromSearch = useCallback((venue: VenueSelection) => {
+    setSelectedPoi(venue);
+    setSelectedPin(null);
+    bottomSheetRef.current?.snapToIndex(0);
+    if (venue.coordinate) {
+      mapRef.current?.animateToRegion({
+        ...venue.coordinate,
+        latitudeDelta: 0.01,
+        longitudeDelta: 0.01,
+      }, 500);
+    }
+  }, []);
+
   const toggleFriendsOnly = () => {
-    if (!isConnoisseur && !friendsOnly) return; // can't enable without premium
+    if (!isConnoisseur && !friendsOnly) return;
     setFriendsOnly(!friendsOnly);
   };
 
   return (
     <View style={styles.container}>
       <MapView
+        ref={mapRef}
         style={styles.map}
+        provider={Platform.OS === 'ios' ? PROVIDER_GOOGLE : undefined}
         initialRegion={DEFAULT_REGION}
         onRegionChangeComplete={handleRegionChange}
+        onPoiClick={handlePoiClick}
         showsUserLocation
         showsMyLocationButton
       >
@@ -95,11 +141,17 @@ export function AreaExplorerScreen() {
               latitude: pin.venue.lat!,
               longitude: pin.venue.lng!,
             }}
-            pinColor={pin.friendNoteCount > 0 ? '#D4A017' : colors.primary}
+            pinColor={getMarkerColor(pin)}
             onPress={() => handleMarkerPress(pin)}
           />
         ))}
       </MapView>
+
+      {/* Search bar overlay */}
+      <MapSearchBar
+        mapCenter={{ latitude: region.latitude, longitude: region.longitude }}
+        onVenueSelect={handleVenueFromSearch}
+      />
 
       {/* Filters overlay */}
       <View style={styles.filters}>
@@ -166,6 +218,16 @@ export function AreaExplorerScreen() {
               onViewNotes={() =>
                 navigation.navigate('NoteDetail', { noteId: selectedPin.venue.id })
               }
+              onWriteNote={() =>
+                openNoteCreation({
+                  placeId: selectedPin.venue.placeId,
+                  name: selectedPin.venue.name,
+                  address: selectedPin.venue.address ?? undefined,
+                  coordinate: selectedPin.venue.lat != null && selectedPin.venue.lng != null
+                    ? { latitude: selectedPin.venue.lat, longitude: selectedPin.venue.lng }
+                    : undefined,
+                })
+              }
               onMenuDecider={
                 isConnoisseur && selectedPin.category === 'RESTAURANT'
                   ? () =>
@@ -175,6 +237,12 @@ export function AreaExplorerScreen() {
                       })
                   : undefined
               }
+            />
+          )}
+          {selectedPoi && !selectedPin && (
+            <VenuePreviewCard
+              poiVenue={selectedPoi}
+              onWriteNote={() => openNoteCreation(selectedPoi)}
             />
           )}
         </BottomSheetView>
@@ -188,7 +256,7 @@ const styles = StyleSheet.create({
   map: { width, height },
   filters: {
     position: 'absolute',
-    top: spacing.md,
+    top: 72,
     left: spacing.md,
     right: spacing.md,
     flexDirection: 'row',
@@ -219,7 +287,7 @@ const styles = StyleSheet.create({
   filterTextActive: { color: colors.textInverse },
   loader: {
     position: 'absolute',
-    top: 60,
+    top: 110,
     alignSelf: 'center',
   },
   sheetBackground: { backgroundColor: colors.background },

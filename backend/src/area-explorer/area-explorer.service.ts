@@ -14,6 +14,7 @@ export interface MapPin {
     types: string[];
   };
   noteCount: number;
+  myNoteCount: number;
   friendNoteCount: number;
   avgRating: number | null;
   avgFriendRating: number | null;
@@ -102,16 +103,20 @@ export class AreaExplorerService {
       string,
       {
         notes: typeof notes;
+        myNotes: typeof notes;
         friendNotes: typeof notes;
       }
     >();
 
     for (const note of notes) {
       if (!venueMap.has(note.venueId!)) {
-        venueMap.set(note.venueId!, { notes: [], friendNotes: [] });
+        venueMap.set(note.venueId!, { notes: [], myNotes: [], friendNotes: [] });
       }
       const entry = venueMap.get(note.venueId!)!;
       entry.notes.push(note);
+      if (note.authorId === userId) {
+        entry.myNotes.push(note);
+      }
       if (friendSet.has(note.authorId)) {
         entry.friendNotes.push(note);
       }
@@ -143,6 +148,7 @@ export class AreaExplorerService {
           types: venue.types,
         },
         noteCount: entry.notes.length,
+        myNoteCount: entry.myNotes.length,
         friendNoteCount: entry.friendNotes.length,
         avgRating:
           allRatings.length > 0

@@ -2,15 +2,51 @@ import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { MapPin } from '../../types';
+import { VenueSelection } from '../../store/ui.store';
 import { colors, typography, spacing, borderRadius } from '../../theme';
 
-interface VenuePreviewCardProps {
+interface PinProps {
   pin: MapPin;
   onViewNotes: () => void;
   onMenuDecider?: () => void;
+  onWriteNote?: () => void;
 }
 
-export function VenuePreviewCard({ pin, onViewNotes, onMenuDecider }: VenuePreviewCardProps) {
+interface PoiProps {
+  poiVenue: VenueSelection;
+  onWriteNote: () => void;
+}
+
+type VenuePreviewCardProps = PinProps | PoiProps;
+
+function isPoiProps(props: VenuePreviewCardProps): props is PoiProps {
+  return 'poiVenue' in props;
+}
+
+export function VenuePreviewCard(props: VenuePreviewCardProps) {
+  if (isPoiProps(props)) {
+    const { poiVenue, onWriteNote } = props;
+    return (
+      <View style={styles.card}>
+        <Text style={styles.name} numberOfLines={1}>{poiVenue.name}</Text>
+        {poiVenue.address && (
+          <Text style={styles.address} numberOfLines={1}>{poiVenue.address}</Text>
+        )}
+        <Text style={styles.pioneerPrompt}>No notes yet — be the first!</Text>
+        <View style={styles.actions}>
+          <TouchableOpacity
+            style={[styles.actionButton, styles.actionPrimary, { flex: 1 }]}
+            onPress={onWriteNote}
+          >
+            <MaterialIcons name="edit" size={14} color={colors.textInverse} />
+            <Text style={[styles.actionText, styles.actionTextPrimary]}>Write Note</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    );
+  }
+
+  const { pin, onViewNotes, onMenuDecider, onWriteNote } = props;
   return (
     <View style={styles.card}>
       <Text style={styles.name} numberOfLines={1}>{pin.venue.name}</Text>
@@ -49,6 +85,15 @@ export function VenuePreviewCard({ pin, onViewNotes, onMenuDecider }: VenuePrevi
         <TouchableOpacity style={styles.actionButton} onPress={onViewNotes}>
           <Text style={styles.actionText}>View Notes</Text>
         </TouchableOpacity>
+        {onWriteNote && (
+          <TouchableOpacity
+            style={[styles.actionButton, styles.actionPrimary]}
+            onPress={onWriteNote}
+          >
+            <MaterialIcons name="edit" size={14} color={colors.textInverse} />
+            <Text style={[styles.actionText, styles.actionTextPrimary]}>Write Note</Text>
+          </TouchableOpacity>
+        )}
         {onMenuDecider && pin.category === 'RESTAURANT' && (
           <TouchableOpacity
             style={[styles.actionButton, styles.actionPrimary]}
@@ -75,6 +120,7 @@ const styles = StyleSheet.create({
   stats: { flexDirection: 'row', gap: spacing.md, marginTop: spacing.xs },
   stat: { flexDirection: 'row', alignItems: 'center', gap: 2 },
   statText: { ...typography.caption, color: colors.textSecondary },
+  pioneerPrompt: { ...typography.caption, color: colors.textSecondary, fontStyle: 'italic', marginTop: spacing.xs },
   friendNames: { ...typography.caption, color: colors.accent, fontStyle: 'italic' },
   actions: {
     flexDirection: 'row',

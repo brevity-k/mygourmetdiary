@@ -5,6 +5,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { MaterialIcons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { NoteCreationStackParamList } from '../../navigation/types';
+import { useUIStore } from '../../store/ui.store';
 import { colors, typography, spacing, borderRadius } from '../../theme';
 
 type NavigationProp = NativeStackNavigationProp<NoteCreationStackParamList>;
@@ -38,6 +39,7 @@ const NOTE_TYPES = [
 
 export function NoteTypeSelectScreen() {
   const navigation = useNavigation<NavigationProp>();
+  const pendingVenue = useUIStore((s) => s.pendingVenue);
 
   const handleSelect = (screen: keyof NoteCreationStackParamList) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -47,6 +49,15 @@ export function NoteTypeSelectScreen() {
   return (
     <View style={styles.container}>
       <Text style={styles.heading}>What are you noting?</Text>
+
+      {pendingVenue && (
+        <View style={styles.venueBanner}>
+          <MaterialIcons name="place" size={18} color={colors.primary} />
+          <Text style={styles.venueBannerText} numberOfLines={1}>
+            Writing note for: {pendingVenue.name}
+          </Text>
+        </View>
+      )}
 
       <View style={styles.options}>
         {NOTE_TYPES.map((type) => (
@@ -89,6 +100,23 @@ const styles = StyleSheet.create({
     ...typography.h2,
     color: colors.text,
     marginBottom: spacing.lg,
+  },
+  venueBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    backgroundColor: colors.surfaceElevated,
+    padding: spacing.md,
+    borderRadius: borderRadius.md,
+    marginBottom: spacing.lg,
+    borderLeftWidth: 3,
+    borderLeftColor: colors.primary,
+  },
+  venueBannerText: {
+    ...typography.bodySmall,
+    color: colors.text,
+    flex: 1,
+    fontWeight: '500',
   },
   options: {
     gap: spacing.md,
