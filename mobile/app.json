@@ -16,7 +16,10 @@
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.mygourmetdiary.app",
-      "usesAppleSignIn": true
+      "usesAppleSignIn": true,
+      "config": {
+        "googleMapsApiKey": "AIzaSyAzxDPSZXpn3WhsnNODzhrigLWexEzGfis"
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -48,13 +51,7 @@
           "locationWhenInUsePermission": "MyGourmetDiary needs your location to show nearby venues on the map."
         }
       ],
-      "expo-sqlite",
-      [
-        "react-native-maps",
-        {
-          "googleMapsApiKey": "AIzaSyAzxDPSZXpn3WhsnNODzhrigLWexEzGfis"
-        }
-      ]
+      "expo-sqlite"
     ],
     "extra": {
       "eas": {}
