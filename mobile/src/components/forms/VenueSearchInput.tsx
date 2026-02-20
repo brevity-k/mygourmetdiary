@@ -4,7 +4,6 @@ import {
   TextInput,
   Text,
   TouchableOpacity,
-  FlatList,
   StyleSheet,
 } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -108,22 +107,18 @@ export function VenueSearchInput({
 
       {results.length > 0 && (
         <View style={styles.dropdown}>
-          <FlatList
-            data={results.slice(0, 5)}
-            keyExtractor={(item) => item.placeId}
-            renderItem={({ item }) => (
-              <TouchableOpacity
-                style={styles.result}
-                onPress={() => handleSelect(item)}
-              >
-                <Text style={styles.resultName}>{item.name}</Text>
-                <Text style={styles.resultAddress} numberOfLines={1}>
-                  {item.address}
-                </Text>
-              </TouchableOpacity>
-            )}
-            keyboardShouldPersistTaps="handled"
-          />
+          {results.slice(0, 5).map((item) => (
+            <TouchableOpacity
+              key={item.placeId}
+              style={styles.result}
+              onPress={() => handleSelect(item)}
+            >
+              <Text style={styles.resultName}>{item.name}</Text>
+              <Text style={styles.resultAddress} numberOfLines={1}>
+                {item.address}
+              </Text>
+            </TouchableOpacity>
+          ))}
         </View>
       )}
     </View>
