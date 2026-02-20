@@ -4,7 +4,7 @@ import {
   TextInput,
   TouchableOpacity,
   Text,
-  FlatList,
+  ScrollView,
   StyleSheet,
   Keyboard,
 } from 'react-native';
@@ -105,13 +105,13 @@ export function MapSearchBar({ mapCenter, onVenueSelect }: MapSearchBarProps) {
       </View>
 
       {showResults && results.length > 0 && (
-        <FlatList
-          data={results}
-          keyExtractor={(item) => item.placeId}
-          keyboardShouldPersistTaps="handled"
+        <ScrollView
           style={styles.resultsList}
-          renderItem={({ item }) => (
+          keyboardShouldPersistTaps="handled"
+        >
+          {results.map((item) => (
             <TouchableOpacity
+              key={item.placeId}
               style={styles.resultItem}
               onPress={() => handleSelect(item)}
             >
@@ -127,8 +127,8 @@ export function MapSearchBar({ mapCenter, onVenueSelect }: MapSearchBarProps) {
                 )}
               </View>
             </TouchableOpacity>
-          )}
-        />
+          ))}
+        </ScrollView>
       )}
     </View>
   );
