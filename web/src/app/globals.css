@@ -1,0 +1,62 @@
+@import "tailwindcss";
+
+@theme {
+  --font-heading: "Cormorant", serif;
+  --font-body: "DM Sans", sans-serif;
+
+  --color-background: #FDF8F0;
+  --color-foreground: #2C1810;
+
+  --color-primary: #8B4513;
+  --color-primary-light: #A0522D;
+  --color-primary-dark: #654321;
+  --color-primary-foreground: #FFFFFF;
+
+  --color-accent: #C2703E;
+  --color-accent-light: #E8A87C;
+  --color-accent-foreground: #FFFFFF;
+
+  --color-surface: #FFFFFF;
+  --color-surface-elevated: #FFF9F2;
+
+  --color-muted: #F0E8DC;
+  --color-muted-foreground: #6B5B4F;
+
+  --color-card: #FFFFFF;
+  --color-card-foreground: #2C1810;
+
+  --color-border: #E8DDD0;
+  --color-border-light: #F0E8DC;
+
+  --color-input: #E8DDD0;
+  --color-ring: #8B4513;
+
+  --color-success: #4A7C59;
+  --color-error: #C0392B;
+  --color-warning: #D4A017;
+
+  --color-rating-active: #D4A574;
+  --color-rating-inactive: #E8DDD0;
+
+  --color-skeleton: #F0E8DC;
+
+  --color-destructive: #C0392B;
+  --color-destructive-foreground: #FFFFFF;
+
+  --radius-sm: 0.375rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground font-body antialiased;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-heading);
+  }
+}
