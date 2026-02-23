@@ -2,6 +2,9 @@ import { initializeApp, getApps, getApp, type FirebaseApp } from 'firebase/app';
 import {
   getAuth,
   signInWithPopup,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  updateProfile,
   GoogleAuthProvider,
   OAuthProvider,
   onAuthStateChanged as firebaseOnAuthStateChanged,
@@ -59,6 +62,17 @@ export async function signInWithApple(): Promise<AuthUser> {
   provider.addScope('email');
   provider.addScope('name');
   const result = await signInWithPopup(getFirebaseAuth(), provider);
+  return toAuthUser(result.user);
+}
+
+export async function signInWithEmail(email: string, password: string): Promise<AuthUser> {
+  const result = await signInWithEmailAndPassword(getFirebaseAuth(), email, password);
+  return toAuthUser(result.user);
+}
+
+export async function signUpWithEmail(email: string, password: string, displayName: string): Promise<AuthUser> {
+  const result = await createUserWithEmailAndPassword(getFirebaseAuth(), email, password);
+  await updateProfile(result.user, { displayName });
   return toAuthUser(result.user);
 }
 

@@ -1,5 +1,6 @@
 'use client';
 
+import { usePathname } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
 import { AppSidebar } from '@/components/app-sidebar';
 import { MobileNav } from '@/components/mobile-nav';
@@ -7,6 +8,9 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const { loading, firebaseUser } = useAuth();
+  const pathname = usePathname();
+
+  const isFullBleed = pathname === '/explore';
 
   if (loading) {
     return (
@@ -28,9 +32,13 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     <div className="min-h-screen bg-background">
       <AppSidebar />
       <main className="lg:pl-64 pb-20 lg:pb-0">
-        <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-          {children}
-        </div>
+        {isFullBleed ? (
+          children
+        ) : (
+          <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+            {children}
+          </div>
+        )}
       </main>
       <MobileNav />
     </div>
