@@ -23,6 +23,32 @@ interface NoteFormData {
 
 const DRAFT_KEY_PREFIX = 'web_note_draft_';
 
+function getDefaultExtension(type: NoteType): Record<string, any> {
+  switch (type) {
+    case NoteType.RESTAURANT:
+      return { dishName: '', dishCategory: '', wouldOrderAgain: false };
+    case NoteType.WINE:
+      return { wineName: '', wineType: '' };
+    case NoteType.SPIRIT:
+      return { spiritName: '', spiritType: '' };
+    case NoteType.WINERY_VISIT:
+      return { wouldRevisit: false };
+    default:
+      return {};
+  }
+}
+
+// Remove empty string values so backend optional validators don't reject them
+function cleanExtension(ext: Record<string, any>): Record<string, any> {
+  const cleaned: Record<string, any> = {};
+  for (const [key, value] of Object.entries(ext)) {
+    if (value !== '' && value !== undefined) {
+      cleaned[key] = value;
+    }
+  }
+  return cleaned;
+}
+
 export function useNoteForm(type: NoteType, onSuccess: () => void) {
   const queryClient = useQueryClient();
   const { showToast } = useToast();
@@ -36,7 +62,7 @@ export function useNoteForm(type: NoteType, onSuccess: () => void) {
     freeText: '',
     visibility: Visibility.PRIVATE,
     tagIds: [],
-    extension: {},
+    extension: getDefaultExtension(type),
     venueId: null,
     experiencedAt: new Date().toISOString().split('T')[0],
   });
@@ -110,6 +136,7 @@ export function useNoteForm(type: NoteType, onSuccess: () => void) {
 
       return notesApi.create({
         ...formData,
+        extension: cleanExtension(formData.extension),
         experiencedAt: new Date(formData.experiencedAt).toISOString(),
         photoIds,
       });
