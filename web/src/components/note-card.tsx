@@ -23,7 +23,7 @@ interface NoteCardProps {
 }
 
 export function NoteCard({ note }: NoteCardProps) {
-  const config = typeConfig[note.type];
+  const config = typeConfig[note.type] ?? typeConfig[NoteType.RESTAURANT];
   const Icon = config.icon;
   const coverPhoto = note.photos?.[0];
 
@@ -49,9 +49,11 @@ export function NoteCard({ note }: NoteCardProps) {
             <Badge variant="secondary" className="text-[10px]">
               {config.label}
             </Badge>
-            <span className="ml-auto text-xs text-muted-foreground">
-              {format(new Date(note.experiencedAt), 'MMM d, yyyy')}
-            </span>
+            {note.experiencedAt && (
+              <span className="ml-auto text-xs text-muted-foreground">
+                {format(new Date(note.experiencedAt), 'MMM d, yyyy')}
+              </span>
+            )}
           </div>
 
           <h3 className="font-heading text-lg font-semibold leading-tight line-clamp-2">
@@ -82,6 +84,7 @@ export function NoteCard({ note }: NoteCardProps) {
 
 function getSubtitle(note: Note): string | null {
   const ext = note.extension;
+  if (!ext) return null;
   switch (note.type) {
     case NoteType.RESTAURANT:
       return ext.dishName || null;
