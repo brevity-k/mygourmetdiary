@@ -10,8 +10,13 @@ import { NoteCard } from '@/components/note-card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { SearchMapView } from '@/components/map/search-map-view';
 import { useDebounce } from '@/hooks/use-debounce';
+import dynamic from 'next/dynamic';
+
+const SearchMapView = dynamic(
+  () => import('@/components/map/search-map-view').then((m) => m.SearchMapView),
+  { ssr: false },
+);
 
 export default function SearchPage() {
   const [query, setQuery] = useState('');

@@ -116,7 +116,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (loading) return;
 
-    const isAuthRoute = pathname?.startsWith('/login') || pathname?.startsWith('/onboarding');
+    const isAuthRoute = pathname?.startsWith('/login') || pathname?.startsWith('/register') || pathname?.startsWith('/onboarding');
     const isAuthenticated = !!firebaseUser;
 
     if (!isAuthenticated && !isAuthRoute) {

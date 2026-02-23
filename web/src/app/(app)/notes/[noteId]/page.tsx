@@ -28,8 +28,13 @@ import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
 import { RatingDisplay } from '@/components/rating-display';
 import { PhotoGallery } from '@/components/photo-gallery';
-import { StaticVenueMap } from '@/components/map/static-venue-map';
 import { useToast } from '@/components/ui/toast';
+import dynamic from 'next/dynamic';
+
+const StaticVenueMap = dynamic(
+  () => import('@/components/map/static-venue-map').then((m) => m.StaticVenueMap),
+  { ssr: false },
+);
 import {
   DropdownMenu,
   DropdownMenuTrigger,

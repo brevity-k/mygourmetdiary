@@ -5,8 +5,13 @@ import { LayoutGrid, Map as MapIcon } from 'lucide-react';
 import { NoteType } from '@mygourmetdiary/shared-types';
 import { NOTE_TYPE_LABELS } from '@mygourmetdiary/shared-constants';
 import { NoteFeed } from '@/components/note-feed';
-import { FeedMapView } from '@/components/map/feed-map-view';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import dynamic from 'next/dynamic';
+
+const FeedMapView = dynamic(
+  () => import('@/components/map/feed-map-view').then((m) => m.FeedMapView),
+  { ssr: false },
+);
 import { Button } from '@/components/ui/button';
 
 const filterOptions = [
