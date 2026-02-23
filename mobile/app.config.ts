@@ -1,0 +1,64 @@
+import { ExpoConfig, ConfigContext } from 'expo/config';
+
+export default ({ config }: ConfigContext): ExpoConfig => ({
+  ...config,
+  name: 'MyGourmetDiary',
+  slug: 'mygourmetdiary',
+  scheme: 'mygourmetdiary',
+  version: '1.0.0',
+  orientation: 'portrait',
+  icon: './assets/icon.png',
+  userInterfaceStyle: 'light',
+  newArchEnabled: true,
+  splash: {
+    image: './assets/splash-icon.png',
+    resizeMode: 'contain',
+    backgroundColor: '#FDF8F0',
+  },
+  ios: {
+    supportsTablet: false,
+    bundleIdentifier: 'com.mygourmetdiary.app',
+    usesAppleSignIn: true,
+    config: {
+      googleMapsApiKey: process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY ?? '',
+    },
+  },
+  android: {
+    adaptiveIcon: {
+      foregroundImage: './assets/adaptive-icon.png',
+      backgroundColor: '#FDF8F0',
+    },
+    package: 'com.mygourmetdiary.app',
+    edgeToEdgeEnabled: true,
+  },
+  plugins: [
+    'expo-apple-authentication',
+    [
+      'expo-image-picker',
+      {
+        photosPermission:
+          'MyGourmetDiary needs access to your photos to add images to your notes.',
+        cameraPermission:
+          'MyGourmetDiary needs access to your camera to take photos of food and drinks.',
+      },
+    ],
+    '@react-native-community/datetimepicker',
+    [
+      'expo-notifications',
+      {
+        color: '#8B4513',
+      },
+    ],
+    [
+      'expo-location',
+      {
+        locationWhenInUsePermission:
+          'MyGourmetDiary needs your location to show nearby venues on the map.',
+      },
+    ],
+    'expo-sqlite',
+  ],
+  extra: {
+    eas: {},
+  },
+});
