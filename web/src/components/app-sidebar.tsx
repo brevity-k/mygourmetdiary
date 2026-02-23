@@ -9,6 +9,7 @@ import {
   UserCircle,
   PlusCircle,
   Settings,
+  Map,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/lib/auth-context';
@@ -19,6 +20,7 @@ const navItems = [
   { href: '/binders', label: 'Binders', icon: BookOpen },
   { href: '/notes/new', label: 'New Note', icon: PlusCircle },
   { href: '/search', label: 'Search', icon: Search },
+  { href: '/explore', label: 'Explore', icon: Map },
   { href: '/profile', label: 'Profile', icon: UserCircle },
 ];
 

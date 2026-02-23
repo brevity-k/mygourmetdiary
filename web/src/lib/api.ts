@@ -7,6 +7,7 @@ import {
   createVenuesApi,
   createPhotosApi,
   createNotesApi,
+  createAreaExplorerApi,
   createSearchApi,
 } from '@mygourmetdiary/shared-api';
 import { getIdToken } from './firebase';
@@ -39,4 +40,5 @@ export const tagsApi = createTagsApi(apiClient);
 export const venuesApi = createVenuesApi(apiClient);
 export const photosApi = createPhotosApi(apiClient);
 export const notesApi = createNotesApi(apiClient);
+export const areaExplorerApi = createAreaExplorerApi(apiClient);
 export const searchApi = createSearchApi(apiClient);

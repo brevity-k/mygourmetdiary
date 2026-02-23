@@ -28,6 +28,7 @@ import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
 import { RatingDisplay } from '@/components/rating-display';
 import { PhotoGallery } from '@/components/photo-gallery';
+import { StaticVenueMap } from '@/components/map/static-venue-map';
 import { useToast } from '@/components/ui/toast';
 import {
   DropdownMenu,
@@ -146,6 +147,15 @@ export default function NoteDetailPage({ params }: { params: Promise<{ noteId: s
               <span className="text-sm">· {note.venue.address}</span>
             )}
           </div>
+        )}
+
+        {note.venue?.lat != null && note.venue?.lng != null && (
+          <StaticVenueMap
+            lat={note.venue.lat}
+            lng={note.venue.lng}
+            venueName={note.venue.name}
+            noteType={note.type}
+          />
         )}
 
         <RatingDisplay rating={note.rating} />

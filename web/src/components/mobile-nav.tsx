@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, BookOpen, PlusCircle, Search, UserCircle } from 'lucide-react';
+import { Home, BookOpen, PlusCircle, Search, Map, UserCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const navItems = [
@@ -10,7 +10,7 @@ const navItems = [
   { href: '/binders', label: 'Binders', icon: BookOpen },
   { href: '/notes/new', label: '', icon: PlusCircle, isFab: true },
   { href: '/search', label: 'Search', icon: Search },
-  { href: '/profile', label: 'Profile', icon: UserCircle },
+  { href: '/explore', label: 'Explore', icon: Map },
 ];
 
 export function MobileNav() {

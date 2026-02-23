@@ -2,6 +2,7 @@ import type { AxiosInstance } from 'axios';
 import type {
   ApiResponse,
   Binder,
+  MapPin,
   Note,
   NoteType,
   PaginatedResponse,
@@ -119,6 +120,29 @@ export function createNotesApi(client: AxiosInstance) {
       client
         .post<ApiResponse<Note>>(`/notes/${noteId}/photos`, { photoIds })
         .then((r) => r.data.data),
+  };
+}
+
+export function createAreaExplorerApi(client: AxiosInstance) {
+  return {
+    getMapPins: (params: {
+      lat: number;
+      lng: number;
+      radiusKm?: number;
+      category?: string;
+      friendsOnly?: boolean;
+    }) => {
+      const searchParams = new URLSearchParams({
+        lat: String(params.lat),
+        lng: String(params.lng),
+      });
+      if (params.radiusKm) searchParams.set('radiusKm', String(params.radiusKm));
+      if (params.category) searchParams.set('category', params.category);
+      if (params.friendsOnly) searchParams.set('friendsOnly', 'true');
+      return client
+        .get<ApiResponse<MapPin[]>>(`/explore/map?${searchParams}`)
+        .then((r) => r.data.data);
+    },
   };
 }
 

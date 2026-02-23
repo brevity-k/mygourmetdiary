@@ -7,5 +7,6 @@ export {
   createVenuesApi,
   createPhotosApi,
   createNotesApi,
+  createAreaExplorerApi,
   createSearchApi,
 } from './endpoints';

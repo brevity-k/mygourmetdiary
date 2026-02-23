@@ -2,18 +2,22 @@
 
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Search as SearchIcon } from 'lucide-react';
+import { Search as SearchIcon, LayoutGrid, Map as MapIcon } from 'lucide-react';
 import { NoteType } from '@mygourmetdiary/shared-types';
 import { searchApi } from '@/lib/api';
 import { Input } from '@/components/ui/input';
 import { NoteCard } from '@/components/note-card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Button } from '@/components/ui/button';
+import { SearchMapView } from '@/components/map/search-map-view';
 import { useDebounce } from '@/hooks/use-debounce';
 
 export default function SearchPage() {
   const [query, setQuery] = useState('');
   const [typeFilter, setTypeFilter] = useState('all');
+  const [viewMode, setViewMode] = useState<'grid' | 'map'>('grid');
+  const [highlightedNoteId, setHighlightedNoteId] = useState<string | null>(null);
   const debouncedQuery = useDebounce(query, 300);
 
   const { data, isLoading, isFetching } = useQuery({
@@ -27,9 +31,33 @@ export default function SearchPage() {
     enabled: debouncedQuery.length >= 2,
   });
 
+  const hasResults = data && data.hits.length > 0;
+
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl font-heading font-bold">Search</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-3xl font-heading font-bold">Search</h1>
+        {hasResults && (
+          <div className="flex items-center gap-1 rounded-lg border border-border p-0.5">
+            <Button
+              variant={viewMode === 'grid' ? 'secondary' : 'ghost'}
+              size="sm"
+              className="h-8 w-8 p-0"
+              onClick={() => setViewMode('grid')}
+            >
+              <LayoutGrid className="h-4 w-4" />
+            </Button>
+            <Button
+              variant={viewMode === 'map' ? 'secondary' : 'ghost'}
+              size="sm"
+              className="h-8 w-8 p-0"
+              onClick={() => setViewMode('map')}
+            >
+              <MapIcon className="h-4 w-4" />
+            </Button>
+          </div>
+        )}
+      </div>
 
       <div className="relative">
         <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -65,14 +93,22 @@ export default function SearchPage() {
             </div>
           ))}
         </div>
-      ) : data && data.hits.length > 0 ? (
+      ) : hasResults ? (
         <>
           <p className="text-sm text-muted-foreground">{data.total} result{data.total !== 1 && 's'}</p>
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-            {data.hits.map((note) => (
-              <NoteCard key={note.id} note={note} />
-            ))}
-          </div>
+          {viewMode === 'grid' ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+              {data.hits.map((note) => (
+                <NoteCard key={note.id} note={note} />
+              ))}
+            </div>
+          ) : (
+            <SearchMapView
+              notes={data.hits}
+              highlightedNoteId={highlightedNoteId ?? undefined}
+              onNoteHover={setHighlightedNoteId}
+            />
+          )}
         </>
       ) : (
         <div className="text-center py-16">
