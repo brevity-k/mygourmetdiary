@@ -34,7 +34,7 @@
     }
   },
   "dependencies": {
-    "next": "15.3.3",
+    "next": "15.3.8",
     "react-native-worklets": "0.5.1",
     "expo": "~54.0.33",
     "react": "19.1.0",
