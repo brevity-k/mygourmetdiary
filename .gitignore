@@ -50,3 +50,9 @@ backend/prisma/migrations/**/migration_lock.toml
 # Firebase config files
 GoogleService-Info.plist
 google-services.json
+
+# Private documentation
+CLAUDE.md
+COMPETITIVE_ANALYSIS.md
+DRAFT.md
+TECHNICAL_FEASIBILITY.md
