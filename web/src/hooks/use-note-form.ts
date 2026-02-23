@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { NoteType, Visibility } from '@mygourmetdiary/shared-types';
 import type { Venue } from '@mygourmetdiary/shared-types';
-import { notesApi, photosApi } from '@/lib/api';
+import { notesApi, photosApi, venuesApi } from '@/lib/api';
 import { useToast } from '@/components/ui/toast';
 import type { PhotoFile } from '@/components/photo-uploader';
 
@@ -89,6 +89,10 @@ export function useNoteForm(type: NoteType, onSuccess: () => void) {
     setVenue(v);
     setFormData((prev) => ({ ...prev, venueId: v?.placeId ?? null }));
     setIsDirty(true);
+    // Persist venue to backend DB so it exists when the note is created
+    if (v?.placeId) {
+      venuesApi.get(v.placeId).catch(() => {});
+    }
   }, []);
 
   const mutation = useMutation({
