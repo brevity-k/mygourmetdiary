@@ -11,6 +11,7 @@
   "dependencies": {
     "@mygourmetdiary/shared-types": "*",
     "@mygourmetdiary/shared-constants": "*",
+    "@expo/vector-icons": "^15.1.1",
     "@gorhom/bottom-sheet": "^5.2.8",
     "@hookform/resolvers": "^5.2.2",
     "@react-native-async-storage/async-storage": "^2.2.0",
