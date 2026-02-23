@@ -16,10 +16,7 @@
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.mygourmetdiary.app",
-      "usesAppleSignIn": true,
-      "config": {
-        "googleMapsApiKey": "AIzaSyAzxDPSZXpn3WhsnNODzhrigLWexEzGfis"
-      }
+      "usesAppleSignIn": true
     },
     "android": {
       "adaptiveIcon": {

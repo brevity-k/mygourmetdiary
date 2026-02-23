@@ -37,8 +37,8 @@
     "next": "15.3.8",
     "react-native-worklets": "0.5.1",
     "expo": "~54.0.33",
-    "react": "19.1.0",
-    "react-dom": "19.1.0",
+    "react": "19.1.5",
+    "react-dom": "19.1.5",
     "react-native": "0.81.5"
   },
   "version": "1.0.0",
