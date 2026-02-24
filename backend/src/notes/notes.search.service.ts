@@ -74,11 +74,64 @@ export class NotesSearchService implements OnModuleInit {
 
       this.available = true;
       this.logger.log('Meilisearch notes index configured');
+
+      // Bulk-index existing notes that may not be in the index
+      this.reindexAll().catch((e) => {
+        this.logger.error('Bulk reindex failed', e);
+      });
     } catch (e) {
       this.logger.warn(
         `Meilisearch unavailable — search features disabled: ${e instanceof Error ? e.message : e}`,
       );
     }
+  }
+
+  private async reindexAll() {
+    const batchSize = 200;
+    let skip = 0;
+    let indexed = 0;
+
+    // eslint-disable-next-line no-constant-condition
+    while (true) {
+      const notes = await this.prisma.note.findMany({
+        include: { venue: true },
+        orderBy: { createdAt: 'asc' },
+        skip,
+        take: batchSize,
+      });
+
+      if (notes.length === 0) break;
+
+      const docs: NoteSearchDocument[] = notes.map((note) => {
+        const ext = note.extension as any;
+        return {
+          id: note.id,
+          authorId: note.authorId,
+          binderId: note.binderId,
+          type: note.type,
+          title: note.title,
+          freeText: note.freeText,
+          rating: note.rating,
+          visibility: note.visibility,
+          tagIds: note.tagIds,
+          venueName: note.venue?.name || null,
+          extensionText: this.extractExtensionText(note.type, note.extension),
+          createdAt: new Date(note.createdAt).getTime(),
+          pricePaid: ext?.pricePaid ?? null,
+          cuisineTags: ext?.cuisineTags ?? [],
+          wineType: ext?.wineType ?? null,
+          spiritType: ext?.spiritType ?? null,
+        };
+      });
+
+      await this.index.addDocuments(docs);
+      indexed += docs.length;
+      skip += batchSize;
+
+      if (notes.length < batchSize) break;
+    }
+
+    this.logger.log(`Bulk reindex complete: ${indexed} notes indexed`);
   }
 
   async indexNote(note: any): Promise<void> {
@@ -123,25 +176,8 @@ export class NotesSearchService implements OnModuleInit {
       return { hits: [], total: 0, limit, offset };
     }
 
-    if (this.available) {
-      const filter = [`authorId = "${authorId}"`];
-      if (type) filter.push(`type = "${type}"`);
-
-      const results = await this.index.search(query, {
-        filter,
-        limit,
-        offset,
-        sort: ['createdAt:desc'],
-      });
-
-      return {
-        hits: results.hits,
-        total: results.estimatedTotalHits,
-        limit,
-        offset,
-      };
-    }
-
+    // Always use PostgreSQL for personal search — returns full Note objects
+    // with photos, venue, and extension that the frontend requires.
     return this.searchPostgres(authorId, query, type, limit, offset);
   }
 
