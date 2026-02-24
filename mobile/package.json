@@ -9,11 +9,11 @@
     "web": "expo start --web"
   },
   "dependencies": {
-    "@mygourmetdiary/shared-types": "*",
-    "@mygourmetdiary/shared-constants": "*",
     "@expo/vector-icons": "^15.1.1",
     "@gorhom/bottom-sheet": "^5.2.8",
     "@hookform/resolvers": "^5.2.2",
+    "@mygourmetdiary/shared-constants": "*",
+    "@mygourmetdiary/shared-types": "*",
     "@react-native-async-storage/async-storage": "^2.2.0",
     "@react-native-community/datetimepicker": "8.4.4",
     "@react-native-community/netinfo": "11.4.1",
@@ -22,6 +22,7 @@
     "@react-navigation/native-stack": "^7.13.0",
     "@tanstack/react-query": "^5.90.21",
     "axios": "^1.13.5",
+    "babel-preset-expo": "^54.0.10",
     "date-fns": "^4.1.0",
     "expo": "~54.0.33",
     "expo-apple-authentication": "^8.0.8",
