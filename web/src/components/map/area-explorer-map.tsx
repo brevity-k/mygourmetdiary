@@ -4,9 +4,9 @@ import { useState, useCallback, useEffect, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Map, AdvancedMarker, Pin, useMap } from '@vis.gl/react-google-maps';
 import { MarkerClusterer } from '@googlemaps/markerclusterer';
-import type { MapPin as MapPinType } from '@mygourmetdiary/shared-types';
-import { Loader2 } from 'lucide-react';
-import { areaExplorerApi } from '@/lib/api';
+import type { MapPin as MapPinType, Venue } from '@mygourmetdiary/shared-types';
+import { Loader2, Search, X } from 'lucide-react';
+import { areaExplorerApi, venuesApi } from '@/lib/api';
 import { GoogleMapsProvider } from './google-maps-provider';
 import { DIARY_MAP_STYLES, MARKER_COLORS, DEFAULT_CENTER, DEFAULT_ZOOM } from './map-styles';
 import { useMapRegion } from './use-map-region';
@@ -21,8 +21,104 @@ function getMarkerColor(pin: MapPinType): string {
 
 type CategoryFilter = 'RESTAURANT' | 'WINERY_VISIT' | undefined;
 
+function MapSearchBar({ onSelect }: { onSelect: (venue: Venue) => void }) {
+  const [query, setQuery] = useState('');
+  const [results, setResults] = useState<Venue[]>([]);
+  const [showResults, setShowResults] = useState(false);
+  const [searching, setSearching] = useState(false);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!query.trim()) {
+      setResults([]);
+      setShowResults(false);
+      return;
+    }
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(async () => {
+      setSearching(true);
+      try {
+        const venues = await venuesApi.search(query);
+        setResults(venues);
+        setShowResults(true);
+      } catch {
+        setResults([]);
+      } finally {
+        setSearching(false);
+      }
+    }, 300);
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
+  }, [query]);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        setShowResults(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  return (
+    <div ref={containerRef} className="relative w-full max-w-sm">
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <input
+          type="text"
+          placeholder="Search venues..."
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          onFocus={() => results.length > 0 && setShowResults(true)}
+          className="w-full pl-9 pr-8 py-2 text-sm rounded-full border border-border bg-surface shadow-md focus:outline-none focus:ring-2 focus:ring-primary"
+        />
+        {query && (
+          <button
+            type="button"
+            onClick={() => { setQuery(''); setResults([]); setShowResults(false); }}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        )}
+      </div>
+      {searching && (
+        <div className="absolute right-10 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
+          <Loader2 className="h-3.5 w-3.5 animate-spin" />
+        </div>
+      )}
+      {showResults && results.length > 0 && (
+        <div className="absolute z-50 mt-1 w-full rounded-lg border border-border bg-surface shadow-lg max-h-64 overflow-y-auto">
+          {results.map((venue) => (
+            <button
+              key={venue.placeId}
+              type="button"
+              className="w-full px-3 py-2 text-left hover:bg-surface-elevated flex items-start gap-2"
+              onClick={() => {
+                onSelect(venue);
+                setQuery('');
+                setResults([]);
+                setShowResults(false);
+              }}
+            >
+              <div>
+                <p className="text-sm font-medium">{venue.name}</p>
+                {venue.address && <p className="text-xs text-muted-foreground">{venue.address}</p>}
+              </div>
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function AreaExplorerMapInner() {
   const mapId = process.env.NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID;
+  const map = useMap();
   const { queryRegion, radiusKm, handleCameraChange } = useMapRegion();
   const [category, setCategory] = useState<CategoryFilter>(undefined);
   const [friendsOnly, setFriendsOnly] = useState(false);
@@ -55,6 +151,26 @@ function AreaExplorerMapInner() {
     setCategory((prev) => (prev === cat ? undefined : cat));
   };
 
+  const handleSearchSelect = useCallback(
+    (venue: Venue) => {
+      if (venue.lat != null && venue.lng != null && map) {
+        map.panTo({ lat: venue.lat, lng: venue.lng });
+        map.setZoom(16);
+      }
+      setSelectedPin({
+        venue,
+        noteCount: 0,
+        myNoteCount: 0,
+        friendNoteCount: 0,
+        avgRating: null,
+        avgFriendRating: null,
+        topFriendNames: [],
+        category: 'RESTAURANT',
+      });
+    },
+    [map],
+  );
+
   return (
     <div className="relative w-full h-full">
       <Map
@@ -70,23 +186,26 @@ function AreaExplorerMapInner() {
         <ClusteredMarkers pins={pins} onMarkerClick={handleMarkerClick} />
       </Map>
 
-      {/* Filter chips */}
-      <div className="absolute top-4 left-4 right-4 lg:right-auto flex gap-2 z-10">
-        <FilterChip
-          label="Friends Only"
-          active={friendsOnly}
-          onClick={() => setFriendsOnly(!friendsOnly)}
-        />
-        <FilterChip
-          label="Restaurants"
-          active={category === 'RESTAURANT'}
-          onClick={() => toggleCategory('RESTAURANT')}
-        />
-        <FilterChip
-          label="Wineries"
-          active={category === 'WINERY_VISIT'}
-          onClick={() => toggleCategory('WINERY_VISIT')}
-        />
+      {/* Search bar + Filter chips */}
+      <div className="absolute top-4 left-4 right-4 lg:right-auto flex flex-col gap-2 z-10">
+        <MapSearchBar onSelect={handleSearchSelect} />
+        <div className="flex gap-2">
+          <FilterChip
+            label="Friends Only"
+            active={friendsOnly}
+            onClick={() => setFriendsOnly(!friendsOnly)}
+          />
+          <FilterChip
+            label="Restaurants"
+            active={category === 'RESTAURANT'}
+            onClick={() => toggleCategory('RESTAURANT')}
+          />
+          <FilterChip
+            label="Wineries"
+            active={category === 'WINERY_VISIT'}
+            onClick={() => toggleCategory('WINERY_VISIT')}
+          />
+        </div>
       </div>
 
       {/* Loading indicator */}

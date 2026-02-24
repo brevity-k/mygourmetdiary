@@ -11,6 +11,7 @@ interface SwitchProps extends Omit<React.ButtonHTMLAttributes<HTMLButtonElement>
 const Switch = React.forwardRef<HTMLButtonElement, SwitchProps>(
   ({ className, checked, onCheckedChange, ...props }, ref) => (
     <button
+      type="button"
       ref={ref}
       role="switch"
       aria-checked={checked}
