@@ -174,25 +174,7 @@ export class NotesSearchService implements OnModuleInit {
       this.prisma.note.count({ where }),
     ]);
 
-    return {
-      hits: notes.map((n) => ({
-        id: n.id,
-        authorId: n.authorId,
-        binderId: n.binderId,
-        type: n.type,
-        title: n.title,
-        freeText: n.freeText,
-        rating: n.rating,
-        visibility: n.visibility,
-        tagIds: n.tagIds,
-        venueName: n.venue?.name || null,
-        extensionText: this.extractExtensionText(n.type, n.extension),
-        createdAt: n.createdAt.getTime(),
-      })),
-      total,
-      limit,
-      offset,
-    };
+    return { hits: notes, total, limit, offset };
   }
 
   async searchPublic(
@@ -289,7 +271,7 @@ export class NotesSearchService implements OnModuleInit {
     const [notes, total] = await Promise.all([
       this.prisma.note.findMany({
         where,
-        include: { venue: true },
+        include: { venue: true, photos: { orderBy: { sortOrder: 'asc' } } },
         orderBy: { createdAt: 'desc' },
         skip: offset,
         take: limit,
@@ -297,25 +279,7 @@ export class NotesSearchService implements OnModuleInit {
       this.prisma.note.count({ where }),
     ]);
 
-    return {
-      hits: notes.map((n) => ({
-        id: n.id,
-        authorId: n.authorId,
-        binderId: n.binderId,
-        type: n.type,
-        title: n.title,
-        freeText: n.freeText,
-        rating: n.rating,
-        visibility: n.visibility,
-        tagIds: n.tagIds,
-        venueName: n.venue?.name || null,
-        extensionText: this.extractExtensionText(n.type, n.extension),
-        createdAt: n.createdAt.getTime(),
-      })),
-      total,
-      limit,
-      offset,
-    };
+    return { hits: notes, total, limit, offset };
   }
 
   private extractExtensionText(type: string, extension: any): string {
