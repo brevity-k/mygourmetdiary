@@ -156,7 +156,6 @@ export class NotesSearchService implements OnModuleInit {
     if (type) where.type = type;
 
     if (query.trim()) {
-      const pattern = `%${query.trim()}%`;
       where.OR = [
         { title: { contains: query.trim(), mode: 'insensitive' } },
         { freeText: { contains: query.trim(), mode: 'insensitive' } },
