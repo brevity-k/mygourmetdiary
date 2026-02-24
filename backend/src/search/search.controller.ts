@@ -38,6 +38,30 @@ export class SearchController {
     );
   }
 
+  @Get('all')
+  @ApiOperation({ summary: 'Search own notes + all public notes' })
+  @ApiQuery({ name: 'q', required: true })
+  @ApiQuery({ name: 'type', required: false })
+  @ApiQuery({ name: 'limit', required: false })
+  @ApiQuery({ name: 'offset', required: false })
+  async searchAll(
+    @CurrentUser() user: User,
+    @Query('q') q: string,
+    @Query('type') type?: string,
+    @Query('limit') limit?: number,
+    @Query('offset') offset?: number,
+  ) {
+    const safeLimit = Math.min(Math.max(limit || 20, 1), 100);
+    const safeOffset = Math.max(offset || 0, 0);
+    return this.searchService.searchAll(
+      user.id,
+      q?.slice(0, 500) || '',
+      type,
+      safeLimit,
+      safeOffset,
+    );
+  }
+
   @Get('public')
   @ApiOperation({ summary: 'Search public notes with friend-tiered results' })
   @ApiQuery({ name: 'q', required: true })

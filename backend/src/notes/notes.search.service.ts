@@ -159,6 +159,52 @@ export class NotesSearchService implements OnModuleInit {
     await this.index.addDocuments([doc]);
   }
 
+  async searchAll(
+    userId: string,
+    query: string,
+    type?: string,
+    limit = 20,
+    offset = 0,
+  ) {
+    const VALID_TYPES = ['RESTAURANT', 'WINE', 'SPIRIT', 'WINERY_VISIT'];
+    if (type && !VALID_TYPES.includes(type)) {
+      return { hits: [], total: 0, limit, offset };
+    }
+
+    const where: Record<string, unknown> = {
+      OR: [
+        { authorId: userId },
+        { visibility: 'PUBLIC' },
+      ],
+    };
+    if (type) where.type = type;
+
+    if (query.trim()) {
+      where.AND = [
+        {
+          OR: [
+            { title: { contains: query.trim(), mode: 'insensitive' } },
+            { freeText: { contains: query.trim(), mode: 'insensitive' } },
+            { venue: { name: { contains: query.trim(), mode: 'insensitive' } } },
+          ],
+        },
+      ];
+    }
+
+    const [notes, total] = await Promise.all([
+      this.prisma.note.findMany({
+        where,
+        include: { venue: true, photos: { orderBy: { sortOrder: 'asc' } } },
+        orderBy: { createdAt: 'desc' },
+        skip: offset,
+        take: limit,
+      }),
+      this.prisma.note.count({ where }),
+    ]);
+
+    return { hits: notes, total, limit, offset };
+  }
+
   async removeNote(id: string): Promise<void> {
     if (!this.available) return;
     await this.index.deleteDocument(id);

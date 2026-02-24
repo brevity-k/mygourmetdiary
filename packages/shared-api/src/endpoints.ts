@@ -157,5 +157,14 @@ export function createSearchApi(client: AxiosInstance) {
         .get<ApiResponse<SearchResult>>(`/search?${params}`)
         .then((r) => r.data.data);
     },
+    searchAll: (q: string, type?: string, limit?: number, offset?: number) => {
+      const params = new URLSearchParams({ q });
+      if (type) params.set('type', type);
+      if (limit) params.set('limit', String(limit));
+      if (offset) params.set('offset', String(offset));
+      return client
+        .get<ApiResponse<SearchResult>>(`/search/all?${params}`)
+        .then((r) => r.data.data);
+    },
   };
 }

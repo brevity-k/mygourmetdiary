@@ -14,16 +14,17 @@ import { useDebounce } from '@/hooks/use-debounce';
 export default function SearchPage() {
   const [query, setQuery] = useState('');
   const [typeFilter, setTypeFilter] = useState('all');
+  const [scope, setScope] = useState<'mine' | 'all'>('all');
   const debouncedQuery = useDebounce(query, 300);
 
   const { data, isLoading, isFetching, isError } = useQuery({
-    queryKey: ['search', debouncedQuery, typeFilter],
-    queryFn: () =>
-      searchApi.search(
-        debouncedQuery,
-        typeFilter === 'all' ? undefined : typeFilter,
-        20,
-      ),
+    queryKey: ['search', debouncedQuery, typeFilter, scope],
+    queryFn: () => {
+      const type = typeFilter === 'all' ? undefined : typeFilter;
+      return scope === 'mine'
+        ? searchApi.search(debouncedQuery, type, 20)
+        : searchApi.searchAll(debouncedQuery, type, 20);
+    },
     enabled: debouncedQuery.length >= 2,
   });
 
@@ -43,14 +44,23 @@ export default function SearchPage() {
         />
       </div>
 
-      <Tabs value={typeFilter} onValueChange={setTypeFilter}>
-        <TabsList>
-          <TabsTrigger value="all">All</TabsTrigger>
-          <TabsTrigger value={NoteType.RESTAURANT}>Restaurant</TabsTrigger>
-          <TabsTrigger value={NoteType.WINE}>Wine</TabsTrigger>
-          <TabsTrigger value={NoteType.SPIRIT}>Spirit</TabsTrigger>
-        </TabsList>
-      </Tabs>
+      <div className="flex flex-wrap items-center gap-4">
+        <Tabs value={scope} onValueChange={(v) => setScope(v as 'mine' | 'all')}>
+          <TabsList>
+            <TabsTrigger value="all">All Notes</TabsTrigger>
+            <TabsTrigger value="mine">My Notes</TabsTrigger>
+          </TabsList>
+        </Tabs>
+
+        <Tabs value={typeFilter} onValueChange={setTypeFilter}>
+          <TabsList>
+            <TabsTrigger value="all">All</TabsTrigger>
+            <TabsTrigger value={NoteType.RESTAURANT}>Restaurant</TabsTrigger>
+            <TabsTrigger value={NoteType.WINE}>Wine</TabsTrigger>
+            <TabsTrigger value={NoteType.SPIRIT}>Spirit</TabsTrigger>
+          </TabsList>
+        </Tabs>
+      </div>
 
       {debouncedQuery.length < 2 ? (
         <div className="text-center py-16">
