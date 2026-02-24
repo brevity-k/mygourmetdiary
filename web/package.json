@@ -10,31 +10,31 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@mygourmetdiary/shared-types": "*",
-    "@mygourmetdiary/shared-constants": "*",
+    "@googlemaps/markerclusterer": "^2.5.3",
     "@mygourmetdiary/shared-api": "*",
+    "@mygourmetdiary/shared-constants": "*",
+    "@mygourmetdiary/shared-types": "*",
     "@tanstack/react-query": "^5.90.21",
+    "@vis.gl/react-google-maps": "^1.5.2",
     "axios": "^1.7.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
     "firebase": "^12.9.0",
-    "@googlemaps/markerclusterer": "^2.5.3",
-    "@vis.gl/react-google-maps": "^1.5.2",
     "lucide-react": "^0.468.0",
-    "next": "15.3.8",
+    "next": "^15.5.12",
     "react": "19.1.5",
     "react-dom": "19.1.5",
     "tailwind-merge": "^3.0.0",
     "tailwindcss-animate": "^1.0.7"
   },
   "devDependencies": {
+    "@tailwindcss/postcss": "^4.0.0",
     "@types/node": "^22.0.0",
     "@types/react": "^19.1.0",
     "@types/react-dom": "^19.1.0",
     "postcss": "^8.5.0",
     "tailwindcss": "^4.0.0",
-    "@tailwindcss/postcss": "^4.0.0",
     "typescript": "^5.9.0"
   }
 }
