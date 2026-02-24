@@ -1,6 +1,7 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { MeiliSearch, Index } from 'meilisearch';
+import { PrismaService } from '../prisma/prisma.service';
 
 interface NoteSearchDocument {
   id: string;
@@ -27,7 +28,10 @@ export class NotesSearchService implements OnModuleInit {
   private client: MeiliSearch;
   private index!: Index;
 
-  constructor(private readonly configService: ConfigService) {
+  constructor(
+    private readonly configService: ConfigService,
+    private readonly prisma: PrismaService,
+  ) {
     this.client = new MeiliSearch({
       host: this.configService.get<string>('MEILISEARCH_HOST') || 'http://localhost:7700',
       apiKey: this.configService.get<string>('MEILISEARCH_API_KEY'),
@@ -114,26 +118,79 @@ export class NotesSearchService implements OnModuleInit {
     limit = 20,
     offset = 0,
   ) {
-    if (!this.available) return { hits: [], total: 0, limit, offset };
-
     const VALID_TYPES = ['RESTAURANT', 'WINE', 'SPIRIT', 'WINERY_VISIT'];
     if (type && !VALID_TYPES.includes(type)) {
       return { hits: [], total: 0, limit, offset };
     }
 
-    const filter = [`authorId = "${authorId}"`];
-    if (type) filter.push(`type = "${type}"`);
+    if (this.available) {
+      const filter = [`authorId = "${authorId}"`];
+      if (type) filter.push(`type = "${type}"`);
 
-    const results = await this.index.search(query, {
-      filter,
-      limit,
-      offset,
-      sort: ['createdAt:desc'],
-    });
+      const results = await this.index.search(query, {
+        filter,
+        limit,
+        offset,
+        sort: ['createdAt:desc'],
+      });
+
+      return {
+        hits: results.hits,
+        total: results.estimatedTotalHits,
+        limit,
+        offset,
+      };
+    }
+
+    return this.searchPostgres(authorId, query, type, limit, offset);
+  }
+
+  private async searchPostgres(
+    authorId: string,
+    query: string,
+    type?: string,
+    limit = 20,
+    offset = 0,
+  ) {
+    const where: Record<string, unknown> = { authorId };
+    if (type) where.type = type;
+
+    if (query.trim()) {
+      const pattern = `%${query.trim()}%`;
+      where.OR = [
+        { title: { contains: query.trim(), mode: 'insensitive' } },
+        { freeText: { contains: query.trim(), mode: 'insensitive' } },
+        { venue: { name: { contains: query.trim(), mode: 'insensitive' } } },
+      ];
+    }
+
+    const [notes, total] = await Promise.all([
+      this.prisma.note.findMany({
+        where,
+        include: { venue: true, photos: { orderBy: { sortOrder: 'asc' } } },
+        orderBy: { createdAt: 'desc' },
+        skip: offset,
+        take: limit,
+      }),
+      this.prisma.note.count({ where }),
+    ]);
 
     return {
-      hits: results.hits,
-      total: results.estimatedTotalHits,
+      hits: notes.map((n) => ({
+        id: n.id,
+        authorId: n.authorId,
+        binderId: n.binderId,
+        type: n.type,
+        title: n.title,
+        freeText: n.freeText,
+        rating: n.rating,
+        visibility: n.visibility,
+        tagIds: n.tagIds,
+        venueName: n.venue?.name || null,
+        extensionText: this.extractExtensionText(n.type, n.extension),
+        createdAt: n.createdAt.getTime(),
+      })),
+      total,
       limit,
       offset,
     };
@@ -155,58 +212,108 @@ export class NotesSearchService implements OnModuleInit {
       dateTo?: string;
     },
   ) {
-    if (!this.available) return { hits: [], total: 0, limit, offset };
-
     const VALID_TYPES = ['RESTAURANT', 'WINE', 'SPIRIT', 'WINERY_VISIT'];
     if (type && !VALID_TYPES.includes(type)) {
       return { hits: [], total: 0, limit, offset };
     }
 
-    const filter: string[] = ['visibility = "PUBLIC"'];
-    if (type) filter.push(`type = "${type}"`);
+    if (this.available) {
+      const filter: string[] = ['visibility = "PUBLIC"'];
+      if (type) filter.push(`type = "${type}"`);
+      if (authorIds && authorIds.length > 0) {
+        const authorFilter = authorIds.map((id) => `authorId = "${id}"`).join(' OR ');
+        filter.push(`(${authorFilter})`);
+      }
+
+      // Advanced filters
+      if (filters) {
+        if (filters.minRating !== undefined) {
+          filter.push(`rating >= ${filters.minRating}`);
+        }
+        if (filters.maxPrice !== undefined) {
+          filter.push(`pricePaid <= ${filters.maxPrice}`);
+        }
+        if (filters.cuisineTags && filters.cuisineTags.length > 0) {
+          const tagFilter = filters.cuisineTags
+            .map((t) => `cuisineTags = "${t}"`)
+            .join(' OR ');
+          filter.push(`(${tagFilter})`);
+        }
+        if (filters.wineType) {
+          filter.push(`wineType = "${filters.wineType}"`);
+        }
+        if (filters.spiritType) {
+          filter.push(`spiritType = "${filters.spiritType}"`);
+        }
+        if (filters.dateFrom) {
+          filter.push(`createdAt >= ${new Date(filters.dateFrom).getTime()}`);
+        }
+        if (filters.dateTo) {
+          filter.push(`createdAt <= ${new Date(filters.dateTo).getTime()}`);
+        }
+      }
+
+      const results = await this.index.search(query, {
+        filter,
+        limit,
+        offset,
+        sort: ['createdAt:desc'],
+      });
+
+      return {
+        hits: results.hits,
+        total: results.estimatedTotalHits,
+        limit,
+        offset,
+      };
+    }
+
+    // PostgreSQL fallback
+    const where: Record<string, unknown> = { visibility: 'PUBLIC' };
+    if (type) where.type = type;
     if (authorIds && authorIds.length > 0) {
-      const authorFilter = authorIds.map((id) => `authorId = "${id}"`).join(' OR ');
-      filter.push(`(${authorFilter})`);
+      where.authorId = { in: authorIds };
     }
-
-    // Advanced filters
+    if (query.trim()) {
+      where.OR = [
+        { title: { contains: query.trim(), mode: 'insensitive' } },
+        { freeText: { contains: query.trim(), mode: 'insensitive' } },
+        { venue: { name: { contains: query.trim(), mode: 'insensitive' } } },
+      ];
+    }
     if (filters) {
-      if (filters.minRating !== undefined) {
-        filter.push(`rating >= ${filters.minRating}`);
-      }
-      if (filters.maxPrice !== undefined) {
-        filter.push(`pricePaid <= ${filters.maxPrice}`);
-      }
-      if (filters.cuisineTags && filters.cuisineTags.length > 0) {
-        const tagFilter = filters.cuisineTags
-          .map((t) => `cuisineTags = "${t}"`)
-          .join(' OR ');
-        filter.push(`(${tagFilter})`);
-      }
-      if (filters.wineType) {
-        filter.push(`wineType = "${filters.wineType}"`);
-      }
-      if (filters.spiritType) {
-        filter.push(`spiritType = "${filters.spiritType}"`);
-      }
-      if (filters.dateFrom) {
-        filter.push(`createdAt >= ${new Date(filters.dateFrom).getTime()}`);
-      }
-      if (filters.dateTo) {
-        filter.push(`createdAt <= ${new Date(filters.dateTo).getTime()}`);
-      }
+      if (filters.minRating !== undefined) where.rating = { gte: filters.minRating };
+      if (filters.dateFrom) where.createdAt = { ...(where.createdAt as any || {}), gte: new Date(filters.dateFrom) };
+      if (filters.dateTo) where.createdAt = { ...(where.createdAt as any || {}), lte: new Date(filters.dateTo) };
     }
 
-    const results = await this.index.search(query, {
-      filter,
-      limit,
-      offset,
-      sort: ['createdAt:desc'],
-    });
+    const [notes, total] = await Promise.all([
+      this.prisma.note.findMany({
+        where,
+        include: { venue: true },
+        orderBy: { createdAt: 'desc' },
+        skip: offset,
+        take: limit,
+      }),
+      this.prisma.note.count({ where }),
+    ]);
 
     return {
-      hits: results.hits,
-      total: results.estimatedTotalHits,
+      hits: notes.map((n) => ({
+        id: n.id,
+        authorId: n.authorId,
+        binderId: n.binderId,
+        type: n.type,
+        title: n.title,
+        freeText: n.freeText,
+        rating: n.rating,
+        visibility: n.visibility,
+        tagIds: n.tagIds,
+        venueName: n.venue?.name || null,
+        extensionText: this.extractExtensionText(n.type, n.extension),
+        createdAt: n.createdAt.getTime(),
+      })),
+      total,
       limit,
       offset,
     };
