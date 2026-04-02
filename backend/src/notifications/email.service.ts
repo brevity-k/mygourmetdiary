@@ -41,20 +41,10 @@ export class EmailService {
   }
 
   async sendDigest(userId: string, items: DigestItem[]): Promise<boolean> {
-    if (!this.transporter) {
-      this.logger.warn('Email transport not configured, skipping digest');
-      return false;
-    }
+    if (!this.transporter) return false;
 
-    const user = await this.prisma.user.findUnique({
-      where: { id: userId },
-      select: { email: true, displayName: true },
-    });
-
-    if (!user?.email) {
-      this.logger.warn(`No email for user ${userId}`);
-      return false;
-    }
+    const user = await this.getUserEmail(userId);
+    if (!user) return false;
 
     const itemsHtml = items
       .map(
@@ -98,12 +88,8 @@ export class EmailService {
   async sendWelcome(userId: string): Promise<boolean> {
     if (!this.transporter) return false;
 
-    const user = await this.prisma.user.findUnique({
-      where: { id: userId },
-      select: { email: true, displayName: true },
-    });
-
-    if (!user?.email) return false;
+    const user = await this.getUserEmail(userId);
+    if (!user) return false;
 
     const html = `
       <div style="font-family:-apple-system,BlinkMacSystemFont,sans-serif;max-width:560px;margin:0 auto">
@@ -128,6 +114,20 @@ export class EmailService {
       this.logger.error(`Failed to send welcome to ${user.email}: ${err}`);
       return false;
     }
+  }
+
+  private async getUserEmail(
+    userId: string,
+  ): Promise<{ email: string; displayName: string | null } | null> {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { email: true, displayName: true },
+    });
+    if (!user?.email) {
+      this.logger.warn(`No email for user ${userId}`);
+      return null;
+    }
+    return user as { email: string; displayName: string | null };
   }
 
   private escapeHtml(text: string): string {

@@ -18,15 +18,7 @@ export interface MenuItemCandidate {
   description?: string;
 }
 
-/**
- * OCR service for menu and label scanning.
- *
- * Uses Google Cloud Vision API for text extraction from photos.
- * Inspired by mise's ocr2txt tool pattern: image → text → structured parse.
- *
- * Environment:
- *   GOOGLE_CLOUD_VISION_KEY — API key for Cloud Vision (or use service account)
- */
+/** Uses Google Cloud Vision API for text extraction from photos. */
 @Injectable()
 export class OcrService {
   private readonly logger = new Logger(OcrService.name);
@@ -43,20 +35,24 @@ export class OcrService {
     return !!this.apiKey;
   }
 
-  /**
-   * Extract text from an image URL (e.g., R2 presigned URL).
-   */
   async extractText(imageUrl: string): Promise<OcrResult> {
+    return this.callVisionApi({ source: { imageUri: imageUrl } });
+  }
+
+  async extractTextFromBase64(base64Content: string): Promise<OcrResult> {
+    return this.callVisionApi({ content: base64Content });
+  }
+
+  private async callVisionApi(
+    image: Record<string, unknown>,
+  ): Promise<OcrResult> {
     if (!this.apiKey) {
       throw new Error('OCR not configured: GOOGLE_CLOUD_VISION_KEY missing');
     }
 
     const body = {
       requests: [
-        {
-          image: { source: { imageUri: imageUrl } },
-          features: [{ type: 'TEXT_DETECTION', maxResults: 1 }],
-        },
+        { image, features: [{ type: 'TEXT_DETECTION', maxResults: 1 }] },
       ],
     };
 
@@ -88,53 +84,6 @@ export class OcrService {
       pages.length > 0 ? pages[0].confidence ?? 0.9 : 0.9;
 
     return { text, confidence, lines };
-  }
-
-  /**
-   * Extract text from a base64-encoded image (for direct mobile uploads).
-   */
-  async extractTextFromBase64(
-    base64Content: string,
-    mimeType = 'image/jpeg',
-  ): Promise<OcrResult> {
-    if (!this.apiKey) {
-      throw new Error('OCR not configured: GOOGLE_CLOUD_VISION_KEY missing');
-    }
-
-    const body = {
-      requests: [
-        {
-          image: { content: base64Content },
-          features: [{ type: 'TEXT_DETECTION', maxResults: 1 }],
-        },
-      ],
-    };
-
-    const res = await fetch(
-      `https://vision.googleapis.com/v1/images:annotate?key=${this.apiKey}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-      },
-    );
-
-    if (!res.ok) {
-      const errText = await res.text();
-      throw new Error(`Vision API error ${res.status}: ${errText}`);
-    }
-
-    const data = await res.json();
-    const annotation = data.responses?.[0]?.fullTextAnnotation;
-
-    if (!annotation) {
-      return { text: '', confidence: 0, lines: [] };
-    }
-
-    const text = annotation.text || '';
-    const lines = text.split('\n').filter((l: string) => l.trim());
-
-    return { text, confidence: 0.9, lines };
   }
 
   /**
