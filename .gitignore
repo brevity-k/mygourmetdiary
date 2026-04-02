@@ -27,7 +27,9 @@ Thumbs.db
 # Expo
 .expo/
 mobile/.expo/
+ios/
 mobile/ios/
+android/
 mobile/android/
 *.jks
 *.p8
