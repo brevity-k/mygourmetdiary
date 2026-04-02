@@ -19,7 +19,6 @@
     "teeny-request": "10.1.2",
     "retry-request": "8.0.2",
     "http-proxy-agent": "7.0.2",
-    "minimatch": "10.2.5",
     "tmp": "0.2.4",
     "react-native-gesture-handler": "~2.28.0",
     "react-native-reanimated": "~4.1.1",
