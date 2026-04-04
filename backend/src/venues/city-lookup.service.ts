@@ -59,7 +59,13 @@ export class CityLookupService {
       return [];
     }
 
-    const data = await res.json();
+    let data: any;
+    try {
+      data = await res.json();
+    } catch {
+      this.logger.error('GeoNames returned malformed JSON');
+      return [];
+    }
     const geonames = data.geonames || [];
 
     const results: CityInfo[] = geonames.map(
@@ -101,7 +107,12 @@ export class CityLookupService {
 
     if (!res.ok) return null;
 
-    const data = await res.json();
+    let data: any;
+    try {
+      data = await res.json();
+    } catch {
+      return null;
+    }
     const geonames = data.geonames || [];
 
     if (geonames.length > 0) {

@@ -24,6 +24,7 @@ export class GooglePlacesClient {
   private readonly logger = new Logger(GooglePlacesClient.name);
   private readonly apiKey: string;
   private readonly baseUrl = 'https://places.googleapis.com/v1';
+  private readonly searchRadiusMeters = 10_000;
 
   constructor(private readonly configService: ConfigService) {
     this.apiKey = this.configService.get<string>('GOOGLE_PLACES_API_KEY') || '';
@@ -39,7 +40,7 @@ export class GooglePlacesClient {
       body.locationBias = {
         circle: {
           center: { latitude: lat, longitude: lng },
-          radius: 10000,
+          radius: this.searchRadiusMeters,
         },
       };
     }
@@ -72,7 +73,13 @@ export class GooglePlacesClient {
       return [];
     }
 
-    const data = (await response.json()) as TextSearchResponse;
+    let data: TextSearchResponse;
+    try {
+      data = (await response.json()) as TextSearchResponse;
+    } catch {
+      this.logger.error('Google Places returned malformed JSON');
+      return [];
+    }
     return data.places || [];
   }
 
@@ -102,7 +109,12 @@ export class GooglePlacesClient {
       return null;
     }
 
-    return response.json() as Promise<PlaceSearchResult>;
+    try {
+      return (await response.json()) as PlaceSearchResult;
+    } catch {
+      this.logger.error('Google Places detail returned malformed JSON');
+      return null;
+    }
   }
 
   mapToVenueData(place: PlaceSearchResult) {
