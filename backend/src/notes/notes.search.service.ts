@@ -105,7 +105,7 @@ export class NotesSearchService implements OnModuleInit {
       if (notes.length === 0) break;
 
       const docs: NoteSearchDocument[] = notes.map((note) => {
-        const ext = note.extension as any;
+        const ext = note.extension as Record<string, any>;
         return {
           id: note.id,
           authorId: note.authorId,
@@ -138,7 +138,7 @@ export class NotesSearchService implements OnModuleInit {
 
   async indexNote(note: any): Promise<void> {
     if (!this.available) return;
-    const ext = note.extension as any;
+    const ext = note.extension as Record<string, any>;
     const doc: NoteSearchDocument = {
       id: note.id,
       authorId: note.authorId,

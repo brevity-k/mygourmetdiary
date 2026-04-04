@@ -73,7 +73,7 @@ export class SignalsService {
       .notifySignalOnNote(
         sender?.displayName ?? 'Someone',
         dto.signalType,
-        note.type === 'RESTAURANT' ? ((await this.prisma.note.findUnique({ where: { id: noteId } }))?.extension as any)?.dishName ?? 'a dish' : 'your note',
+        note.type === 'RESTAURANT' ? ((await this.prisma.note.findUnique({ where: { id: noteId } }))?.extension as Record<string, any>)?.dishName ?? 'a dish' : 'your note',
         note.authorId,
         noteId,
       )

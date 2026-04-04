@@ -5,7 +5,7 @@ import {
   BadRequestException,
   Logger,
 } from '@nestjs/common';
-import { NoteType } from '@prisma/client';
+import { NoteType, Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { PioneersService } from '../pioneers/pioneers.service';
@@ -104,7 +104,7 @@ export class NotesService {
         freeText: dto.freeText,
         visibility: dto.visibility,
         tagIds: dto.tagIds || [],
-        extension: dto.extension as any,
+        extension: dto.extension as unknown as Prisma.InputJsonValue,
         venueId: resolvedVenueId,
         experiencedAt: new Date(dto.experiencedAt),
       },
@@ -179,7 +179,7 @@ export class NotesService {
       where: { id },
       data: {
         ...dto,
-        extension: dto.extension as any,
+        extension: dto.extension as unknown as Prisma.InputJsonValue,
         experiencedAt: dto.experiencedAt
           ? new Date(dto.experiencedAt)
           : undefined,

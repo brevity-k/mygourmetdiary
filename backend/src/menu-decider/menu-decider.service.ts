@@ -80,7 +80,7 @@ export class MenuDeciderService {
     >();
 
     for (const note of notes) {
-      const ext = note.extension as any;
+      const ext = note.extension as Record<string, any>;
       const dishName = ext?.dishName;
       if (!dishName) continue;
 

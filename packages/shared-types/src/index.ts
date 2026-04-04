@@ -298,6 +298,12 @@ export interface WineryVisitExtension {
   tastingFlightNoteIds?: string[];
 }
 
+export type NoteExtension =
+  | RestaurantExtension
+  | WineExtension
+  | SpiritExtension
+  | WineryVisitExtension;
+
 // ─── API Response ───────────────────────────────────────
 
 export interface ApiResponse<T> {
