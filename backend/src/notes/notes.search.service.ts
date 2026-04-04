@@ -22,6 +22,8 @@ interface NoteSearchDocument {
   spiritType: string | null;
 }
 
+const VALID_NOTE_TYPES = ['RESTAURANT', 'WINE', 'SPIRIT', 'WINERY_VISIT'];
+
 @Injectable()
 export class NotesSearchService implements OnModuleInit {
   private readonly logger = new Logger(NotesSearchService.name);
@@ -166,8 +168,7 @@ export class NotesSearchService implements OnModuleInit {
     limit = 20,
     offset = 0,
   ) {
-    const VALID_TYPES = ['RESTAURANT', 'WINE', 'SPIRIT', 'WINERY_VISIT'];
-    if (type && !VALID_TYPES.includes(type)) {
+    if (type && !VALID_NOTE_TYPES.includes(type)) {
       return { hits: [], total: 0, limit, offset };
     }
 
@@ -217,8 +218,7 @@ export class NotesSearchService implements OnModuleInit {
     limit = 20,
     offset = 0,
   ) {
-    const VALID_TYPES = ['RESTAURANT', 'WINE', 'SPIRIT', 'WINERY_VISIT'];
-    if (type && !VALID_TYPES.includes(type)) {
+    if (type && !VALID_NOTE_TYPES.includes(type)) {
       return { hits: [], total: 0, limit, offset };
     }
 
@@ -275,8 +275,7 @@ export class NotesSearchService implements OnModuleInit {
       dateTo?: string;
     },
   ) {
-    const VALID_TYPES = ['RESTAURANT', 'WINE', 'SPIRIT', 'WINERY_VISIT'];
-    if (type && !VALID_TYPES.includes(type)) {
+    if (type && !VALID_NOTE_TYPES.includes(type)) {
       return { hits: [], total: 0, limit, offset };
     }
 
@@ -346,8 +345,10 @@ export class NotesSearchService implements OnModuleInit {
     }
     if (filters) {
       if (filters.minRating !== undefined) where.rating = { gte: filters.minRating };
-      if (filters.dateFrom) where.createdAt = { ...(where.createdAt as any || {}), gte: new Date(filters.dateFrom) };
-      if (filters.dateTo) where.createdAt = { ...(where.createdAt as any || {}), lte: new Date(filters.dateTo) };
+      const createdAtFilter: { gte?: Date; lte?: Date } = {};
+      if (filters.dateFrom) createdAtFilter.gte = new Date(filters.dateFrom);
+      if (filters.dateTo) createdAtFilter.lte = new Date(filters.dateTo);
+      if (Object.keys(createdAtFilter).length > 0) where.createdAt = createdAtFilter;
     }
 
     const [notes, total] = await Promise.all([

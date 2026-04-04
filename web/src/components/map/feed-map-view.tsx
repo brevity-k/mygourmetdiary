@@ -6,16 +6,9 @@ import { Map, AdvancedMarker, Pin, InfoWindow } from '@vis.gl/react-google-maps'
 import type { Note, NoteType } from '@mygourmetdiary/shared-types';
 import { notesApi } from '@/lib/api';
 import { GoogleMapsProvider } from './google-maps-provider';
-import { DIARY_MAP_STYLES, MARKER_COLORS, DEFAULT_CENTER, DEFAULT_ZOOM } from './map-styles';
+import { DIARY_MAP_STYLES, MARKER_COLORS, DEFAULT_CENTER, DEFAULT_ZOOM, NOTE_TYPE_PIN_COLOR } from './map-styles';
 import { VenueInfoPopover } from './venue-info-popover';
 import { Skeleton } from '@/components/ui/skeleton';
-
-const NOTE_TYPE_PIN_COLOR: Record<string, string> = {
-  RESTAURANT: MARKER_COLORS.restaurant,
-  WINE: MARKER_COLORS.wine,
-  SPIRIT: MARKER_COLORS.spirit,
-  WINERY_VISIT: MARKER_COLORS.winery,
-};
 
 interface FeedMapViewProps {
   typeFilter?: NoteType;

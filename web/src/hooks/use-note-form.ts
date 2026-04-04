@@ -8,6 +8,8 @@ import { notesApi, photosApi, venuesApi } from '@/lib/api';
 import { useToast } from '@/components/ui/toast';
 import type { PhotoFile } from '@/components/photo-uploader';
 
+const AUTOSAVE_INTERVAL_MS = 30_000;
+
 interface NoteFormData {
   type: NoteType;
   title: string;
@@ -92,7 +94,7 @@ export function useNoteForm(type: NoteType, onSuccess: () => void) {
     if (autoSaveRef.current) clearTimeout(autoSaveRef.current);
     autoSaveRef.current = setTimeout(() => {
       localStorage.setItem(draftKey, JSON.stringify({ formData }));
-    }, 30000);
+    }, AUTOSAVE_INTERVAL_MS);
     return () => {
       if (autoSaveRef.current) clearTimeout(autoSaveRef.current);
     };

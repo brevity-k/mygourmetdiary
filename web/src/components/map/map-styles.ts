@@ -63,3 +63,10 @@ export const MARKER_COLORS = {
 
 export const DEFAULT_CENTER = { lat: 34.0522, lng: -118.2437 }; // Los Angeles
 export const DEFAULT_ZOOM = 13;
+
+export const NOTE_TYPE_PIN_COLOR: Record<string, string> = {
+  RESTAURANT: MARKER_COLORS.restaurant,
+  WINE: MARKER_COLORS.wine,
+  SPIRIT: MARKER_COLORS.spirit,
+  WINERY_VISIT: MARKER_COLORS.winery,
+};

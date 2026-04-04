@@ -4,17 +4,10 @@ import { useState, useCallback } from 'react';
 import { Map, AdvancedMarker, Pin, InfoWindow } from '@vis.gl/react-google-maps';
 import type { Note } from '@mygourmetdiary/shared-types';
 import { GoogleMapsProvider } from './google-maps-provider';
-import { DIARY_MAP_STYLES, MARKER_COLORS, DEFAULT_CENTER, DEFAULT_ZOOM } from './map-styles';
+import { DIARY_MAP_STYLES, MARKER_COLORS, DEFAULT_CENTER, DEFAULT_ZOOM, NOTE_TYPE_PIN_COLOR } from './map-styles';
 import { VenueInfoPopover } from './venue-info-popover';
 import { NoteCard } from '@/components/note-card';
 import { cn } from '@/lib/utils';
-
-const NOTE_TYPE_PIN_COLOR: Record<string, string> = {
-  RESTAURANT: MARKER_COLORS.restaurant,
-  WINE: MARKER_COLORS.wine,
-  SPIRIT: MARKER_COLORS.spirit,
-  WINERY_VISIT: MARKER_COLORS.winery,
-};
 
 interface SearchMapViewProps {
   notes: Note[];
