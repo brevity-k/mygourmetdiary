@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { createHash } from 'crypto';
 import { PrismaService } from '../prisma/prisma.service';
 import { RedisService } from '../redis/redis.service';
@@ -10,8 +10,6 @@ const STALE_THRESHOLD_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
 
 @Injectable()
 export class VenuesService {
-  private readonly logger = new Logger(VenuesService.name);
-
   constructor(
     private readonly prisma: PrismaService,
     private readonly redis: RedisService,

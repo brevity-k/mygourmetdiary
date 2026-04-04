@@ -10,10 +10,9 @@ interface VenueInfoPopoverProps {
   venue: Venue;
   noteCount?: number;
   avgRating?: number | null;
-  onClose?: () => void;
 }
 
-export function VenueInfoPopover({ venue, noteCount, avgRating, onClose }: VenueInfoPopoverProps) {
+export function VenueInfoPopover({ venue, noteCount, avgRating }: VenueInfoPopoverProps) {
   return (
     <div className="min-w-[220px] max-w-[300px] p-3 space-y-2">
       <h3 className="font-heading font-semibold text-sm leading-tight">{venue.name}</h3>

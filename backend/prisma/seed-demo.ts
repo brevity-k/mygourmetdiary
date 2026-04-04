@@ -101,7 +101,6 @@ async function main() {
       { user: alice, rating: d.aliceRating },
       { user: bob, rating: d.bobRating },
     ]) {
-      const noteId = `demo-note-${user.id.slice(0, 8)}-r${i}`;
       const existing = await prisma.note.findFirst({
         where: { authorId: user.id, title: d.dish },
       });

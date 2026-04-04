@@ -4,7 +4,7 @@ import Redis from 'ioredis';
 
 @Injectable()
 export class RedisService extends Redis implements OnModuleDestroy {
-  constructor(private readonly configService: ConfigService) {
+  constructor(configService: ConfigService) {
     super(configService.get<string>('REDIS_URL') || 'redis://localhost:6379', {
       maxRetriesPerRequest: 3,
       lazyConnect: true,

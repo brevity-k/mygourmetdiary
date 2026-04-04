@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { NoteType, TasteCategory } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 
@@ -23,8 +23,6 @@ const MAX_RATING_DIFF = 9;
 
 @Injectable()
 export class TssComputationService {
-  private readonly logger = new Logger(TssComputationService.name);
-
   constructor(private readonly prisma: PrismaService) {}
 
   noteTypeToCategory(type: NoteType): TasteCategory | null {
