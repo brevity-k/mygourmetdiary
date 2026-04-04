@@ -77,7 +77,7 @@ export class SignalsService {
         note.authorId,
         noteId,
       )
-      .catch(() => {});
+      .catch((e) => this.logger.warn('Failed to send signal notification', e));
 
     // Trigger incremental TSS recomputation for ECHOED/DIVERGED signals
     if (dto.signalType === SignalType.ECHOED || dto.signalType === SignalType.DIVERGED) {

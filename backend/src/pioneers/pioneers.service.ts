@@ -113,6 +113,6 @@ export class PioneersService {
     // Notify user
     this.notificationsService
       .notifyPioneerBadge(userId, note.venue?.name ?? 'a venue', note.venueId)
-      .catch(() => {});
+      .catch((e) => this.logger.warn('Failed to send pioneer badge notification', e));
   }
 }

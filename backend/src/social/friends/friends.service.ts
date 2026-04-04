@@ -2,6 +2,7 @@ import {
   Injectable,
   BadRequestException,
   ForbiddenException,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { TasteCategory } from '@prisma/client';
@@ -16,6 +17,8 @@ const FREE_PIN_LIMIT = 3;
 
 @Injectable()
 export class FriendsService {
+  private readonly logger = new Logger(FriendsService.name);
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly tssCache: TssCacheService,
@@ -89,7 +92,7 @@ export class FriendsService {
         dto.pinnedId,
         pinnerId,
       )
-      .catch(() => {});
+      .catch((e) => this.logger.warn('Failed to send gourmet friend notification', e));
 
     return pin;
   }
