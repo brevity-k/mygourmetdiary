@@ -23,8 +23,8 @@ export default function LoginPage() {
     try {
       await signInWithGoogle();
       router.push('/feed');
-    } catch (err: any) {
-      setError(err.message || 'Failed to sign in with Google');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : String(err));
     } finally {
       setLoading(false);
     }
@@ -38,12 +38,13 @@ export default function LoginPage() {
     try {
       await signInWithEmail(email, password);
       router.push('/feed');
-    } catch (err: any) {
-      const code = err.code;
+    } catch (err: unknown) {
+      const firebaseErr = err as { code?: string; message?: string };
+      const code = firebaseErr.code;
       if (code === 'auth/user-not-found' || code === 'auth/wrong-password' || code === 'auth/invalid-credential') {
         setError('Invalid email or password.');
       } else {
-        setError(err.message || 'Failed to sign in');
+        setError(err instanceof Error ? err.message : String(err));
       }
     } finally {
       setLoading(false);
@@ -55,8 +56,8 @@ export default function LoginPage() {
     try {
       await devLogin();
       router.push('/feed');
-    } catch (err: any) {
-      setError(err.message || 'Dev sign in failed');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : String(err));
     } finally {
       setLoading(false);
     }

@@ -8,3 +8,6 @@ export { ToastProvider, useToast } from './Toast';
 export { Skeleton } from './Skeleton';
 export { NoteCardSkeleton } from './NoteCardSkeleton';
 export { BinderCardSkeleton } from './BinderCardSkeleton';
+export { SegmentControl } from './SegmentControl';
+export { PremiumGate } from './PremiumGate';
+export { NotificationListener } from './NotificationListener';

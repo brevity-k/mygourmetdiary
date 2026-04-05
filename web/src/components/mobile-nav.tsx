@@ -2,16 +2,12 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, BookOpen, PlusCircle, Search, Map } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { NAV_ITEMS } from '@/lib/nav-items';
 
-const navItems = [
-  { href: '/feed', label: 'Feed', icon: Home },
-  { href: '/binders', label: 'Binders', icon: BookOpen },
-  { href: '/notes/new', label: '', icon: PlusCircle, isFab: true },
-  { href: '/search', label: 'Search', icon: Search },
-  { href: '/explore', label: 'Explore', icon: Map },
-];
+const mobileNavItems = NAV_ITEMS.map((item) =>
+  item.href === '/notes/new' ? { ...item, label: '', isFab: true as const } : item,
+);
 
 export function MobileNav() {
   const pathname = usePathname();
@@ -19,11 +15,11 @@ export function MobileNav() {
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-40 border-t border-border-light bg-surface lg:hidden">
       <div className="flex items-center justify-around h-16 px-2">
-        {navItems.map((item) => {
+        {mobileNavItems.map((item) => {
           const isActive = pathname === item.href || pathname?.startsWith(item.href + '/');
           const Icon = item.icon;
 
-          if (item.isFab) {
+          if ('isFab' in item && item.isFab) {
             return (
               <Link
                 key={item.href}

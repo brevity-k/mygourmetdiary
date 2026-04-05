@@ -14,13 +14,10 @@ import {
   EyeOff,
   ThumbsUp,
   ThumbsDown,
-  UtensilsCrossed,
-  Wine,
-  GlassWater,
-  Warehouse,
 } from 'lucide-react';
 import { NoteType, Visibility } from '@mygourmetdiary/shared-types';
-import { NOTE_TYPE_LABELS } from '@mygourmetdiary/shared-constants';
+import { NOTE_TYPE_LABELS, SERVING_METHODS } from '@mygourmetdiary/shared-constants';
+import { NOTE_TYPE_CONFIG } from '@/lib/note-type-config';
 import { notesApi } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -44,12 +41,9 @@ import {
   DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
 
-const typeIcons = {
-  [NoteType.RESTAURANT]: UtensilsCrossed,
-  [NoteType.WINE]: Wine,
-  [NoteType.SPIRIT]: GlassWater,
-  [NoteType.WINERY_VISIT]: Warehouse,
-};
+const SERVING_METHOD_LABELS = Object.fromEntries(
+  SERVING_METHODS.map(({ value, label }) => [value, label]),
+) as Record<string, string>;
 
 export default function NoteDetailPage({ params }: { params: Promise<{ noteId: string }> }) {
   const { noteId } = use(params);
@@ -94,7 +88,7 @@ export default function NoteDetailPage({ params }: { params: Promise<{ noteId: s
     );
   }
 
-  const Icon = typeIcons[note.type];
+  const Icon = NOTE_TYPE_CONFIG[note.type].icon;
   const ext = note.extension;
 
   return (
@@ -202,7 +196,7 @@ export default function NoteDetailPage({ params }: { params: Promise<{ noteId: s
                 {ext.distillery && <DetailRow label="Distillery" value={ext.distillery} />}
                 {ext.ageStatement && <DetailRow label="Age" value={ext.ageStatement} />}
                 {ext.abv && <DetailRow label="ABV" value={`${ext.abv}%`} />}
-                {ext.servingMethod && <DetailRow label="Serving" value={ext.servingMethod.replace('_', ' ')} />}
+                {ext.servingMethod && <DetailRow label="Serving" value={SERVING_METHOD_LABELS[ext.servingMethod] ?? ext.servingMethod} />}
                 {ext.pricePaid && <DetailRow label="Price" value={`$${ext.pricePaid}`} />}
               </>
             )}

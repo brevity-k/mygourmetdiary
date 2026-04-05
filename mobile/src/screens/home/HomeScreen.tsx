@@ -19,8 +19,8 @@ import { SegmentControl } from '../../components/common/SegmentControl';
 import { EmptyState } from '../../components/common/EmptyState';
 import { NoteCardSkeleton } from '../../components/common/NoteCardSkeleton';
 import { HomeStackParamList } from '../../navigation/types';
-import { NoteType, SocialNote } from '../../types';
-import { colors, typography, spacing } from '../../theme';
+import { Note, NoteType, SocialNote } from '../../types';
+import { colors, typography, spacing, borderRadius } from '../../theme';
 
 type NavigationProp = NativeStackNavigationProp<HomeStackParamList>;
 
@@ -65,7 +65,8 @@ export function HomeScreen() {
   });
 
   const activeFeed = segment === 'mine' ? myFeed : socialFeed;
-  const notes = activeFeed.data?.pages.flatMap((page) => page.items) || [];
+  const myNotes: Note[] = myFeed.data?.pages.flatMap((page) => page.items) || [];
+  const socialNotes: SocialNote[] = socialFeed.data?.pages.flatMap((page) => page.items) || [];
 
   const handleEndReached = useCallback(() => {
     if (activeFeed.hasNextPage && !activeFeed.isFetchingNextPage) {
@@ -122,30 +123,24 @@ export function HomeScreen() {
         </ScrollView>
       </View>
 
-      <FlatList
-        data={notes}
+      {segment === 'following' ? (
+      <FlatList<SocialNote>
+        data={socialNotes}
         keyExtractor={(item) => item.id}
-        renderItem={({ item }) =>
-          segment === 'following' ? (
-            <SocialNoteCard
-              note={item as SocialNote}
-              onPress={() => navigation.navigate('NoteDetail', { noteId: item.id })}
-              onAuthorPress={
-                (item as SocialNote).author
-                  ? () => navigation.navigate('UserProfile', { userId: (item as SocialNote).author!.id })
-                  : undefined
-              }
-            />
-          ) : (
-            <NoteCard
-              note={item}
-              onPress={() => navigation.navigate('NoteDetail', { noteId: item.id })}
-            />
-          )
-        }
+        renderItem={({ item }) => (
+          <SocialNoteCard
+            note={item}
+            onPress={() => navigation.navigate('NoteDetail', { noteId: item.id })}
+            onAuthorPress={
+              item.author
+                ? () => navigation.navigate('UserProfile', { userId: item.author!.id })
+                : undefined
+            }
+          />
+        )}
         contentContainerStyle={[
           styles.list,
-          notes.length === 0 && styles.emptyList,
+          socialNotes.length === 0 && styles.emptyList,
         ]}
         onEndReached={handleEndReached}
         onEndReachedThreshold={0.5}
@@ -167,15 +162,51 @@ export function HomeScreen() {
         }
         ListEmptyComponent={
           <EmptyState
-            title={segment === 'mine' ? 'No notes yet' : 'No posts from followed binders'}
-            description={
-              segment === 'mine'
-                ? 'Tap the + button to create your first gourmet note.'
-                : 'Follow binders from other gourmets to see their notes here.'
-            }
+            title="No posts from followed binders"
+            description="Follow binders from other gourmets to see their notes here."
           />
         }
       />
+      ) : (
+      <FlatList<Note>
+        data={myNotes}
+        keyExtractor={(item) => item.id}
+        renderItem={({ item }) => (
+          <NoteCard
+            note={item}
+            onPress={() => navigation.navigate('NoteDetail', { noteId: item.id })}
+          />
+        )}
+        contentContainerStyle={[
+          styles.list,
+          myNotes.length === 0 && styles.emptyList,
+        ]}
+        onEndReached={handleEndReached}
+        onEndReachedThreshold={0.5}
+        refreshControl={
+          <RefreshControl
+            refreshing={activeFeed.isRefetching}
+            onRefresh={activeFeed.refetch}
+            tintColor={colors.primary}
+          />
+        }
+        ListFooterComponent={
+          activeFeed.isFetchingNextPage ? (
+            <ActivityIndicator
+              style={{ paddingVertical: spacing.md }}
+              size="small"
+              color={colors.primary}
+            />
+          ) : null
+        }
+        ListEmptyComponent={
+          <EmptyState
+            title="No notes yet"
+            description="Tap the + button to create your first gourmet note."
+          />
+        }
+      />
+      )}
     </View>
   );
 }
@@ -197,7 +228,7 @@ const styles = StyleSheet.create({
   filterChip: {
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm + 2,
-    borderRadius: 20,
+    borderRadius: borderRadius.pill,
     backgroundColor: colors.surface,
     borderWidth: 1,
     borderColor: colors.border,

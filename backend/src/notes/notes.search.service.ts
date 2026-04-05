@@ -93,17 +93,16 @@ export class NotesSearchService implements OnModuleInit {
     let skip = 0;
     let indexed = 0;
 
-    // eslint-disable-next-line no-constant-condition
-    while (true) {
-      const notes = await this.prisma.note.findMany({
+    const findBatch = () =>
+      this.prisma.note.findMany({
         include: { venue: true },
         orderBy: { createdAt: 'asc' },
         skip,
         take: batchSize,
       });
+    let notes = await findBatch();
 
-      if (notes.length === 0) break;
-
+    while (notes.length > 0) {
       const docs: NoteSearchDocument[] = notes.map((note: (typeof notes)[number]) => {
         const ext = note.extension as Record<string, any>;
         return {
@@ -128,9 +127,10 @@ export class NotesSearchService implements OnModuleInit {
 
       await this.index.addDocuments(docs);
       indexed += docs.length;
-      skip += batchSize;
 
       if (notes.length < batchSize) break;
+      skip += batchSize;
+      notes = await findBatch();
     }
 
     this.logger.log(`Bulk reindex complete: ${indexed} notes indexed`);

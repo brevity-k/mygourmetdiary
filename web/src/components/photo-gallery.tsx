@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import Image from 'next/image';
 import { ChevronLeft, ChevronRight, X } from 'lucide-react';
 import type { Photo } from '@mygourmetdiary/shared-types';
@@ -12,6 +12,27 @@ interface PhotoGalleryProps {
 
 export function PhotoGallery({ photos }: PhotoGalleryProps) {
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+
+  const closeLightbox = useCallback(() => setLightboxIndex(null), []);
+  const prevPhoto = useCallback(
+    () => setLightboxIndex((i) => (i !== null ? (i - 1 + photos.length) % photos.length : null)),
+    [photos.length],
+  );
+  const nextPhoto = useCallback(
+    () => setLightboxIndex((i) => (i !== null ? (i + 1) % photos.length : null)),
+    [photos.length],
+  );
+
+  useEffect(() => {
+    if (lightboxIndex === null) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') closeLightbox();
+      else if (e.key === 'ArrowLeft') prevPhoto();
+      else if (e.key === 'ArrowRight') nextPhoto();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [lightboxIndex, closeLightbox, prevPhoto, nextPhoto]);
 
   if (photos.length === 0) return null;
 
@@ -47,7 +68,8 @@ export function PhotoGallery({ photos }: PhotoGalleryProps) {
       {lightboxIndex !== null && (
         <div className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center">
           <button
-            onClick={() => setLightboxIndex(null)}
+            onClick={closeLightbox}
+            aria-label="Close lightbox"
             className="absolute top-4 right-4 text-white/80 hover:text-white z-50"
           >
             <X className="h-8 w-8" />
@@ -56,13 +78,15 @@ export function PhotoGallery({ photos }: PhotoGalleryProps) {
           {photos.length > 1 && (
             <>
               <button
-                onClick={() => setLightboxIndex((lightboxIndex - 1 + photos.length) % photos.length)}
+                onClick={prevPhoto}
+                aria-label="Previous photo"
                 className="absolute left-4 text-white/80 hover:text-white z-50"
               >
                 <ChevronLeft className="h-10 w-10" />
               </button>
               <button
-                onClick={() => setLightboxIndex((lightboxIndex + 1) % photos.length)}
+                onClick={nextPhoto}
+                aria-label="Next photo"
                 className="absolute right-4 text-white/80 hover:text-white z-50"
               >
                 <ChevronRight className="h-10 w-10" />

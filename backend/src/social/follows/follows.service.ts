@@ -5,6 +5,8 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { BindersService } from '../../binders/binders.service';
+import { paginateResults } from '../../common/utils/pagination';
+import { PREMIUM_TIER } from '../../common/constants';
 
 const FREE_FOLLOW_LIMIT = 5;
 
@@ -26,7 +28,7 @@ export class FollowsService {
       where: { id: userId },
       select: { subscriptionTier: true },
     });
-    if (user?.subscriptionTier !== 'CONNOISSEUR') {
+    if (user?.subscriptionTier !== PREMIUM_TIER) {
       const count = await this.prisma.binderFollow.count({
         where: { followerId: userId },
       });
@@ -82,13 +84,7 @@ export class FollowsService {
       take: limit + 1,
     });
 
-    const hasMore = follows.length > limit;
-    const items = hasMore ? follows.slice(0, limit) : follows;
-    const nextCursor = hasMore
-      ? items[items.length - 1].createdAt.toISOString()
-      : null;
-
-    return { items, nextCursor, hasMore };
+    return paginateResults(follows, limit, (f) => f.createdAt.toISOString());
   }
 
   async isFollowing(userId: string, binderId: string): Promise<boolean> {

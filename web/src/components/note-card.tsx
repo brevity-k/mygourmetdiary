@@ -3,27 +3,21 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { format } from 'date-fns';
-import { MapPin, UtensilsCrossed, Wine, GlassWater, Warehouse } from 'lucide-react';
+import { MapPin } from 'lucide-react';
 import type { Note } from '@mygourmetdiary/shared-types';
 import { NoteType } from '@mygourmetdiary/shared-types';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { RatingDisplay } from '@/components/rating-display';
+import { NOTE_TYPE_CONFIG } from '@/lib/note-type-config';
 import { cn } from '@/lib/utils';
-
-const typeConfig = {
-  [NoteType.RESTAURANT]: { icon: UtensilsCrossed, label: 'Restaurant', color: 'text-amber-800' },
-  [NoteType.WINE]: { icon: Wine, label: 'Wine', color: 'text-red-700' },
-  [NoteType.SPIRIT]: { icon: GlassWater, label: 'Spirit', color: 'text-amber-600' },
-  [NoteType.WINERY_VISIT]: { icon: Warehouse, label: 'Winery', color: 'text-green-700' },
-};
 
 interface NoteCardProps {
   note: Note;
 }
 
 export function NoteCard({ note }: NoteCardProps) {
-  const config = typeConfig[note.type] ?? typeConfig[NoteType.RESTAURANT];
+  const config = NOTE_TYPE_CONFIG[note.type] ?? NOTE_TYPE_CONFIG[NoteType.RESTAURANT];
   const Icon = config.icon;
   const coverPhoto = note.photos?.[0];
 

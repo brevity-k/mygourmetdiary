@@ -5,6 +5,7 @@ import { NotesSearchService } from '../notes/notes.search.service';
 import { TieredSearchService } from './tiered-search.service';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { clampLimit } from '../common/utils/pagination';
+import { PREMIUM_TIER } from '../common/constants';
 
 @ApiTags('search')
 @ApiBearerAuth()
@@ -89,7 +90,7 @@ export class SearchController {
     @Query('dateTo') dateTo?: string,
   ) {
     const hasPremiumFilters = minRating || maxPrice || cuisineTags || wineType || spiritType || dateFrom || dateTo;
-    if (hasPremiumFilters && user.subscriptionTier !== 'CONNOISSEUR') {
+    if (hasPremiumFilters && user.subscriptionTier !== PREMIUM_TIER) {
       throw new ForbiddenException('Advanced filters require a Connoisseur subscription');
     }
 

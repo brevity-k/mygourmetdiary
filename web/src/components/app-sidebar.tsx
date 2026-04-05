@@ -2,25 +2,14 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import {
-  Home,
-  BookOpen,
-  Search,
-  UserCircle,
-  PlusCircle,
-  Settings,
-  Map,
-} from 'lucide-react';
+import { UserCircle, Settings } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { NAV_ITEMS } from '@/lib/nav-items';
 import { useAuth } from '@/lib/auth-context';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
-const navItems = [
-  { href: '/feed', label: 'Feed', icon: Home },
-  { href: '/binders', label: 'Binders', icon: BookOpen },
-  { href: '/notes/new', label: 'New Note', icon: PlusCircle },
-  { href: '/search', label: 'Search', icon: Search },
-  { href: '/explore', label: 'Explore', icon: Map },
+const sidebarNavItems = [
+  ...NAV_ITEMS,
   { href: '/profile', label: 'Profile', icon: UserCircle },
 ];
 
@@ -37,7 +26,7 @@ export function AppSidebar() {
       </div>
 
       <nav className="flex-1 px-3 py-4 space-y-1">
-        {navItems.map((item) => {
+        {sidebarNavItems.map((item) => {
           const isActive = pathname === item.href || pathname?.startsWith(item.href + '/');
           const Icon = item.icon;
           return (

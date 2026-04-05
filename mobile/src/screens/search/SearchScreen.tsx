@@ -60,7 +60,7 @@ export function SearchScreen() {
   const personalHits = personalSearch.data?.hits || [];
 
   // Build tiered sections from social search
-  const sections = [];
+  const sections: { title: string; tier: number; data: SocialNote[] }[] = [];
   if (socialSearch.data) {
     const { tier1, tier2, tier3, tier4 } = socialSearch.data;
     if (tier1.length > 0) sections.push({ title: 'Gourmet Friends', tier: 1, data: tier1 });
@@ -150,11 +150,11 @@ export function SearchScreen() {
           )}
           renderItem={({ item }) => (
             <SocialNoteCard
-              note={item as SocialNote}
+              note={item}
               onPress={() => navigation.navigate('NoteDetail', { noteId: item.id })}
               onAuthorPress={
-                (item as SocialNote).author
-                  ? () => navigation.navigate('UserProfile', { userId: (item as SocialNote).author!.id })
+                item.author
+                  ? () => navigation.navigate('UserProfile', { userId: item.author!.id })
                   : undefined
               }
             />

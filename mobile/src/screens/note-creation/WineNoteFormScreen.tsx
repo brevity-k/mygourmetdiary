@@ -13,7 +13,7 @@ import { PhotoPicker } from '../../components/forms/PhotoPicker';
 import { BinderSelector } from '../../components/forms/BinderSelector';
 import { DateInput } from '../../components/forms/DateInput';
 import { WINE_TYPES, WINE_FINISHES, PURCHASE_CONTEXTS } from '../../constants/tags.constants';
-import { colors, typography, spacing } from '../../theme';
+import { colors, typography, spacing, borderRadius } from '../../theme';
 
 export function WineNoteFormScreen() {
   const navigation = useNavigation();
@@ -272,7 +272,7 @@ const styles = StyleSheet.create({
   chipOption: {
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
-    borderRadius: 20,
+    borderRadius: borderRadius.pill,
     borderWidth: 1,
     borderColor: colors.border,
     backgroundColor: colors.surface,

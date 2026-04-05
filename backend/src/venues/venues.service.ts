@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { createHash } from 'crypto';
+import { Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { RedisService } from '../redis/redis.service';
 import { GooglePlacesClient } from './google-places.client';
@@ -58,11 +59,15 @@ export class VenuesService {
     if (!place) return dbVenue; // return stale data if API fails
 
     const venueData = this.googlePlaces.mapToVenueData(place);
+    const prismaData = {
+      ...venueData,
+      hours: venueData.hours ?? Prisma.JsonNull,
+    };
 
     const venue = await this.prisma.venue.upsert({
       where: { placeId },
-      update: venueData,
-      create: venueData,
+      update: prismaData,
+      create: prismaData,
     });
 
     await this.redis.setJson(cacheKey, venue, VENUE_CACHE_TTL);

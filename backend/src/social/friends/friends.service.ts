@@ -10,6 +10,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { TssCacheService } from '../../taste-matching/tss-cache.service';
 import { NotificationsService } from '../../notifications/notifications.service';
 import { PinFriendDto, UpdatePinDto } from './dto/pin-friend.dto';
+import { PREMIUM_TIER } from '../../common/constants';
 
 const MIN_TSS = 0.7;
 const MIN_OVERLAP = 5;
@@ -41,7 +42,7 @@ export class FriendsService {
       where: { id: pinnerId },
       select: { subscriptionTier: true },
     });
-    if (pinner?.subscriptionTier !== 'CONNOISSEUR') {
+    if (pinner?.subscriptionTier !== PREMIUM_TIER) {
       const existing = await this.prisma.gourmetFriendPin.findUnique({
         where: { pinnerId_pinnedId: { pinnerId, pinnedId: dto.pinnedId } },
       });

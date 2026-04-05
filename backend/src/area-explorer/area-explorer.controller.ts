@@ -3,6 +3,7 @@ import { ApiTags, ApiBearerAuth, ApiOperation, ApiQuery } from '@nestjs/swagger'
 import { User } from '@prisma/client';
 import { AreaExplorerService } from './area-explorer.service';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
+import { PREMIUM_TIER } from '../common/constants';
 
 @ApiTags('explore')
 @ApiBearerAuth()
@@ -35,7 +36,7 @@ export class AreaExplorerController {
     const isFriendsOnly = friendsOnly === 'true';
 
     // friendsOnly requires premium
-    if (isFriendsOnly && user.subscriptionTier !== 'CONNOISSEUR') {
+    if (isFriendsOnly && user.subscriptionTier !== PREMIUM_TIER) {
       throw new ForbiddenException('Friends-only view requires premium subscription');
     }
 

@@ -16,6 +16,7 @@ export function RatingInput({ value, onChange }: RatingInputProps) {
           <button
             key={rating}
             type="button"
+            aria-label={`Rate ${rating} out of 10`}
             onClick={() => onChange(rating)}
             className={cn(
               'h-8 w-8 rounded-full text-xs font-medium transition-all',

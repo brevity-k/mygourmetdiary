@@ -1,5 +1,25 @@
 import { plainToInstance } from 'class-transformer';
-import { IsEnum, IsNumber, IsOptional, IsString, validateSync } from 'class-validator';
+import {
+  IsEnum,
+  IsNumber,
+  IsOptional,
+  IsString,
+  Validate,
+  ValidatorConstraint,
+  ValidatorConstraintInterface,
+  validateSync,
+} from 'class-validator';
+
+@ValidatorConstraint({ name: 'noWildcardOrigin', async: false })
+class NoWildcardOrigin implements ValidatorConstraintInterface {
+  validate(value: string) {
+    return !value.split(',').some((origin) => origin.trim() === '*');
+  }
+
+  defaultMessage() {
+    return 'ALLOWED_ORIGINS must not contain a wildcard "*"';
+  }
+}
 
 enum Environment {
   Development = 'development',
@@ -53,6 +73,15 @@ class EnvironmentVariables {
 
   @IsString()
   MEILISEARCH_API_KEY!: string;
+
+  @IsString()
+  @IsOptional()
+  REVENUECAT_WEBHOOK_AUTH_KEY?: string;
+
+  @IsString()
+  @IsOptional()
+  @Validate(NoWildcardOrigin)
+  ALLOWED_ORIGINS?: string;
 }
 
 export function validate(config: Record<string, unknown>) {

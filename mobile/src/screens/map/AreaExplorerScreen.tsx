@@ -27,7 +27,7 @@ const DEFAULT_REGION: Region = {
 
 function getMarkerColor(pin: MapPin): string {
   if (pin.myNoteCount > 0) return colors.primary; // brown — "I've been here"
-  if (pin.friendNoteCount > 0) return '#D4A017'; // gold — "Friends visited"
+  if (pin.friendNoteCount > 0) return colors.warning; // gold — "Friends visited"
   return colors.textTertiary; // gray — general notes
 }
 

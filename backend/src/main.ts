@@ -52,6 +52,7 @@ async function bootstrap() {
 
   // Swagger — only in non-production
   if (process.env.NODE_ENV !== 'production') {
+    logger.warn('Swagger UI is enabled — do not expose this in production');
     const config = new DocumentBuilder()
       .setTitle('MyGourmetDiary API')
       .setDescription('Personal gourmet journaling API')

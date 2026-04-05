@@ -80,6 +80,10 @@ export function useNoteForm(type: NoteType, onSuccess: () => void) {
     });
   }, [draftKey, pendingVenue]);
 
+  // Keep a ref to the latest formData so the cleanup can flush without stale closures
+  const formDataRef = useRef(formData);
+  formDataRef.current = formData;
+
   // Auto-save draft every 30 seconds
   useEffect(() => {
     if (!isDirty) return;
@@ -90,7 +94,11 @@ export function useNoteForm(type: NoteType, onSuccess: () => void) {
     }, 30000);
 
     return () => {
-      if (autoSaveRef.current) clearTimeout(autoSaveRef.current);
+      if (autoSaveRef.current) {
+        clearTimeout(autoSaveRef.current);
+        // Flush the pending draft save immediately on unmount
+        AsyncStorage.setItem(draftKey, JSON.stringify({ formData: formDataRef.current }));
+      }
     };
   }, [formData, isDirty, draftKey]);
 

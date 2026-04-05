@@ -1,6 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { Prisma } from '@prisma/client';
 
 interface PlaceSearchResult {
   id: string;
@@ -137,7 +136,7 @@ export class GooglePlacesClient {
       googleRating: place.rating || null,
       priceLevel: place.priceLevel ? (priceLevelMap[place.priceLevel] ?? null) : null,
       types: place.types || [],
-      hours: place.regularOpeningHours?.weekdayDescriptions ?? Prisma.JsonNull,
+      hours: place.regularOpeningHours?.weekdayDescriptions ?? null,
       lastFetchedAt: new Date(),
     };
   }

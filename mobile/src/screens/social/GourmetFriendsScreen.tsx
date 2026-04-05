@@ -150,7 +150,7 @@ const styles = StyleSheet.create({
     paddingBottom: spacing.md,
   },
   swipeAction: {
-    backgroundColor: colors.error || '#E53935',
+    backgroundColor: colors.error,
     justifyContent: 'center',
     alignItems: 'center',
     width: 80,

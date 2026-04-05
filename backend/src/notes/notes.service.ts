@@ -13,6 +13,7 @@ import { CreateNoteDto } from './dto/create-note.dto';
 import { UpdateNoteDto } from './dto/update-note.dto';
 import { NoteExtensionFactory } from './factory/note-extension.factory';
 import { NotesSearchService } from './notes.search.service';
+import { paginateResults } from '../common/utils/pagination';
 
 @Injectable()
 export class NotesService {
@@ -44,13 +45,7 @@ export class NotesService {
       take: limit + 1,
     });
 
-    const hasMore = notes.length > limit;
-    const items = hasMore ? notes.slice(0, limit) : notes;
-    const nextCursor = hasMore
-      ? items[items.length - 1].createdAt.toISOString()
-      : null;
-
-    return { items, nextCursor, hasMore };
+    return paginateResults(notes, limit, (n) => n.createdAt.toISOString());
   }
 
   async findById(id: string, userId: string) {
@@ -225,13 +220,7 @@ export class NotesService {
       take: limit + 1,
     });
 
-    const hasMore = notes.length > limit;
-    const items = hasMore ? notes.slice(0, limit) : notes;
-    const nextCursor = hasMore
-      ? items[items.length - 1].createdAt.toISOString()
-      : null;
-
-    return { items, nextCursor, hasMore };
+    return paginateResults(notes, limit, (n) => n.createdAt.toISOString());
   }
 
   async socialFeed(
@@ -269,13 +258,7 @@ export class NotesService {
       take: limit + 1,
     });
 
-    const hasMore = notes.length > limit;
-    const items = hasMore ? notes.slice(0, limit) : notes;
-    const nextCursor = hasMore
-      ? items[items.length - 1].createdAt.toISOString()
-      : null;
-
-    return { items, nextCursor, hasMore };
+    return paginateResults(notes, limit, (n) => n.createdAt.toISOString());
   }
 
   async findPublicById(id: string) {

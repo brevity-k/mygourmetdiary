@@ -17,7 +17,7 @@ import { EmptyState } from '../../components/common/EmptyState';
 import { NoteCardSkeleton } from '../../components/common/NoteCardSkeleton';
 import { SearchStackParamList } from '../../navigation/types';
 import { NoteType } from '../../types';
-import { colors, typography, spacing } from '../../theme';
+import { colors, typography, spacing, borderRadius } from '../../theme';
 
 type NavProp = NativeStackNavigationProp<SearchStackParamList>;
 
@@ -143,7 +143,7 @@ const styles = StyleSheet.create({
   filterChip: {
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
-    borderRadius: 20,
+    borderRadius: borderRadius.pill,
     backgroundColor: colors.surface,
     borderWidth: 1,
     borderColor: colors.border,

@@ -26,8 +26,8 @@ export default function OnboardingPage() {
       await usersApi.updateMe({ displayName: displayName.trim() });
       await refreshUser();
       router.push('/feed');
-    } catch (err: any) {
-      setError(err?.response?.data?.message || 'Failed to update profile');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : String(err));
     } finally {
       setLoading(false);
     }

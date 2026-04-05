@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { IS_PREMIUM_KEY } from '../decorators/premium.decorator';
+import { PREMIUM_TIER } from '../constants';
 
 @Injectable()
 export class PremiumGuard implements CanActivate {
@@ -21,7 +22,7 @@ export class PremiumGuard implements CanActivate {
     const request = context.switchToHttp().getRequest();
     const user = request.user;
 
-    if (!user || user.subscriptionTier !== 'CONNOISSEUR') {
+    if (!user || user.subscriptionTier !== PREMIUM_TIER) {
       throw new ForbiddenException('Premium subscription required');
     }
 

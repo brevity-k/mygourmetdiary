@@ -40,8 +40,9 @@ export default function RegisterPage() {
     try {
       await signUpWithEmail(email, password, displayName.trim());
       router.push('/feed');
-    } catch (err: any) {
-      const code = err.code;
+    } catch (err: unknown) {
+      const firebaseErr = err as { code?: string; message?: string };
+      const code = firebaseErr.code;
       if (code === 'auth/email-already-in-use') {
         setError('An account with this email already exists.');
       } else if (code === 'auth/weak-password') {
@@ -49,7 +50,7 @@ export default function RegisterPage() {
       } else if (code === 'auth/invalid-email') {
         setError('Invalid email address.');
       } else {
-        setError(err.message || 'Failed to create account');
+        setError(err instanceof Error ? err.message : String(err));
       }
     } finally {
       setLoading(false);
