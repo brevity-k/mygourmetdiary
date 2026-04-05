@@ -20,6 +20,7 @@
     "noFallthroughCasesInSwitch": true,
     "paths": {
       "@/*": ["src/*"],
+      "@prisma/client": ["prisma/generated/client/client"],
       "meilisearch": ["../node_modules/meilisearch/dist"]
     }
   }
