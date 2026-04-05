@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { Venue } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { RedisService } from '../redis/redis.service';
 import { TssCacheService } from '../taste-matching/tss-cache.service';
@@ -60,7 +61,7 @@ export class AreaExplorerService {
       return [];
     }
 
-    const venueIds = venues.map((v) => v.id);
+    const venueIds = venues.map((v: Venue) => v.id);
 
     // Build note type filter
     const typeFilter: string[] = [];
@@ -128,12 +129,12 @@ export class AreaExplorerService {
       const entry = venueMap.get(venue.id);
       if (!entry || entry.notes.length === 0) continue;
 
-      const allRatings = entry.notes.map((n) => n.rating);
-      const friendRatings = entry.friendNotes.map((n) => n.rating);
+      const allRatings = entry.notes.map((n: (typeof notes)[number]) => n.rating);
+      const friendRatings = entry.friendNotes.map((n: (typeof notes)[number]) => n.rating);
 
       const topFriendNames = [
-        ...new Set(entry.friendNotes.map((n) => n.author.displayName)),
-      ].slice(0, 3);
+        ...new Set(entry.friendNotes.map((n: (typeof notes)[number]) => n.author.displayName)),
+      ].slice(0, 3) as string[];
 
       const noteType = entry.notes[0]?.type;
 
@@ -152,11 +153,11 @@ export class AreaExplorerService {
         friendNoteCount: entry.friendNotes.length,
         avgRating:
           allRatings.length > 0
-            ? Math.round((allRatings.reduce((a, b) => a + b, 0) / allRatings.length) * 10) / 10
+            ? Math.round((allRatings.reduce((a: number, b: number) => a + b, 0) / allRatings.length) * 10) / 10
             : null,
         avgFriendRating:
           friendRatings.length > 0
-            ? Math.round((friendRatings.reduce((a, b) => a + b, 0) / friendRatings.length) * 10) / 10
+            ? Math.round((friendRatings.reduce((a: number, b: number) => a + b, 0) / friendRatings.length) * 10) / 10
             : null,
         topFriendNames,
         category: noteType === 'WINERY_VISIT' ? 'WINERY_VISIT' : 'RESTAURANT',

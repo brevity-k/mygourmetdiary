@@ -179,13 +179,13 @@ describe('FriendsService', () => {
     expect(result[0].similarities).toHaveLength(3);
 
     const restaurant = result[0].similarities.find(
-      (s) => s.category === TasteCategory.RESTAURANT,
+      (s: { category: TasteCategory; score: number | null; overlapCount: number }) => s.category === TasteCategory.RESTAURANT,
     );
     expect(restaurant?.score).toBe(0.85);
     expect(restaurant?.overlapCount).toBe(12);
 
     const spirit = result[0].similarities.find(
-      (s) => s.category === TasteCategory.SPIRIT,
+      (s: { category: TasteCategory; score: number | null; overlapCount: number }) => s.category === TasteCategory.SPIRIT,
     );
     expect(spirit?.score).toBeNull();
     expect(spirit?.overlapCount).toBe(0);

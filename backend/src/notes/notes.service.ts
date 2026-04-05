@@ -245,7 +245,7 @@ export class NotesService {
       where: { followerId: userId },
       select: { binderId: true },
     });
-    const binderIds = follows.map((f) => f.binderId);
+    const binderIds = follows.map((f: { binderId: string }) => f.binderId);
 
     if (binderIds.length === 0) {
       return { items: [], nextCursor: null, hasMore: false };

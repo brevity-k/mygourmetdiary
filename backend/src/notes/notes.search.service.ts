@@ -1,6 +1,6 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { MeiliSearch, Index } from 'meilisearch';
+import { Meilisearch, Index } from 'meilisearch';
 import { PrismaService } from '../prisma/prisma.service';
 
 interface NoteSearchDocument {
@@ -27,14 +27,14 @@ const VALID_NOTE_TYPES = ['RESTAURANT', 'WINE', 'SPIRIT', 'WINERY_VISIT'];
 @Injectable()
 export class NotesSearchService implements OnModuleInit {
   private readonly logger = new Logger(NotesSearchService.name);
-  private client: MeiliSearch;
+  private client: Meilisearch;
   private index!: Index;
 
   constructor(
     private readonly configService: ConfigService,
     private readonly prisma: PrismaService,
   ) {
-    this.client = new MeiliSearch({
+    this.client = new Meilisearch({
       host: this.configService.get<string>('MEILISEARCH_HOST') || 'http://localhost:7700',
       apiKey: this.configService.get<string>('MEILISEARCH_API_KEY'),
     });
@@ -104,7 +104,7 @@ export class NotesSearchService implements OnModuleInit {
 
       if (notes.length === 0) break;
 
-      const docs: NoteSearchDocument[] = notes.map((note) => {
+      const docs: NoteSearchDocument[] = notes.map((note: (typeof notes)[number]) => {
         const ext = note.extension as Record<string, any>;
         return {
           id: note.id,

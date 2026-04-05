@@ -125,7 +125,7 @@ export class PhotosService {
     }
 
     await this.prisma.photo.deleteMany({
-      where: { id: { in: orphans.map((p) => p.id) } },
+      where: { id: { in: orphans.map((p: { id: string }) => p.id) } },
     });
   }
 }

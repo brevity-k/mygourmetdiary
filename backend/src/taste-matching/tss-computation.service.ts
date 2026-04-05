@@ -115,7 +115,7 @@ export class TssComputationService {
     });
 
     return notes
-      .map((n) => {
+      .map((n: (typeof notes)[number]) => {
         const matchKey = this.buildMatchKey(n.type, n.extension as Record<string, any>, n.venueId);
         if (!matchKey) return null;
         return {
@@ -126,7 +126,7 @@ export class TssComputationService {
           experiencedAt: n.experiencedAt,
         };
       })
-      .filter((item): item is RatedItem => item !== null);
+      .filter((item: RatedItem | null): item is RatedItem => item !== null);
   }
 
   async recomputePair(userAId: string, userBId: string, category: TasteCategory) {

@@ -67,7 +67,7 @@ export class UserDiscoveryService {
       where: { id: { in: userIds } },
       select: { id: true, displayName: true, avatarUrl: true, createdAt: true },
     });
-    const userLookup = new Map(users.map((u) => [u.id, u]));
+    const userLookup = new Map(users.map((u: (typeof users)[number]) => [u.id, u] as const));
 
     return {
       items: paged

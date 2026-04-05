@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { Venue } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
 
@@ -34,18 +35,20 @@ export class PioneersService {
     const venueCounts = await this.prisma.note.groupBy({
       by: ['venueId'],
       where: {
-        venueId: { in: venues.map((v) => v.id) },
+        venueId: { in: venues.map((v: Venue) => v.id) },
         visibility: 'PUBLIC',
       },
       _count: true,
     });
 
-    const countMap = new Map(venueCounts.map((vc) => [vc.venueId, vc._count]));
+    const countMap = new Map<string | null, number>(
+      venueCounts.map((vc: { venueId: string | null; _count: number }) => [vc.venueId, vc._count]),
+    );
 
     // Filter to pioneer zones (< threshold notes)
     return venues
-      .filter((v) => (countMap.get(v.id) ?? 0) < PIONEER_NOTE_THRESHOLD)
-      .map((v) => ({
+      .filter((v: Venue) => (countMap.get(v.id) ?? 0) < PIONEER_NOTE_THRESHOLD)
+      .map((v: Venue) => ({
         venue: {
           id: v.id,
           placeId: v.placeId,

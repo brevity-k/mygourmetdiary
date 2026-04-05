@@ -88,7 +88,7 @@ export class TssBatchJob {
     `;
 
     // Convert BigInt overlap to Number (PostgreSQL COUNT returns bigint)
-    const safePairs = pairs.map((p) => ({
+    const safePairs = pairs.map((p: { user_a_id: string; user_b_id: string; overlap: bigint }) => ({
       user_a_id: p.user_a_id,
       user_b_id: p.user_b_id,
       overlap: Number(p.overlap),

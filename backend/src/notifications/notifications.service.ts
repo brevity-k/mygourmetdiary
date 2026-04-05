@@ -81,8 +81,8 @@ export class NotificationsService {
     });
 
     const followerIds = follows
-      .map((f) => f.followerId)
-      .filter((id) => id !== authorId);
+      .map((f: { followerId: string }) => f.followerId)
+      .filter((id: string) => id !== authorId);
 
     if (followerIds.length === 0) return;
 
@@ -161,12 +161,12 @@ export class NotificationsService {
     });
 
     // Users without preferences row default to true (include them)
-    const prefsMap = new Set(prefs.map((p) => p.userId));
+    const prefsMap = new Set(prefs.map((p: { userId: string }) => p.userId));
     const usersWithPrefs = await this.prisma.notificationPreference.findMany({
       where: { userId: { in: userIds } },
       select: { userId: true },
     });
-    const usersWithPrefsSet = new Set(usersWithPrefs.map((u) => u.userId));
+    const usersWithPrefsSet = new Set(usersWithPrefs.map((u: { userId: string }) => u.userId));
 
     const enabledUserIds = userIds.filter(
       (id) => !usersWithPrefsSet.has(id) || prefsMap.has(id),
@@ -182,7 +182,7 @@ export class NotificationsService {
 
     if (tokens.length === 0) return;
 
-    const messages: ExpoPushMessage[] = tokens.map((t) => ({
+    const messages: ExpoPushMessage[] = tokens.map((t: { token: string }) => ({
       to: t.token,
       title,
       body,

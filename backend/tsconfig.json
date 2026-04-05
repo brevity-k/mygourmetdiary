@@ -19,7 +19,10 @@
     "forceConsistentCasingInFileNames": true,
     "noFallthroughCasesInSwitch": true,
     "paths": {
-      "@/*": ["src/*"]
+      "@/*": ["src/*"],
+      "@prisma/client": ["prisma/generated/client"],
+      "@prisma/client/*": ["prisma/generated/client/*"],
+      "meilisearch": ["../node_modules/meilisearch/dist"]
     }
   }
 }

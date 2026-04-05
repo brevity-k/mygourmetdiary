@@ -8,5 +8,9 @@
   "transformIgnorePatterns": [
     "node_modules/(?!uuid/)"
   ],
-  "testEnvironment": "node"
+  "testEnvironment": "node",
+  "moduleNameMapper": {
+    "^@prisma/client$": "<rootDir>/prisma/generated/client",
+    "^@prisma/client/(.*)$": "<rootDir>/prisma/generated/client/$1"
+  }
 }

@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { TasteCategory } from '@prisma/client';
+import { TasteCategory, TasteSimilarity } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { RedisService } from '../redis/redis.service';
 
@@ -60,7 +60,7 @@ export class TssCacheService {
       orderBy: { score: 'desc' },
     });
 
-    const result = rows.map((r) => ({
+    const result = rows.map((r: TasteSimilarity) => ({
       userId: r.userAId === userId ? r.userBId : r.userAId,
       category: r.category,
       score: r.score,
@@ -84,8 +84,8 @@ export class TssCacheService {
       select: { userAId: true, userBId: true },
     });
 
-    const ids = [...new Set(
-      rows.map((r) => (r.userAId === userId ? r.userBId : r.userAId)),
+    const ids: string[] = [...new Set<string>(
+      rows.map((r: { userAId: string; userBId: string }) => (r.userAId === userId ? r.userBId : r.userAId)),
     )];
     await this.redis.setJson(cacheKey, ids, 86400);
     return ids;
@@ -104,8 +104,8 @@ export class TssCacheService {
       select: { userAId: true, userBId: true },
     });
 
-    const ids = [...new Set(
-      rows.map((r) => (r.userAId === userId ? r.userBId : r.userAId)),
+    const ids: string[] = [...new Set<string>(
+      rows.map((r: { userAId: string; userBId: string }) => (r.userAId === userId ? r.userBId : r.userAId)),
     )];
     await this.redis.setJson(cacheKey, ids, 86400);
     return ids;
@@ -121,7 +121,7 @@ export class TssCacheService {
       select: { pinnedId: true },
     });
 
-    const ids = pins.map((p) => p.pinnedId);
+    const ids = pins.map((p: { pinnedId: string }) => p.pinnedId);
     await this.redis.setJson(cacheKey, ids, 3600); // 1h
     return ids;
   }

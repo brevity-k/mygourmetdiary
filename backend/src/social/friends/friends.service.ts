@@ -146,7 +146,7 @@ export class FriendsService {
     }
 
     const categories = [TasteCategory.RESTAURANT, TasteCategory.WINE, TasteCategory.SPIRIT];
-    return pins.map((pin) => {
+    return pins.map((pin: (typeof pins)[number]) => {
       const userScores = scoreMap.get(pin.pinnedId);
       const similarities = categories.map((category) => {
         const entry = userScores?.get(category);
