@@ -2,15 +2,8 @@
 
 import { Map, AdvancedMarker, Pin } from '@vis.gl/react-google-maps';
 import { GoogleMapsProvider } from './google-maps-provider';
-import { DIARY_MAP_STYLES, MARKER_COLORS } from './map-styles';
+import { DIARY_MAP_STYLES, MARKER_COLORS, NOTE_TYPE_PIN_COLOR } from './map-styles';
 import type { NoteType } from '@mygourmetdiary/shared-types';
-
-const NOTE_TYPE_MARKER_COLOR: Record<string, string> = {
-  RESTAURANT: MARKER_COLORS.restaurant,
-  WINE: MARKER_COLORS.wine,
-  SPIRIT: MARKER_COLORS.spirit,
-  WINERY_VISIT: MARKER_COLORS.winery,
-};
 
 interface StaticVenueMapProps {
   lat: number;
@@ -21,7 +14,7 @@ interface StaticVenueMapProps {
 
 function StaticVenueMapInner({ lat, lng, venueName, noteType }: StaticVenueMapProps) {
   const mapId = process.env.NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID;
-  const pinColor = noteType ? NOTE_TYPE_MARKER_COLOR[noteType] ?? MARKER_COLORS.restaurant : MARKER_COLORS.restaurant;
+  const pinColor = noteType ? NOTE_TYPE_PIN_COLOR[noteType] ?? MARKER_COLORS.restaurant : MARKER_COLORS.restaurant;
 
   return (
     <div className="w-full h-[200px] rounded-lg overflow-hidden border border-border">

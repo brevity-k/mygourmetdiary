@@ -26,7 +26,8 @@ export function useOfflineNotes(binderId?: string, type?: string) {
       .then((result) => {
         if (!cancelled) setNotes(result);
       })
-      .catch(() => {
+      .catch((e) => {
+        console.warn('getOfflineNotes error:', e);
         if (!cancelled) setNotes([]);
       })
       .finally(() => {
@@ -51,7 +52,8 @@ export function useOfflineNoteDetail(noteId: string) {
       .then((result) => {
         if (!cancelled) setNote(result);
       })
-      .catch(() => {
+      .catch((e) => {
+        console.warn('getOfflineNoteById error:', e);
         if (!cancelled) setNote(null);
       })
       .finally(() => {

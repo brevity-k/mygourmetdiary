@@ -7,6 +7,7 @@ import { MarkerClusterer } from '@googlemaps/markerclusterer';
 import type { MapPin as MapPinType, Venue } from '@mygourmetdiary/shared-types';
 import { Loader2, Search, X } from 'lucide-react';
 import { areaExplorerApi, venuesApi } from '@/lib/api';
+import { useClickOutside } from '@/hooks/use-click-outside';
 import { GoogleMapsProvider } from './google-maps-provider';
 import { DIARY_MAP_STYLES, MARKER_COLORS, DEFAULT_CENTER, DEFAULT_ZOOM } from './map-styles';
 import { useMapRegion } from './use-map-region';
@@ -53,15 +54,8 @@ function MapSearchBar({ onSelect }: { onSelect: (venue: Venue) => void }) {
     };
   }, [query]);
 
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
-        setShowResults(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+  const closeResults = useCallback(() => setShowResults(false), []);
+  useClickOutside(containerRef, closeResults);
 
   return (
     <div ref={containerRef} className="relative w-full max-w-sm">

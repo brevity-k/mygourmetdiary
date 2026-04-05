@@ -6,7 +6,6 @@ import {
   createUserWithEmailAndPassword,
   updateProfile,
   GoogleAuthProvider,
-  OAuthProvider,
   onAuthStateChanged as firebaseOnAuthStateChanged,
   signOut as firebaseSignOut,
   browserLocalPersistence,
@@ -53,14 +52,6 @@ function toAuthUser(user: FirebaseUser): AuthUser {
 
 export async function signInWithGoogle(): Promise<AuthUser> {
   const provider = new GoogleAuthProvider();
-  const result = await signInWithPopup(getFirebaseAuth(), provider);
-  return toAuthUser(result.user);
-}
-
-export async function signInWithApple(): Promise<AuthUser> {
-  const provider = new OAuthProvider('apple.com');
-  provider.addScope('email');
-  provider.addScope('name');
   const result = await signInWithPopup(getFirebaseAuth(), provider);
   return toAuthUser(result.user);
 }

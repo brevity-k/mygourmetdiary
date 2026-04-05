@@ -1,5 +1,5 @@
 import React, { useState, useRef, useCallback } from 'react';
-import { View, Text, TouchableOpacity, ActivityIndicator, StyleSheet, Dimensions } from 'react-native';
+import { View, Text, TouchableOpacity, ActivityIndicator, StyleSheet, useWindowDimensions } from 'react-native';
 import MapView, { Marker, Region, PROVIDER_GOOGLE, PoiClickEvent } from 'react-native-maps';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -17,8 +17,6 @@ import { colors, typography, spacing, borderRadius } from '../../theme';
 
 type NavigationProp = NativeStackNavigationProp<SearchStackParamList>;
 
-const { width, height } = Dimensions.get('window');
-
 // Default to Los Angeles (launch market)
 const DEFAULT_REGION: Region = {
   latitude: 34.0522,
@@ -35,6 +33,7 @@ function getMarkerColor(pin: MapPin): string {
 
 export function AreaExplorerScreen() {
   const navigation = useNavigation<NavigationProp>();
+  const { width, height } = useWindowDimensions();
   const isConnoisseur = useSubscriptionStore((s) => s.isActive);
   const openNoteCreation = useUIStore((s) => s.openNoteCreation);
 
@@ -126,7 +125,7 @@ export function AreaExplorerScreen() {
     <View style={styles.container}>
       <MapView
         ref={mapRef}
-        style={styles.map}
+        style={{ width, height }}
         provider={PROVIDER_GOOGLE}
         initialRegion={DEFAULT_REGION}
         onRegionChangeComplete={handleRegionChange}
@@ -253,7 +252,6 @@ export function AreaExplorerScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  map: { width, height },
   filters: {
     position: 'absolute',
     top: 72,

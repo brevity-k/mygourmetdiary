@@ -16,6 +16,7 @@ import { NotesService } from './notes.service';
 import { CreateNoteDto } from './dto/create-note.dto';
 import { UpdateNoteDto } from './dto/update-note.dto';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
+import { clampLimit } from '../common/utils/pagination';
 
 @ApiTags('notes')
 @ApiBearerAuth()
@@ -36,7 +37,7 @@ export class NotesController {
     @Query('type') type?: NoteType,
     @Query('binderId') binderId?: string,
   ) {
-    const safeLimit = Math.min(Math.max(limit || 20, 1), 100);
+    const safeLimit = clampLimit(limit);
     return this.notesService.feed(user.id, cursor, safeLimit, type, binderId);
   }
 
@@ -50,7 +51,7 @@ export class NotesController {
     @Query('limit') limit?: number,
     @Query('type') type?: NoteType,
   ) {
-    const safeLimit = Math.min(Math.max(limit || 20, 1), 100);
+    const safeLimit = clampLimit(limit);
     return this.notesService.publicFeed(cursor, safeLimit, type);
   }
 
@@ -65,7 +66,7 @@ export class NotesController {
     @Query('limit') limit?: number,
     @Query('type') type?: NoteType,
   ) {
-    const safeLimit = Math.min(Math.max(limit || 20, 1), 100);
+    const safeLimit = clampLimit(limit);
     return this.notesService.socialFeed(user.id, cursor, safeLimit, type);
   }
 

@@ -20,6 +20,7 @@ import {
   Warehouse,
 } from 'lucide-react';
 import { NoteType, Visibility } from '@mygourmetdiary/shared-types';
+import { NOTE_TYPE_LABELS } from '@mygourmetdiary/shared-constants';
 import { notesApi } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -131,7 +132,7 @@ export default function NoteDetailPage({ params }: { params: Promise<{ noteId: s
       <div className="space-y-4">
         <div className="flex items-center gap-2 flex-wrap">
           <Icon className="h-5 w-5 text-primary" />
-          <Badge variant="secondary">{note.type.replace('_', ' ')}</Badge>
+          <Badge variant="secondary">{NOTE_TYPE_LABELS[note.type] ?? note.type}</Badge>
           {note.visibility === Visibility.PRIVATE ? (
             <Badge variant="outline"><EyeOff className="h-3 w-3 mr-1" /> Private</Badge>
           ) : (

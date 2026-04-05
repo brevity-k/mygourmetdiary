@@ -3,6 +3,7 @@ import { ApiTags, ApiBearerAuth, ApiOperation, ApiQuery } from '@nestjs/swagger'
 import { User, TasteCategory } from '@prisma/client';
 import { UserDiscoveryService } from './user-discovery.service';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
+import { clampLimit } from '../common/utils/pagination';
 
 @ApiTags('discover')
 @ApiBearerAuth()
@@ -21,7 +22,7 @@ export class UserDiscoveryController {
     @Query('limit') limit?: number,
     @Query('offset') offset?: number,
   ) {
-    const safeLimit = Math.min(Math.max(limit || 20, 1), 100);
+    const safeLimit = clampLimit(limit);
     const safeOffset = Math.max(offset || 0, 0);
     return this.discoveryService.getSimilarUsers(user.id, category, safeLimit, safeOffset);
   }

@@ -60,12 +60,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const registeredUser = await authApi.register();
       setUser(registeredUser);
       return registeredUser;
-    } catch {
+    } catch (registerErr) {
+      console.warn('Auth register failed, trying getMe:', registerErr);
       try {
         const existingUser = await usersApi.getMe();
         setUser(existingUser);
         return existingUser;
-      } catch {
+      } catch (getMeErr) {
+        console.warn('Failed to fetch existing user:', getMeErr);
         return null;
       }
     }
@@ -75,8 +77,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const u = await usersApi.getMe();
       setUser(u);
-    } catch {
-      // ignore
+    } catch (err) {
+      console.warn('Failed to refresh user:', err);
     }
   }, []);
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { use } from 'react';
+import { use, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { notesApi, photosApi } from '@/lib/api';
@@ -44,14 +44,16 @@ export default function EditNotePage({ params }: { params: Promise<{ noteId: str
   const [initialized, setInitialized] = useState(false);
 
   // Initialize form with note data once loaded
-  if (note && !initialized) {
-    setTitle(note.title);
-    setRating(note.rating);
-    setFreeText(note.freeText || '');
-    setBinderId(note.binderId);
-    setVisibility(note.visibility);
-    setInitialized(true);
-  }
+  useEffect(() => {
+    if (note && !initialized) {
+      setTitle(note.title);
+      setRating(note.rating);
+      setFreeText(note.freeText || '');
+      setBinderId(note.binderId);
+      setVisibility(note.visibility);
+      setInitialized(true);
+    }
+  }, [note, initialized]);
 
   const mutation = useMutation({
     mutationFn: async () => {

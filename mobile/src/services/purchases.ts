@@ -3,7 +3,6 @@ import Purchases, {
   CustomerInfo,
   LOG_LEVEL,
 } from 'react-native-purchases';
-import { Platform } from 'react-native';
 import { useSubscriptionStore } from '../store/subscription.store';
 import { SubscriptionTier } from '../types';
 
@@ -16,18 +15,15 @@ export async function initPurchases(appUserId?: string) {
 
   Purchases.setLogLevel(LOG_LEVEL.DEBUG);
 
-  if (Platform.OS === 'ios') {
-    await Purchases.configure({ apiKey: RC_API_KEY, appUserID: appUserId });
-  } else {
-    await Purchases.configure({ apiKey: RC_API_KEY, appUserID: appUserId });
-  }
+  await Purchases.configure({ apiKey: RC_API_KEY, appUserID: appUserId });
 }
 
 export async function getOfferings(): Promise<PurchasesOffering | null> {
   try {
     const offerings = await Purchases.getOfferings();
     return offerings.current ?? null;
-  } catch {
+  } catch (e) {
+    console.warn('getOfferings error:', e);
     return null;
   }
 }
@@ -37,7 +33,8 @@ export async function purchasePackage(pkg: any): Promise<CustomerInfo | null> {
     const { customerInfo } = await Purchases.purchasePackage(pkg);
     syncCustomerInfo(customerInfo);
     return customerInfo;
-  } catch {
+  } catch (e) {
+    console.warn('purchasePackage error:', e);
     return null;
   }
 }
@@ -47,7 +44,8 @@ export async function restorePurchases(): Promise<CustomerInfo | null> {
     const customerInfo = await Purchases.restorePurchases();
     syncCustomerInfo(customerInfo);
     return customerInfo;
-  } catch {
+  } catch (e) {
+    console.warn('restorePurchases error:', e);
     return null;
   }
 }
@@ -56,8 +54,8 @@ export async function checkSubscriptionStatus(): Promise<void> {
   try {
     const customerInfo = await Purchases.getCustomerInfo();
     syncCustomerInfo(customerInfo);
-  } catch {
-    // Silently fail — status will be synced from backend
+  } catch (e) {
+    console.warn('checkSubscriptionStatus error:', e);
   }
 }
 

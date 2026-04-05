@@ -52,15 +52,7 @@ export function SearchScreen() {
   // Social tiered search (with filters)
   const socialSearch = useQuery({
     queryKey: ['search', 'public', debouncedQuery, activeFilters],
-    queryFn: () => {
-      const params = new URLSearchParams({ q: debouncedQuery });
-      if (activeFilters.minRating) params.set('minRating', String(activeFilters.minRating));
-      if (activeFilters.maxPrice) params.set('maxPrice', String(activeFilters.maxPrice));
-      if (activeFilters.cuisineTags) params.set('cuisineTags', activeFilters.cuisineTags);
-      if (activeFilters.wineType) params.set('wineType', activeFilters.wineType);
-      if (activeFilters.spiritType) params.set('spiritType', activeFilters.spiritType);
-      return socialSearchApi.search(debouncedQuery, undefined, undefined);
-    },
+    queryFn: () => socialSearchApi.search(debouncedQuery),
     enabled: debouncedQuery.length >= 2,
   });
 

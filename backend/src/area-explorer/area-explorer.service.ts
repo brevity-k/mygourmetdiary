@@ -1,8 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { Venue } from '@prisma/client';
+import { NoteType, Prisma, Venue } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { RedisService } from '../redis/redis.service';
 import { TssCacheService } from '../taste-matching/tss-cache.service';
+import { computeBoundingBox } from '../common/utils/geo';
 
 export interface MapPin {
   venue: {
@@ -45,14 +46,13 @@ export class AreaExplorerService {
     if (cached) return cached;
 
     // Bounding box calculation (approximate)
-    const latDelta = radiusKm / 111; // ~111km per degree latitude
-    const lngDelta = radiusKm / (111 * Math.cos((lat * Math.PI) / 180));
+    const bbox = computeBoundingBox(lat, lng, radiusKm);
 
     // Get venues within bounding box
     const venues = await this.prisma.venue.findMany({
       where: {
-        lat: { gte: lat - latDelta, lte: lat + latDelta },
-        lng: { gte: lng - lngDelta, lte: lng + lngDelta },
+        lat: { gte: bbox.minLat, lte: bbox.maxLat },
+        lng: { gte: bbox.minLng, lte: bbox.maxLng },
       },
     });
 
@@ -64,10 +64,10 @@ export class AreaExplorerService {
     const venueIds = venues.map((v: Venue) => v.id);
 
     // Build note type filter
-    const typeFilter: string[] = [];
-    if (category === 'RESTAURANT') typeFilter.push('RESTAURANT');
-    else if (category === 'WINERY_VISIT') typeFilter.push('WINERY_VISIT');
-    else typeFilter.push('RESTAURANT', 'WINERY_VISIT');
+    const typeFilter: NoteType[] = [];
+    if (category === 'RESTAURANT') typeFilter.push(NoteType.RESTAURANT);
+    else if (category === 'WINERY_VISIT') typeFilter.push(NoteType.WINERY_VISIT);
+    else typeFilter.push(NoteType.RESTAURANT, NoteType.WINERY_VISIT);
 
     // Get friend IDs
     const friendIds = friendsOnly
@@ -75,7 +75,7 @@ export class AreaExplorerService {
       : [];
 
     // Fetch notes for these venues
-    const noteWhere: any = {
+    const noteWhere: Prisma.NoteWhereInput = {
       venueId: { in: venueIds },
       type: { in: typeFilter },
       visibility: 'PUBLIC',

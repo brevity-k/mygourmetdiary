@@ -4,6 +4,7 @@ import { User } from '@prisma/client';
 import { NotesSearchService } from '../notes/notes.search.service';
 import { TieredSearchService } from './tiered-search.service';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
+import { clampLimit } from '../common/utils/pagination';
 
 @ApiTags('search')
 @ApiBearerAuth()
@@ -27,7 +28,7 @@ export class SearchController {
     @Query('limit') limit?: number,
     @Query('offset') offset?: number,
   ) {
-    const safeLimit = Math.min(Math.max(limit || 20, 1), 100);
+    const safeLimit = clampLimit(limit);
     const safeOffset = Math.max(offset || 0, 0);
     return this.searchService.search(
       user.id,
@@ -51,7 +52,7 @@ export class SearchController {
     @Query('limit') limit?: number,
     @Query('offset') offset?: number,
   ) {
-    const safeLimit = Math.min(Math.max(limit || 20, 1), 100);
+    const safeLimit = clampLimit(limit);
     const safeOffset = Math.max(offset || 0, 0);
     return this.searchService.searchAll(
       user.id,
@@ -105,7 +106,7 @@ export class SearchController {
       : undefined;
 
     const query = q?.slice(0, 500) || '';
-    const perTier = Math.min(Math.max(limit || 10, 1), 50);
+    const perTier = clampLimit(limit, 10, 50);
 
     return this.tieredSearchService.searchPublicTiered(
       user.id,

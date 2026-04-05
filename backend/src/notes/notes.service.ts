@@ -294,28 +294,6 @@ export class NotesService {
     return note;
   }
 
-  async findPublicByAuthor(authorId: string, cursor?: string, limit = 20) {
-    const where: Record<string, unknown> = {
-      authorId,
-      visibility: 'PUBLIC',
-    };
-    if (cursor) where.createdAt = { lt: new Date(cursor) };
-
-    const notes = await this.prisma.note.findMany({
-      where,
-      include: { photos: { orderBy: { sortOrder: 'asc' } }, venue: true },
-      orderBy: { createdAt: 'desc' },
-      take: limit + 1,
-    });
-
-    const hasMore = notes.length > limit;
-    const items = hasMore ? notes.slice(0, limit) : notes;
-    const nextCursor = hasMore
-      ? items[items.length - 1].createdAt.toISOString()
-      : null;
-
-    return { items, nextCursor, hasMore };
-  }
 
   async attachPhotos(noteId: string, userId: string, photoIds: string[]) {
     const note = await this.findById(noteId, userId);

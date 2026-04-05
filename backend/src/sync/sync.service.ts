@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 
 const MAX_NOTES_PER_PAGE = 500;
@@ -12,7 +13,7 @@ export class SyncService {
     since?: string,
     cursor?: string,
   ) {
-    const where: any = { authorId: userId };
+    const where: Prisma.NoteWhereInput = { authorId: userId };
 
     if (since) {
       where.updatedAt = { gte: new Date(since) };

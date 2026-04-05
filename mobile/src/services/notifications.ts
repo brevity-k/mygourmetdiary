@@ -30,11 +30,11 @@ export async function registerForPushNotifications(): Promise<string | null> {
 
   // Register with backend
   const platform = Platform.OS === 'ios' ? 'ios' : 'android';
-  await notificationsApi.registerToken(token, platform).catch(() => {});
+  await notificationsApi.registerToken(token, platform).catch((e) => console.warn('notification token register error:', e));
 
   return token;
 }
 
 export async function unregisterPushNotifications(): Promise<void> {
-  await notificationsApi.removeToken().catch(() => {});
+  await notificationsApi.removeToken().catch((e) => console.warn('notification token remove error:', e));
 }

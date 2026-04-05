@@ -83,8 +83,8 @@ export function useNoteForm(type: NoteType, onSuccess: () => void) {
         const parsed = JSON.parse(draft);
         setFormData(parsed.formData);
       }
-    } catch {
-      // ignore
+    } catch (err) {
+      console.warn('Failed to load note draft from localStorage:', err);
     }
   }, [draftKey]);
 
@@ -119,7 +119,7 @@ export function useNoteForm(type: NoteType, onSuccess: () => void) {
     setIsDirty(true);
     // Persist venue to backend DB so it exists when the note is created
     if (v?.placeId) {
-      venuesApi.get(v.placeId).catch(() => {});
+      venuesApi.get(v.placeId).catch((err) => console.warn('Failed to persist venue:', err));
     }
   }, []);
 

@@ -35,7 +35,7 @@ export function WelcomeScreen() {
       if (id_token) {
         setSigningIn(true);
         signInWithGoogle(id_token)
-          .catch((error: any) => Alert.alert('Sign-in failed', error.message))
+          .catch((error: unknown) => Alert.alert('Sign-in failed', error instanceof Error ? error.message : String(error)))
           .finally(() => setSigningIn(false));
       }
     }
@@ -45,8 +45,8 @@ export function WelcomeScreen() {
     setSigningIn(true);
     try {
       await devSignIn();
-    } catch (error: any) {
-      Alert.alert('Sign-in failed', error.message);
+    } catch (error: unknown) {
+      Alert.alert('Sign-in failed', error instanceof Error ? error.message : String(error));
     } finally {
       setSigningIn(false);
     }
@@ -81,9 +81,10 @@ export function WelcomeScreen() {
       }
 
       await signInWithApple(appleCredential.identityToken, nonce);
-    } catch (error: any) {
-      if (error.code !== 'ERR_REQUEST_CANCELED') {
-        Alert.alert('Sign-in failed', error.message);
+    } catch (error: unknown) {
+      const isCancel = error instanceof Error && 'code' in error && (error as Error & { code: string }).code === 'ERR_REQUEST_CANCELED';
+      if (!isCancel) {
+        Alert.alert('Sign-in failed', error instanceof Error ? error.message : String(error));
       }
     } finally {
       setSigningIn(false);

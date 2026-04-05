@@ -1,9 +1,10 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { MapPin, X } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { venuesApi } from '@/lib/api';
+import { useClickOutside } from '@/hooks/use-click-outside';
 import type { Venue } from '@mygourmetdiary/shared-types';
 
 interface VenueSearchProps {
@@ -42,15 +43,8 @@ export function VenueSearch({ value, onChange }: VenueSearchProps) {
     };
   }, [query]);
 
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
-        setShowResults(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+  const closeResults = useCallback(() => setShowResults(false), []);
+  useClickOutside(containerRef, closeResults);
 
   if (value) {
     return (

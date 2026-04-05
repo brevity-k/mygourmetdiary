@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { Venue } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
+import { computeBoundingBox } from '../common/utils/geo';
 
 const PIONEER_NOTE_THRESHOLD = 3; // Venues with < 3 notes are pioneer zones
 const PIONEER_BADGE_MAX = 5; // First 5 users get badge
@@ -18,14 +19,13 @@ export class PioneersService {
   ) {}
 
   async getPioneerZones(lat: number, lng: number, radiusKm: number) {
-    const latDelta = radiusKm / 111;
-    const lngDelta = radiusKm / (111 * Math.cos((lat * Math.PI) / 180));
+    const bbox = computeBoundingBox(lat, lng, radiusKm);
 
     // Get all venues in radius
     const venues = await this.prisma.venue.findMany({
       where: {
-        lat: { gte: lat - latDelta, lte: lat + latDelta },
-        lng: { gte: lng - lngDelta, lte: lng + lngDelta },
+        lat: { gte: bbox.minLat, lte: bbox.maxLat },
+        lng: { gte: bbox.minLng, lte: bbox.maxLng },
       },
     });
 

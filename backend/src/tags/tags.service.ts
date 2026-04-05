@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { RedisService } from '../redis/redis.service';
-import { TagCategory } from '@prisma/client';
+import { TagCategory, TagTaxonomy } from '@prisma/client';
 
 @Injectable()
 export class TagsService {
@@ -15,7 +15,7 @@ export class TagsService {
 
   async findAll(category?: TagCategory, group?: string) {
     // Try cache for full set
-    const cached = await this.redis.getJson<any[]>(this.CACHE_KEY);
+    const cached = await this.redis.getJson<TagTaxonomy[]>(this.CACHE_KEY);
     if (cached) {
       return this.filterTags(cached, category, group);
     }
@@ -28,7 +28,7 @@ export class TagsService {
     return this.filterTags(tags, category, group);
   }
 
-  private filterTags(tags: any[], category?: TagCategory, group?: string) {
+  private filterTags(tags: TagTaxonomy[], category?: TagCategory, group?: string) {
     let result = tags;
     if (category) {
       result = result.filter((t) => t.category === category);

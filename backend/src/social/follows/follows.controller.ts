@@ -12,6 +12,7 @@ import { ApiTags, ApiBearerAuth, ApiOperation, ApiQuery } from '@nestjs/swagger'
 import { User } from '@prisma/client';
 import { FollowsService } from './follows.service';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
+import { clampLimit } from '../../common/utils/pagination';
 
 @ApiTags('follows')
 @ApiBearerAuth()
@@ -41,7 +42,7 @@ export class FollowsController {
     @Query('cursor') cursor?: string,
     @Query('limit') limit?: number,
   ) {
-    const safeLimit = Math.min(Math.max(limit || 20, 1), 100);
+    const safeLimit = clampLimit(limit);
     return this.followsService.getFollowing(user.id, cursor, safeLimit);
   }
 }

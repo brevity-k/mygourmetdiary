@@ -5,7 +5,7 @@ import {
   ForbiddenException,
   Logger,
 } from '@nestjs/common';
-import { SignalType } from '@prisma/client';
+import { SignalType, TasteCategory } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { RedisService } from '../../redis/redis.service';
 import { TssComputationService } from '../../taste-matching/tss-computation.service';
@@ -132,14 +132,22 @@ export class SignalsService {
     return { ...counts, mySignals };
   }
 
-  private recomputeWithRetry(senderId: string, authorId: string, category: any) {
-    this.tssComputation.recomputePair(senderId, authorId, category).catch(() => {
+  /**
+   * Fire-and-forget TSS recomputation with a single retry.
+   * The nightly batch job will correct any persistent failures.
+   */
+  private recomputeWithRetry(senderId: string, authorId: string, category: TasteCategory) {
+    this.tssComputation.recomputePair(senderId, authorId, category).catch((firstErr) => {
+      this.logger.warn(
+        `Incremental TSS recompute failed (will retry once) for ${senderId}/${authorId}/${category}`,
+        firstErr,
+      );
       // Retry once after 5s delay; nightly batch will correct if this also fails
       setTimeout(() => {
-        this.tssComputation.recomputePair(senderId, authorId, category).catch((e) => {
+        this.tssComputation.recomputePair(senderId, authorId, category).catch((retryErr) => {
           this.logger.warn(
             `Incremental TSS recompute permanently failed for ${senderId}/${authorId}/${category}`,
-            e,
+            retryErr,
           );
         });
       }, 5000);
