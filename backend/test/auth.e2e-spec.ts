@@ -31,7 +31,8 @@ describe('Auth (e2e)', () => {
       .expect(201);
 
     expect(res.body.data).toHaveProperty('id');
-    expect(res.body.data.firebaseUid).toBe('e2e-auth-user1');
+    // firebaseUid is stripped from responses by sanitizeUser()
+    expect(res.body.data).not.toHaveProperty('firebaseUid');
 
     // Verify 4 default binders
     const binders = await prisma.binder.findMany({
