@@ -2,7 +2,7 @@ import { Controller, Get, Query, ForbiddenException } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiOperation, ApiQuery } from '@nestjs/swagger';
 import { User } from '@prisma/client';
 import { NotesSearchService } from '../notes/notes.search.service';
-import { TssCacheService } from '../taste-matching/tss-cache.service';
+import { TieredSearchService } from './tiered-search.service';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 
 @ApiTags('search')
@@ -11,7 +11,7 @@ import { CurrentUser } from '../common/decorators/current-user.decorator';
 export class SearchController {
   constructor(
     private readonly searchService: NotesSearchService,
-    private readonly tssCache: TssCacheService,
+    private readonly tieredSearchService: TieredSearchService,
   ) {}
 
   @Get()
@@ -87,7 +87,6 @@ export class SearchController {
     @Query('dateFrom') dateFrom?: string,
     @Query('dateTo') dateTo?: string,
   ) {
-    // Check if any premium filters are used
     const hasPremiumFilters = minRating || maxPrice || cuisineTags || wineType || spiritType || dateFrom || dateTo;
     if (hasPremiumFilters && user.subscriptionTier !== 'CONNOISSEUR') {
       throw new ForbiddenException('Advanced filters require a Connoisseur subscription');
@@ -104,53 +103,16 @@ export class SearchController {
           dateTo: dateTo || undefined,
         }
       : undefined;
+
     const query = q?.slice(0, 500) || '';
     const perTier = Math.min(Math.max(limit || 10, 1), 50);
 
-    // Load tier sets in parallel
-    const [friendIds, highTssIds, moderateTssIds] = await Promise.all([
-      this.tssCache.getPinnedFriendIds(user.id),
-      this.tssCache.getHighTssUserIds(user.id),
-      this.tssCache.getModerateTssUserIds(user.id),
-    ]);
-
-    // Exclude already-included IDs from lower tiers
-    const highOnly = highTssIds.filter((id) => !friendIds.includes(id));
-    const moderateOnly = moderateTssIds.filter(
-      (id) => !friendIds.includes(id) && !highTssIds.includes(id),
+    return this.tieredSearchService.searchPublicTiered(
+      user.id,
+      query,
+      type,
+      perTier,
+      filters,
     );
-
-    const [tier1, tier2, tier3, tier4] = await Promise.all([
-      friendIds.length > 0
-        ? this.searchService.searchPublic(query, friendIds, type, perTier, 0, filters)
-        : Promise.resolve({ hits: [], total: 0, limit: perTier, offset: 0 }),
-      highOnly.length > 0
-        ? this.searchService.searchPublic(query, highOnly, type, perTier, 0, filters)
-        : Promise.resolve({ hits: [], total: 0, limit: perTier, offset: 0 }),
-      moderateOnly.length > 0
-        ? this.searchService.searchPublic(query, moderateOnly, type, perTier, 0, filters)
-        : Promise.resolve({ hits: [], total: 0, limit: perTier, offset: 0 }),
-      this.searchService.searchPublic(query, undefined, type, perTier, 0, filters),
-    ]);
-
-    // Deduplicate across tiers
-    const seenIds = new Set<string>();
-    const addTier = (hits: any[], tier: number) => {
-      const results: any[] = [];
-      for (const hit of hits) {
-        if (!seenIds.has(hit.id)) {
-          seenIds.add(hit.id);
-          results.push({ ...hit, tier });
-        }
-      }
-      return results;
-    };
-
-    return {
-      tier1: addTier(tier1.hits, 1),
-      tier2: addTier(tier2.hits, 2),
-      tier3: addTier(tier3.hits, 3),
-      tier4: addTier(tier4.hits, 4),
-    };
   }
 }

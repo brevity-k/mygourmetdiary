@@ -11,6 +11,7 @@ import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
 import { User } from '@prisma/client';
 import { SubscriptionsService } from './subscriptions.service';
+import { RevenueCatWebhookDto } from './dto/revenuecat-webhook.dto';
 import { Public } from '../common/decorators/public.decorator';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 
@@ -29,7 +30,7 @@ export class SubscriptionsController {
   @ApiOperation({ summary: 'RevenueCat webhook receiver' })
   async webhook(
     @Headers('authorization') authHeader: string,
-    @Body() body: any,
+    @Body() body: RevenueCatWebhookDto,
   ) {
     const expectedKey = this.configService.get<string>('revenuecat.webhookAuthKey');
     if (!expectedKey || authHeader !== `Bearer ${expectedKey}`) {

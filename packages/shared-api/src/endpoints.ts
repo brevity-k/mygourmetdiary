@@ -4,13 +4,42 @@ import type {
   Binder,
   MapPin,
   Note,
+  NoteExtension,
   NoteType,
   PaginatedResponse,
   PresignResponse,
   SearchResult,
   Tag,
   User,
+  Venue,
+  Visibility,
 } from '@mygourmetdiary/shared-types';
+
+export interface CreateNoteInput {
+  type: NoteType;
+  title: string;
+  binderId: string;
+  rating: number;
+  freeText: string;
+  visibility: Visibility;
+  tagIds: string[];
+  extension: NoteExtension | Record<string, unknown>;
+  venueId: string | null;
+  experiencedAt: string;
+  photoIds?: string[];
+}
+
+export interface UpdateNoteInput {
+  title?: string;
+  binderId?: string;
+  rating?: number;
+  freeText?: string | null;
+  visibility?: Visibility;
+  tagIds?: string[];
+  extension?: NoteExtension | Record<string, unknown>;
+  venueId?: string | null;
+  experiencedAt?: string;
+}
 
 export function createAuthApi(client: AxiosInstance) {
   return {
@@ -65,11 +94,11 @@ export function createVenuesApi(client: AxiosInstance) {
       if (lat !== undefined) params.set('lat', String(lat));
       if (lng !== undefined) params.set('lng', String(lng));
       return client
-        .get<ApiResponse<any[]>>(`/venues/search?${params}`)
+        .get<ApiResponse<Venue[]>>(`/venues/search?${params}`)
         .then((r) => r.data.data);
     },
     get: (placeId: string) =>
-      client.get<ApiResponse<any>>(`/venues/${placeId}`).then((r) => r.data.data),
+      client.get<ApiResponse<Venue>>(`/venues/${placeId}`).then((r) => r.data.data),
   };
 }
 
@@ -110,9 +139,9 @@ export function createNotesApi(client: AxiosInstance) {
     },
     get: (id: string) =>
       client.get<ApiResponse<Note>>(`/notes/${id}`).then((r) => r.data.data),
-    create: (data: any) =>
+    create: (data: CreateNoteInput) =>
       client.post<ApiResponse<Note>>('/notes', data).then((r) => r.data.data),
-    update: (id: string, data: any) =>
+    update: (id: string, data: UpdateNoteInput) =>
       client.patch<ApiResponse<Note>>(`/notes/${id}`, data).then((r) => r.data.data),
     remove: (id: string) =>
       client.delete(`/notes/${id}`),

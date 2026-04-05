@@ -3,6 +3,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { Visibility } from '@mygourmetdiary/shared-types';
 import type { NoteType } from '@mygourmetdiary/shared-types';
+import type { NoteFormData } from '@/hooks/use-note-form';
 import { bindersApi } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -32,7 +33,7 @@ interface NoteFormLayoutProps {
   venue: Venue | null;
   photos: PhotoFile[];
   setPhotos: (photos: PhotoFile[]) => void;
-  updateField: (key: string, value: any) => void;
+  updateField: <K extends keyof NoteFormData>(key: K, value: NoteFormData[K]) => void;
   handleVenueChange: (venue: Venue | null) => void;
   onSubmit: () => void;
   isSubmitting: boolean;

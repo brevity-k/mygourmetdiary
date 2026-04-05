@@ -2,33 +2,38 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { ForbiddenException } from '@nestjs/common';
 import { SearchController } from './search.controller';
 import { NotesSearchService } from '../notes/notes.search.service';
-import { TssCacheService } from '../taste-matching/tss-cache.service';
+import { TieredSearchService } from './tiered-search.service';
 
 describe('SearchController', () => {
   let controller: SearchController;
   let searchService: any;
-  let tssCache: any;
+  let tieredSearchService: any;
 
   const freeUser: any = { id: 'u1', subscriptionTier: 'FREE' };
   const premiumUser: any = { id: 'u1', subscriptionTier: 'CONNOISSEUR' };
 
+  const emptyTieredResult = {
+    tier1: [],
+    tier2: [],
+    tier3: [],
+    tier4: [],
+  };
+
   beforeEach(async () => {
     searchService = {
       search: jest.fn().mockResolvedValue({ hits: [], total: 0, limit: 20, offset: 0 }),
-      searchPublic: jest.fn().mockResolvedValue({ hits: [], total: 0, limit: 10, offset: 0 }),
+      searchAll: jest.fn().mockResolvedValue({ hits: [], total: 0, limit: 20, offset: 0 }),
     };
 
-    tssCache = {
-      getPinnedFriendIds: jest.fn().mockResolvedValue([]),
-      getHighTssUserIds: jest.fn().mockResolvedValue([]),
-      getModerateTssUserIds: jest.fn().mockResolvedValue([]),
+    tieredSearchService = {
+      searchPublicTiered: jest.fn().mockResolvedValue(emptyTieredResult),
     };
 
     const module: TestingModule = await Test.createTestingModule({
       controllers: [SearchController],
       providers: [
         { provide: NotesSearchService, useValue: searchService },
-        { provide: TssCacheService, useValue: tssCache },
+        { provide: TieredSearchService, useValue: tieredSearchService },
       ],
     }).compile();
 
@@ -71,93 +76,78 @@ describe('SearchController', () => {
     ).resolves.toBeDefined();
   });
 
-  // ─── tier deduplication ────────────────────────────────
+  // ─── delegation to TieredSearchService ─────────────────
 
-  it('deduplicates results across tiers', async () => {
-    tssCache.getPinnedFriendIds.mockResolvedValue(['friend1']);
-    tssCache.getHighTssUserIds.mockResolvedValue(['friend1', 'high1']);
-    tssCache.getModerateTssUserIds.mockResolvedValue([]);
+  it('delegates to tieredSearchService.searchPublicTiered', async () => {
+    await controller.searchPublic(freeUser, 'ramen');
 
-    const sharedHit = { id: 'note-1', title: 'Shared' };
-    searchService.searchPublic
-      .mockResolvedValueOnce({ hits: [sharedHit], total: 1, limit: 10, offset: 0 }) // tier1
-      .mockResolvedValueOnce({ hits: [sharedHit], total: 1, limit: 10, offset: 0 }) // tier2
-      .mockResolvedValueOnce({ hits: [], total: 0, limit: 10, offset: 0 }) // tier3
-      .mockResolvedValueOnce({ hits: [sharedHit], total: 1, limit: 10, offset: 0 }); // tier4
-
-    const result = await controller.searchPublic(freeUser, 'ramen');
-
-    expect(result.tier1).toHaveLength(1);
-    expect(result.tier2).toHaveLength(0); // deduplicated
-    expect(result.tier4).toHaveLength(0); // deduplicated
+    expect(tieredSearchService.searchPublicTiered).toHaveBeenCalledWith(
+      'u1',
+      'ramen',
+      undefined,
+      10,
+      undefined,
+    );
   });
 
-  // ─── tier set filtering ────────────────────────────────
+  it('passes type and clamped perTier to tiered search', async () => {
+    await controller.searchPublic(freeUser, 'wine', 'WINE', 25);
 
-  it('excludes friend IDs from high-TSS tier', async () => {
-    tssCache.getPinnedFriendIds.mockResolvedValue(['user-a']);
-    tssCache.getHighTssUserIds.mockResolvedValue(['user-a', 'user-b']);
-    tssCache.getModerateTssUserIds.mockResolvedValue([]);
-
-    searchService.searchPublic.mockResolvedValue({ hits: [], total: 0, limit: 10, offset: 0 });
-
-    await controller.searchPublic(freeUser, 'test');
-
-    // tier2 call should only include user-b (user-a is already in friends)
-    const tier2Call = searchService.searchPublic.mock.calls[1];
-    expect(tier2Call[1]).toEqual(['user-b']);
+    expect(tieredSearchService.searchPublicTiered).toHaveBeenCalledWith(
+      'u1',
+      'wine',
+      'WINE',
+      25,
+      undefined,
+    );
   });
 
-  it('excludes friend and high IDs from moderate tier', async () => {
-    tssCache.getPinnedFriendIds.mockResolvedValue(['user-a']);
-    tssCache.getHighTssUserIds.mockResolvedValue(['user-b']);
-    tssCache.getModerateTssUserIds.mockResolvedValue(['user-a', 'user-b', 'user-c']);
+  it('clamps perTier between 1 and 50', async () => {
+    await controller.searchPublic(freeUser, 'test', undefined, 200);
 
-    searchService.searchPublic.mockResolvedValue({ hits: [], total: 0, limit: 10, offset: 0 });
-
-    await controller.searchPublic(freeUser, 'test');
-
-    // tier3 call should only include user-c
-    const tier3Call = searchService.searchPublic.mock.calls[2];
-    expect(tier3Call[1]).toEqual(['user-c']);
+    expect(tieredSearchService.searchPublicTiered).toHaveBeenCalledWith(
+      'u1',
+      'test',
+      undefined,
+      50,
+      undefined,
+    );
   });
 
-  // ─── empty tiers ───────────────────────────────────────
+  it('passes parsed premium filters to tiered search', async () => {
+    await controller.searchPublic(
+      premiumUser, 'ramen', 'RESTAURANT', 10,
+      '7', '50.5', 'japanese,ramen', 'Red', 'Whiskey', '2025-01-01', '2025-12-31',
+    );
 
-  it('skips search call when tier has no user IDs', async () => {
-    tssCache.getPinnedFriendIds.mockResolvedValue([]);
-    tssCache.getHighTssUserIds.mockResolvedValue([]);
-    tssCache.getModerateTssUserIds.mockResolvedValue([]);
+    expect(tieredSearchService.searchPublicTiered).toHaveBeenCalledWith(
+      'u1',
+      'ramen',
+      'RESTAURANT',
+      10,
+      {
+        minRating: 7,
+        maxPrice: 50.5,
+        cuisineTags: ['japanese', 'ramen'],
+        wineType: 'Red',
+        spiritType: 'Whiskey',
+        dateFrom: '2025-01-01',
+        dateTo: '2025-12-31',
+      },
+    );
+  });
 
-    searchService.searchPublic.mockResolvedValue({ hits: [], total: 0, limit: 10, offset: 0 });
+  it('returns the tiered result from the service', async () => {
+    const tieredResult = {
+      tier1: [{ id: 'n1', tier: 1 }],
+      tier2: [{ id: 'n2', tier: 2 }],
+      tier3: [{ id: 'n3', tier: 3 }],
+      tier4: [{ id: 'n4', tier: 4 }],
+    };
+    tieredSearchService.searchPublicTiered.mockResolvedValue(tieredResult);
 
     const result = await controller.searchPublic(freeUser, 'test');
 
-    // Only tier4 (general) should call searchPublic with undefined authorIds
-    expect(searchService.searchPublic).toHaveBeenCalledTimes(1);
-    expect(result.tier1).toEqual([]);
-    expect(result.tier2).toEqual([]);
-    expect(result.tier3).toEqual([]);
-  });
-
-  // ─── 4-tier response shape ─────────────────────────────
-
-  it('returns correct 4-tier response shape with tier annotations', async () => {
-    tssCache.getPinnedFriendIds.mockResolvedValue(['f1']);
-    tssCache.getHighTssUserIds.mockResolvedValue(['h1']);
-    tssCache.getModerateTssUserIds.mockResolvedValue(['m1']);
-
-    searchService.searchPublic
-      .mockResolvedValueOnce({ hits: [{ id: 'n1' }], total: 1, limit: 10, offset: 0 })
-      .mockResolvedValueOnce({ hits: [{ id: 'n2' }], total: 1, limit: 10, offset: 0 })
-      .mockResolvedValueOnce({ hits: [{ id: 'n3' }], total: 1, limit: 10, offset: 0 })
-      .mockResolvedValueOnce({ hits: [{ id: 'n4' }], total: 1, limit: 10, offset: 0 });
-
-    const result = await controller.searchPublic(freeUser, 'test');
-
-    expect(result.tier1).toEqual([{ id: 'n1', tier: 1 }]);
-    expect(result.tier2).toEqual([{ id: 'n2', tier: 2 }]);
-    expect(result.tier3).toEqual([{ id: 'n3', tier: 3 }]);
-    expect(result.tier4).toEqual([{ id: 'n4', tier: 4 }]);
+    expect(result).toEqual(tieredResult);
   });
 });

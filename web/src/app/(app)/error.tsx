@@ -11,7 +11,9 @@ export default function AppError({
     <div className="flex flex-col items-center justify-center py-20 gap-4">
       <h2 className="text-xl font-heading font-semibold text-foreground">Something went wrong</h2>
       <p className="text-muted-foreground text-sm max-w-md text-center">
-        {error.message || 'An unexpected error occurred.'}
+        {process.env.NODE_ENV === 'development'
+          ? error.message || 'An unexpected error occurred.'
+          : 'An unexpected error occurred. Please try again later.'}
       </p>
       <button
         onClick={reset}

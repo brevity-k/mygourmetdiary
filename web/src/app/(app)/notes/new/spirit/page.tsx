@@ -21,7 +21,7 @@ export default function NewSpiritNotePage() {
       venue={form.venue}
       photos={form.photos}
       setPhotos={form.setPhotos}
-      updateField={form.updateField as any}
+      updateField={form.updateField}
       handleVenueChange={form.handleVenueChange}
       onSubmit={form.submit}
       isSubmitting={form.isSubmitting}

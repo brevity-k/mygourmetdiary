@@ -51,7 +51,7 @@ export class CityLookupService {
     });
 
     const res = await fetch(
-      `http://api.geonames.org/searchJSON?${params}`,
+      `https://secure.geonames.org/searchJSON?${params}`,
     );
 
     if (!res.ok) {
@@ -102,7 +102,7 @@ export class CityLookupService {
     });
 
     const res = await fetch(
-      `http://api.geonames.org/searchJSON?${params}`,
+      `https://secure.geonames.org/searchJSON?${params}`,
     );
 
     if (!res.ok) return null;

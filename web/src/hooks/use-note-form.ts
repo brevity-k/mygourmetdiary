@@ -10,7 +10,7 @@ import type { PhotoFile } from '@/components/photo-uploader';
 
 const AUTOSAVE_INTERVAL_MS = 30_000;
 
-interface NoteFormData {
+export interface NoteFormData {
   type: NoteType;
   title: string;
   binderId: string;
