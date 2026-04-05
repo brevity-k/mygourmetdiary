@@ -10,7 +10,6 @@
   ],
   "testEnvironment": "node",
   "moduleNameMapper": {
-    "^@prisma/client$": "<rootDir>/prisma/generated/client",
-    "^@prisma/client/(.*)$": "<rootDir>/prisma/generated/client/$1"
+    "^meilisearch$": "<rootDir>/node_modules/meilisearch/dist/index.js"
   }
 }
