@@ -88,11 +88,11 @@
     "coverageDirectory": "../coverage",
     "testEnvironment": "node",
     "transformIgnorePatterns": [
-      "node_modules/(?!uuid/)"
+      "node_modules/(?!uuid/|meilisearch/)"
     ],
     "moduleNameMapper": {
       "^@prisma/client$": "<rootDir>/../prisma/generated/client/client",
-      "^meilisearch$": "<rootDir>/../node_modules/meilisearch/dist/index.js"
+      "^meilisearch$": "<rootDir>/../../node_modules/meilisearch/dist/index.js"
     }
   }
 }
