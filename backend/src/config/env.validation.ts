@@ -39,40 +39,52 @@ class EnvironmentVariables {
   DATABASE_URL!: string;
 
   @IsString()
-  REDIS_URL!: string;
+  @IsOptional()
+  REDIS_URL?: string;
 
   @IsString()
-  FIREBASE_PROJECT_ID!: string;
+  @IsOptional()
+  FIREBASE_PROJECT_ID?: string;
 
   @IsString()
-  FIREBASE_CLIENT_EMAIL!: string;
+  @IsOptional()
+  FIREBASE_CLIENT_EMAIL?: string;
 
   @IsString()
-  FIREBASE_PRIVATE_KEY!: string;
+  @IsOptional()
+  FIREBASE_PRIVATE_KEY?: string;
 
   @IsString()
-  GOOGLE_PLACES_API_KEY!: string;
+  @IsOptional()
+  GOOGLE_PLACES_API_KEY?: string;
 
   @IsString()
-  R2_ACCOUNT_ID!: string;
+  @IsOptional()
+  R2_ACCOUNT_ID?: string;
 
   @IsString()
-  R2_ACCESS_KEY_ID!: string;
+  @IsOptional()
+  R2_ACCESS_KEY_ID?: string;
 
   @IsString()
-  R2_SECRET_ACCESS_KEY!: string;
+  @IsOptional()
+  R2_SECRET_ACCESS_KEY?: string;
 
   @IsString()
-  R2_BUCKET_NAME!: string;
+  @IsOptional()
+  R2_BUCKET_NAME?: string;
 
   @IsString()
-  R2_PUBLIC_URL!: string;
+  @IsOptional()
+  R2_PUBLIC_URL?: string;
 
   @IsString()
-  MEILISEARCH_HOST!: string;
+  @IsOptional()
+  MEILISEARCH_HOST?: string;
 
   @IsString()
-  MEILISEARCH_API_KEY!: string;
+  @IsOptional()
+  MEILISEARCH_API_KEY?: string;
 
   @IsString()
   @IsOptional()
