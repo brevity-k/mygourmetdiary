@@ -44,6 +44,10 @@
   "version": "1.0.0",
   "scripts": {
     "android": "expo run:android",
-    "ios": "expo run:ios"
+    "ios": "expo run:ios",
+    "build": "npm run build --workspace=backend && npm run build --workspace=web",
+    "lint": "npm run lint:check --workspace=backend && npm run lint --workspace=web",
+    "typecheck": "npm run typecheck --workspace=backend && npm run typecheck --workspace=web && npx --workspace=mobile tsc --noEmit",
+    "test": "npm test --workspace=backend"
   }
 }

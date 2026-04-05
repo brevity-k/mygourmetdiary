@@ -61,7 +61,7 @@ jobs:
           --health-retries 5
     env:
       DATABASE_URL: postgresql://test:test@localhost:5432/mygourmetdiary_test
-      NODE_ENV: development
+      NODE_ENV: test
     steps:
       - uses: actions/checkout@v6
       - uses: actions/setup-node@v6
@@ -85,3 +85,39 @@ jobs:
       - run: npm ci
       - run: npx tsc --noEmit
         working-directory: mobile
+
+  web-lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+        working-directory: web
+
+  web-typecheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+        working-directory: web
+
+  web-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+        working-directory: web
