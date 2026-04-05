@@ -94,7 +94,6 @@
       "node_modules/(?!uuid/|meilisearch/)"
     ],
     "moduleNameMapper": {
-      "^@prisma/client$": "<rootDir>/../prisma/generated/client/client",
       "^meilisearch$": "<rootDir>/../../node_modules/meilisearch/dist/index.js"
     }
   }
