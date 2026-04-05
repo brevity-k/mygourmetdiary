@@ -23,6 +23,9 @@
     "prisma:seed:demo": "ts-node prisma/seed-demo.ts",
     "postinstall": "prisma generate"
   },
+  "engines": {
+    "node": ">=22.0.0"
+  },
   "prisma": {
     "seed": "ts-node prisma/seed.ts"
   },
