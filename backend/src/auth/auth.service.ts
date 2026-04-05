@@ -27,7 +27,12 @@ export class AuthService {
     let picture: string | undefined;
 
     // Dev bypass: token format is `dev:<firebaseUid>`
-    if (process.env.NODE_ENV === 'development' && idToken.startsWith('dev:')) {
+    // Requires BOTH NODE_ENV=development AND DEV_AUTH_ENABLED=true
+    if (
+      process.env.NODE_ENV === 'development' &&
+      process.env.DEV_AUTH_ENABLED === 'true' &&
+      idToken.startsWith('dev:')
+    ) {
       uid = idToken.substring(4);
       // Look up existing user data if available
       const existing = await this.prisma.user.findUnique({
@@ -78,7 +83,11 @@ export class AuthService {
     // Invalidate cache
     await this.redis.del(`user:firebase:${uid}`);
 
-    this.logger.log(`User registered/updated: ${user.id} (${user.email})`);
+    const [local, domain] = user.email.split('@');
+    const masked = local
+      ? `${local[0]}${'*'.repeat(Math.max(local.length - 1, 2))}@${domain ?? ''}`
+      : '***';
+    this.logger.log(`User registered/updated: ${user.id} (${masked})`);
     return user;
   }
 

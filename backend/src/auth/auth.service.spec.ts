@@ -15,6 +15,7 @@ describe('AuthService', () => {
   let prisma: any;
   let redis: any;
   const originalEnv = process.env.NODE_ENV;
+  const originalDevAuth = process.env.DEV_AUTH_ENABLED;
 
   beforeEach(async () => {
     prisma = {
@@ -46,12 +47,14 @@ describe('AuthService', () => {
   afterEach(() => {
     jest.clearAllMocks();
     process.env.NODE_ENV = originalEnv;
+    process.env.DEV_AUTH_ENABLED = originalDevAuth;
   });
 
   // --- Dev bypass: existing user ---
 
   it('registers existing user via dev bypass without calling Firebase', async () => {
     process.env.NODE_ENV = 'development';
+    process.env.DEV_AUTH_ENABLED = 'true';
     const existingUser = {
       id: 'u1',
       firebaseUid: 'dev-uid-1',
@@ -77,6 +80,7 @@ describe('AuthService', () => {
 
   it('registers new user via dev bypass with default values', async () => {
     process.env.NODE_ENV = 'development';
+    process.env.DEV_AUTH_ENABLED = 'true';
     prisma.user.findUnique.mockResolvedValue(null);
     const newUser = {
       id: 'u-new',
@@ -132,8 +136,9 @@ describe('AuthService', () => {
 
   it('creates 4 default binders for new user', async () => {
     process.env.NODE_ENV = 'development';
+    process.env.DEV_AUTH_ENABLED = 'true';
     prisma.user.findUnique.mockResolvedValue(null);
-    prisma.user.upsert.mockResolvedValue({ id: 'u1', firebaseUid: 'uid1' });
+    prisma.user.upsert.mockResolvedValue({ id: 'u1', firebaseUid: 'uid1', email: 'uid1@gourmet.local' });
     prisma.binder.count.mockResolvedValue(0);
     prisma.binder.createMany.mockResolvedValue({ count: 4 });
 
@@ -153,8 +158,9 @@ describe('AuthService', () => {
 
   it('skips binder creation when default binders already exist', async () => {
     process.env.NODE_ENV = 'development';
+    process.env.DEV_AUTH_ENABLED = 'true';
     prisma.user.findUnique.mockResolvedValue(null);
-    prisma.user.upsert.mockResolvedValue({ id: 'u1', firebaseUid: 'uid1' });
+    prisma.user.upsert.mockResolvedValue({ id: 'u1', firebaseUid: 'uid1', email: 'uid1@gourmet.local' });
     prisma.binder.count.mockResolvedValue(4);
 
     await service.register('dev:uid1');
@@ -166,8 +172,9 @@ describe('AuthService', () => {
 
   it('invalidates Redis cache on register', async () => {
     process.env.NODE_ENV = 'development';
+    process.env.DEV_AUTH_ENABLED = 'true';
     prisma.user.findUnique.mockResolvedValue(null);
-    prisma.user.upsert.mockResolvedValue({ id: 'u1', firebaseUid: 'uid1' });
+    prisma.user.upsert.mockResolvedValue({ id: 'u1', firebaseUid: 'uid1', email: 'uid1@gourmet.local' });
     prisma.binder.count.mockResolvedValue(4);
 
     await service.register('dev:uid1');
@@ -207,7 +214,7 @@ describe('AuthService', () => {
     });
     (admin.auth as jest.Mock).mockReturnValue({ verifyIdToken: mockVerify });
 
-    prisma.user.upsert.mockResolvedValue({ id: 'u1' });
+    prisma.user.upsert.mockResolvedValue({ id: 'u1', email: 'hello@world.com' });
     prisma.binder.count.mockResolvedValue(4);
 
     await service.register('token');

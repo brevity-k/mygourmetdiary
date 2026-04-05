@@ -1,7 +1,9 @@
-import { Controller, Get, Param, Query } from '@nestjs/common';
+import { Controller, Get, Param, Query, BadRequestException } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiOperation, ApiQuery } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
 import { VenuesService } from './venues.service';
+
+const PLACE_ID_PATTERN = /^[A-Za-z0-9_-]+$/;
 
 @ApiTags('venues')
 @ApiBearerAuth()
@@ -26,6 +28,9 @@ export class VenuesController {
   @Get(':placeId')
   @ApiOperation({ summary: 'Get venue details by Google Place ID' })
   async getByPlaceId(@Param('placeId') placeId: string) {
+    if (!PLACE_ID_PATTERN.test(placeId)) {
+      throw new BadRequestException('Invalid placeId format');
+    }
     return this.venuesService.getByPlaceId(placeId);
   }
 }

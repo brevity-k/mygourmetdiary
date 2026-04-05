@@ -11,6 +11,7 @@ import { User } from '@prisma/client';
 import { AuthService } from './auth.service';
 import { Public } from '../common/decorators/public.decorator';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
+import { sanitizeUser } from '../common/utils/sanitize-user';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -26,13 +27,14 @@ export class AuthController {
       throw new UnauthorizedException('Missing authorization header');
     }
     const token = authHeader.substring(7);
-    return this.authService.register(token);
+    const user = await this.authService.register(token);
+    return sanitizeUser(user);
   }
 
   @Get('me')
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Get current user profile' })
   async me(@CurrentUser() user: User) {
-    return user;
+    return sanitizeUser(user);
   }
 }

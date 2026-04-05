@@ -34,6 +34,12 @@ const firebaseConfig = {
 const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
 
 // Use initializeAuth on first load, getAuth on hot reload
+// TODO: SECURITY — AsyncStorage stores Firebase tokens in plaintext on disk.
+// Replace with expo-secure-store backed persistence once the dependency is added:
+//   1. `npx expo install expo-secure-store`
+//   2. Build a custom persistence adapter using SecureStore.setItemAsync / getItemAsync
+//   3. Pass it to getReactNativePersistence() instead of ReactNativeAsyncStorage
+// See: https://docs.expo.dev/versions/latest/sdk/securestore/
 let auth: ReturnType<typeof initializeAuth>;
 try {
   auth = initializeAuth(app, {

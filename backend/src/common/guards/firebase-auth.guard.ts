@@ -14,12 +14,24 @@ import { RedisService } from '../../redis/redis.service';
 @Injectable()
 export class FirebaseAuthGuard implements CanActivate {
   private readonly logger = new Logger(FirebaseAuthGuard.name);
+  private readonly devBypassEnabled: boolean;
 
   constructor(
     private readonly reflector: Reflector,
     private readonly prisma: PrismaService,
     private readonly redis: RedisService,
-  ) {}
+  ) {
+    this.devBypassEnabled =
+      process.env.NODE_ENV === 'development' &&
+      process.env.DEV_AUTH_ENABLED === 'true';
+
+    if (this.devBypassEnabled) {
+      this.logger.warn(
+        'Dev auth bypass is ACTIVE (NODE_ENV=development, DEV_AUTH_ENABLED=true). ' +
+          'Do NOT use in production.',
+      );
+    }
+  }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
@@ -39,8 +51,9 @@ export class FirebaseAuthGuard implements CanActivate {
 
     try {
       // Dev bypass: Bearer dev:<firebaseUid>
+      // Requires BOTH NODE_ENV=development AND DEV_AUTH_ENABLED=true
       let firebaseUid: string;
-      if (process.env.NODE_ENV === 'development' && token.startsWith('dev:')) {
+      if (this.devBypassEnabled && token.startsWith('dev:')) {
         firebaseUid = token.substring(4);
       } else {
         const decoded = await admin.auth().verifyIdToken(token);

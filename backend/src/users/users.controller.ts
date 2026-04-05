@@ -5,6 +5,7 @@ import { UsersService } from './users.service';
 import { BindersService } from '../binders/binders.service';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
+import { sanitizeUser } from '../common/utils/sanitize-user';
 
 @ApiTags('users')
 @ApiBearerAuth()
@@ -18,13 +19,14 @@ export class UsersController {
   @Get('me')
   @ApiOperation({ summary: 'Get current user profile with stats' })
   async getMe(@CurrentUser() user: User) {
-    return user;
+    return sanitizeUser(user);
   }
 
   @Patch('me')
   @ApiOperation({ summary: 'Update current user profile' })
   async updateMe(@CurrentUser() user: User, @Body() dto: UpdateUserDto) {
-    return this.usersService.update(user.id, dto);
+    const updated = await this.usersService.update(user.id, dto);
+    return sanitizeUser(updated);
   }
 
   @Get(':id/profile')
