@@ -9,6 +9,7 @@ import type {
   PaginatedResponse,
   PresignResponse,
   SearchResult,
+  SocialNote,
   Tag,
   User,
   Venue,
@@ -170,6 +171,12 @@ export function createAreaExplorerApi(client: AxiosInstance) {
       if (params.friendsOnly) searchParams.set('friendsOnly', 'true');
       return client
         .get<ApiResponse<MapPin[]>>(`/explore/map?${searchParams}`)
+        .then((r) => r.data.data);
+    },
+    getVenueNotes: (venueId: string, limit?: number) => {
+      const params = limit ? `?limit=${limit}` : '';
+      return client
+        .get<ApiResponse<SocialNote[]>>(`/explore/venue/${venueId}/notes${params}`)
         .then((r) => r.data.data);
     },
   };

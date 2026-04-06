@@ -1,4 +1,4 @@
-import { Controller, Get, Query, BadRequestException, ForbiddenException } from '@nestjs/common';
+import { Controller, Get, Param, Query, BadRequestException, ForbiddenException } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiOperation, ApiQuery } from '@nestjs/swagger';
 import { User } from '@prisma/client';
 import { AreaExplorerService } from './area-explorer.service';
@@ -48,5 +48,16 @@ export class AreaExplorerController {
       category,
       isFriendsOnly,
     );
+  }
+
+  @Get('venue/:venueId/notes')
+  @ApiOperation({ summary: 'Get notes for a specific venue' })
+  async getVenueNotes(
+    @CurrentUser() user: User,
+    @Param('venueId') venueId: string,
+    @Query('limit') limit?: string,
+  ) {
+    const take = Math.min(Math.max(parseInt(limit || '20', 10) || 20, 1), 50);
+    return this.areaExplorerService.getVenueNotes(user.id, venueId, take);
   }
 }

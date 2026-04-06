@@ -1,14 +1,98 @@
 'use client';
 
 import Link from 'next/link';
-import { X, MapPin, Star, FileText, Users, PenLine } from 'lucide-react';
-import type { MapPin as MapPinType } from '@mygourmetdiary/shared-types';
-import { Button, buttonVariants } from '@/components/ui/button';
+import Image from 'next/image';
+import { useQuery } from '@tanstack/react-query';
+import { format } from 'date-fns';
+import { X, MapPin, Star, FileText, Users, PenLine, Loader2 } from 'lucide-react';
+import type { MapPin as MapPinType, SocialNote } from '@mygourmetdiary/shared-types';
+import { NoteType } from '@mygourmetdiary/shared-types';
+import { NOTE_TYPE_CONFIG } from '@/lib/note-type-config';
+import { areaExplorerApi } from '@/lib/api';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { RatingDisplay } from '@/components/rating-display';
 import { cn } from '@/lib/utils';
 
 interface VenuePreviewPanelProps {
   pin: MapPinType;
   onClose: () => void;
+}
+
+function VenueNoteItem({ note }: { note: SocialNote }) {
+  const config = NOTE_TYPE_CONFIG[note.type] ?? NOTE_TYPE_CONFIG[NoteType.RESTAURANT];
+  const Icon = config.icon;
+  const coverPhoto = note.photos?.[0];
+
+  return (
+    <Link
+      href={`/notes/${note.id}`}
+      className="flex gap-3 p-2 rounded-lg hover:bg-surface-elevated transition-colors group"
+    >
+      {coverPhoto ? (
+        <div className="relative w-16 h-16 rounded-md overflow-hidden shrink-0">
+          <Image
+            src={coverPhoto.publicUrl}
+            alt={note.title}
+            fill
+            className="object-cover group-hover:scale-105 transition-transform duration-300"
+            sizes="64px"
+          />
+        </div>
+      ) : (
+        <div className="w-16 h-16 rounded-md bg-surface-elevated flex items-center justify-center shrink-0">
+          <Icon className={cn('h-6 w-6', config.color)} />
+        </div>
+      )}
+      <div className="min-w-0 flex-1 space-y-0.5">
+        <p className="text-sm font-medium leading-tight line-clamp-1">{note.title}</p>
+        {note.author && (
+          <p className="text-xs text-muted-foreground">by {note.author.displayName}</p>
+        )}
+        <div className="flex items-center gap-2">
+          <RatingDisplay rating={note.rating} size="sm" />
+          <span className="text-[10px] text-muted-foreground">
+            {format(new Date(note.experiencedAt), 'MMM d, yyyy')}
+          </span>
+        </div>
+      </div>
+    </Link>
+  );
+}
+
+function VenueNotesList({ venueId }: { venueId: string }) {
+  const { data: notes, isLoading } = useQuery({
+    queryKey: ['venueNotes', venueId],
+    queryFn: () => areaExplorerApi.getVenueNotes(venueId),
+    enabled: !!venueId,
+  });
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-6">
+        <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
+  if (!notes || notes.length === 0) {
+    return (
+      <p className="text-sm text-muted-foreground text-center py-4">
+        No notes for this venue yet.
+      </p>
+    );
+  }
+
+  return (
+    <div className="space-y-1">
+      <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide px-2">
+        Notes ({notes.length})
+      </h4>
+      {notes.map((note) => (
+        <VenueNoteItem key={note.id} note={note as SocialNote} />
+      ))}
+    </div>
+  );
 }
 
 export function VenuePreviewPanel({ pin, onClose }: VenuePreviewPanelProps) {
@@ -73,19 +157,17 @@ export function VenuePreviewPanel({ pin, onClose }: VenuePreviewPanelProps) {
             You have {pin.myNoteCount} note{pin.myNoteCount !== 1 ? 's' : ''} here.
           </p>
         )}
+
+        <VenueNotesList venueId={venue.id} />
       </div>
 
-      <div className="p-4 border-t border-border-light flex gap-2">
-        <Link
-          href={`/search?q=${encodeURIComponent(venue.name)}`}
-          className={cn(buttonVariants({ variant: 'outline' }), 'flex-1')}
-        >
-          <FileText className="h-4 w-4 mr-2" />
-          View Notes
-        </Link>
+      <div className="p-4 border-t border-border-light">
         <Link
           href={`/notes/new/restaurant?venueId=${venue.placeId}&venueName=${encodeURIComponent(venue.name)}`}
-          className={cn(buttonVariants({ variant: 'default' }), 'flex-1')}
+          className={cn(
+            'inline-flex items-center justify-center w-full rounded-md text-sm font-medium h-9 px-4',
+            'bg-primary text-primary-foreground hover:bg-primary/90 transition-colors',
+          )}
         >
           <PenLine className="h-4 w-4 mr-2" />
           Write Note
@@ -100,8 +182,8 @@ export function VenuePreviewBottomPanel({ pin, onClose }: VenuePreviewPanelProps
   const { venue } = pin;
 
   return (
-    <div className="lg:hidden fixed inset-x-0 bottom-16 z-30 bg-surface border-t border-border shadow-lg rounded-t-xl animate-in slide-in-from-bottom duration-200">
-      <div className="p-4 space-y-3">
+    <div className="lg:hidden fixed inset-x-0 bottom-16 z-30 bg-surface border-t border-border shadow-lg rounded-t-xl animate-in slide-in-from-bottom duration-200 max-h-[70vh] flex flex-col">
+      <div className="p-4 space-y-3 shrink-0">
         <div className="flex items-start justify-between">
           <div className="space-y-1 min-w-0">
             <h3 className="font-heading font-semibold truncate">{venue.name}</h3>
@@ -132,21 +214,23 @@ export function VenuePreviewBottomPanel({ pin, onClose }: VenuePreviewPanelProps
             </span>
           )}
         </div>
+      </div>
 
-        <div className="flex gap-2">
-          <Link
-            href={`/search?q=${encodeURIComponent(venue.name)}`}
-            className={cn(buttonVariants({ size: 'sm', variant: 'outline' }), 'flex-1')}
-          >
-            View Notes
-          </Link>
-          <Link
-            href={`/notes/new/restaurant?venueId=${venue.placeId}&venueName=${encodeURIComponent(venue.name)}`}
-            className={cn(buttonVariants({ size: 'sm', variant: 'default' }), 'flex-1')}
-          >
-            Write Note
-          </Link>
-        </div>
+      <div className="overflow-y-auto flex-1 px-4 pb-2">
+        <VenueNotesList venueId={venue.id} />
+      </div>
+
+      <div className="p-4 border-t border-border-light shrink-0">
+        <Link
+          href={`/notes/new/restaurant?venueId=${venue.placeId}&venueName=${encodeURIComponent(venue.name)}`}
+          className={cn(
+            'inline-flex items-center justify-center w-full rounded-md text-sm font-medium h-9 px-4',
+            'bg-primary text-primary-foreground hover:bg-primary/90 transition-colors',
+          )}
+        >
+          <PenLine className="h-4 w-4 mr-2" />
+          Write Note
+        </Link>
       </div>
     </div>
   );

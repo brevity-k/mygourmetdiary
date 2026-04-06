@@ -173,4 +173,29 @@ export class AreaExplorerService {
     await this.redis.setJson(cacheKey, pins, 300); // 5-min cache
     return pins;
   }
+
+  async getVenueNotes(
+    userId: string,
+    venueId: string,
+    limit = 20,
+  ) {
+    const notes = await this.prisma.note.findMany({
+      where: {
+        venueId,
+        OR: [
+          { authorId: userId },
+          { visibility: 'PUBLIC' },
+        ],
+      },
+      include: {
+        venue: true,
+        photos: { orderBy: { sortOrder: 'asc' } },
+        author: { select: { id: true, displayName: true, avatarUrl: true } },
+      },
+      orderBy: { rating: 'desc' },
+      take: limit,
+    });
+
+    return notes;
+  }
 }
