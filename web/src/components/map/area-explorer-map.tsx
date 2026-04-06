@@ -151,19 +151,32 @@ function AreaExplorerMapInner() {
         map.panTo({ lat: venue.lat, lng: venue.lng });
         map.setZoom(16);
       }
-      setSelectedPin({
-        venue,
-        noteCount: 0,
-        myNoteCount: 0,
-        friendNoteCount: 0,
-        avgRating: null,
-        avgFriendRating: null,
-        topFriendNames: [],
-        category: 'RESTAURANT',
-      });
+      // Use existing pin data if venue is already loaded, otherwise show placeholder
+      const existingPin = pins.find((p) => p.venue.placeId === venue.placeId);
+      setSelectedPin(
+        existingPin ?? {
+          venue,
+          noteCount: 0,
+          myNoteCount: 0,
+          friendNoteCount: 0,
+          avgRating: null,
+          avgFriendRating: null,
+          topFriendNames: [],
+          category: 'RESTAURANT',
+        },
+      );
     },
-    [map],
+    [map, pins],
   );
+
+  // Sync selectedPin with fresh pin data after map pans and pins reload
+  useEffect(() => {
+    if (!selectedPin) return;
+    const freshPin = pins.find((p) => p.venue.placeId === selectedPin.venue.placeId);
+    if (freshPin && freshPin.noteCount !== selectedPin.noteCount) {
+      setSelectedPin(freshPin);
+    }
+  }, [pins, selectedPin]);
 
   return (
     <div className="relative w-full h-full">
