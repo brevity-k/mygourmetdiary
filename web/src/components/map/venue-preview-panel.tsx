@@ -9,7 +9,7 @@ import type { MapPin as MapPinType, SocialNote } from '@mygourmetdiary/shared-ty
 import { NoteType } from '@mygourmetdiary/shared-types';
 import { NOTE_TYPE_CONFIG } from '@/lib/note-type-config';
 import { areaExplorerApi } from '@/lib/api';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { RatingDisplay } from '@/components/rating-display';
 import { cn } from '@/lib/utils';
@@ -161,13 +161,17 @@ export function VenuePreviewPanel({ pin, onClose }: VenuePreviewPanelProps) {
         <VenueNotesList venueId={venue.id} />
       </div>
 
-      <div className="p-4 border-t border-border-light">
+      <div className="p-4 border-t border-border-light flex gap-2">
+        <Link
+          href={`/search?q=${encodeURIComponent(venue.name)}`}
+          className={cn(buttonVariants({ variant: 'outline' }), 'flex-1')}
+        >
+          <FileText className="h-4 w-4 mr-2" />
+          View Notes
+        </Link>
         <Link
           href={`/notes/new/restaurant?venueId=${venue.placeId}&venueName=${encodeURIComponent(venue.name)}`}
-          className={cn(
-            'inline-flex items-center justify-center w-full rounded-md text-sm font-medium h-9 px-4',
-            'bg-primary text-primary-foreground hover:bg-primary/90 transition-colors',
-          )}
+          className={cn(buttonVariants({ variant: 'default' }), 'flex-1')}
         >
           <PenLine className="h-4 w-4 mr-2" />
           Write Note
@@ -220,15 +224,17 @@ export function VenuePreviewBottomPanel({ pin, onClose }: VenuePreviewPanelProps
         <VenueNotesList venueId={venue.id} />
       </div>
 
-      <div className="p-4 border-t border-border-light shrink-0">
+      <div className="p-4 border-t border-border-light shrink-0 flex gap-2">
+        <Link
+          href={`/search?q=${encodeURIComponent(venue.name)}`}
+          className={cn(buttonVariants({ size: 'sm', variant: 'outline' }), 'flex-1')}
+        >
+          View Notes
+        </Link>
         <Link
           href={`/notes/new/restaurant?venueId=${venue.placeId}&venueName=${encodeURIComponent(venue.name)}`}
-          className={cn(
-            'inline-flex items-center justify-center w-full rounded-md text-sm font-medium h-9 px-4',
-            'bg-primary text-primary-foreground hover:bg-primary/90 transition-colors',
-          )}
+          className={cn(buttonVariants({ size: 'sm', variant: 'default' }), 'flex-1')}
         >
-          <PenLine className="h-4 w-4 mr-2" />
           Write Note
         </Link>
       </div>
