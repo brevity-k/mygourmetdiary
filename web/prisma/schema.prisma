@@ -1,0 +1,303 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ─── Enums ──────────────────────────────────────────────
+
+enum BinderCategory {
+  RESTAURANT
+  WINE
+  SPIRIT
+  MIXED
+}
+
+enum Visibility {
+  PUBLIC
+  PRIVATE
+}
+
+enum NoteType {
+  RESTAURANT
+  WINE
+  SPIRIT
+  WINERY_VISIT
+}
+
+enum TagCategory {
+  RESTAURANT
+  WINE
+  SPIRIT
+  CUISINE
+}
+
+enum SignalType {
+  BOOKMARKED
+  ECHOED
+  DIVERGED
+}
+
+enum TasteCategory {
+  RESTAURANT
+  WINE
+  SPIRIT
+}
+
+enum SubscriptionTier {
+  FREE
+  CONNOISSEUR
+}
+
+// ─── Models ─────────────────────────────────────────────
+
+model User {
+  id                    String           @id @default(cuid())
+  supabaseId            String           @unique @map("supabase_id")
+  email                 String           @unique
+  displayName           String           @map("display_name")
+  avatarUrl             String?          @map("avatar_url")
+  subscriptionTier      SubscriptionTier @default(FREE) @map("subscription_tier")
+  rcCustomerId          String?          @map("rc_customer_id")
+  subscriptionExpiresAt DateTime?        @map("subscription_expires_at")
+  createdAt             DateTime         @default(now()) @map("created_at")
+  updatedAt             DateTime         @updatedAt @map("updated_at")
+
+  binders                Binder[]
+  notes                  Note[]
+  photos                 Photo[]
+  binderFollows          BinderFollow[]          @relation("UserFollows")
+  tasteSignalsSent       TasteSignal[]           @relation("UserSignalsSent")
+  tasteSimilaritiesA     TasteSimilarity[]       @relation("TasteSimilarityA")
+  tasteSimilaritiesB     TasteSimilarity[]       @relation("TasteSimilarityB")
+  gourmetFriendPins      GourmetFriendPin[]      @relation("UserPins")
+  gourmetPinnedBy        GourmetFriendPin[]      @relation("UserPinnedBy")
+  pushTokens             PushToken[]
+  notificationPreference NotificationPreference?
+  pioneerBadges          PioneerBadge[]
+
+  @@index([email])
+  @@map("users")
+}
+
+model Binder {
+  id          String         @id @default(cuid())
+  ownerId     String         @map("owner_id")
+  name        String
+  description String?
+  category    BinderCategory
+  visibility  Visibility     @default(PRIVATE)
+  coverUrl    String?        @map("cover_url")
+  isDefault   Boolean        @default(false) @map("is_default")
+  createdAt   DateTime       @default(now()) @map("created_at")
+  updatedAt   DateTime       @updatedAt @map("updated_at")
+
+  owner     User           @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  notes     Note[]
+  followers BinderFollow[]
+
+  @@index([ownerId])
+  @@map("binders")
+}
+
+model Note {
+  id            String     @id @default(cuid())
+  authorId      String     @map("author_id")
+  binderId      String     @map("binder_id")
+  type          NoteType
+  title         String
+  rating        Int        @db.SmallInt
+  freeText      String?    @map("free_text")
+  visibility    Visibility @default(PRIVATE)
+  tagIds        String[]   @map("tag_ids")
+  extension     Json       @default("{}")
+  venueId       String?    @map("venue_id")
+  experiencedAt DateTime   @map("experienced_at")
+  createdAt     DateTime   @default(now()) @map("created_at")
+  updatedAt     DateTime   @updatedAt @map("updated_at")
+
+  author       User          @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  binder       Binder        @relation(fields: [binderId], references: [id], onDelete: Cascade)
+  venue        Venue?        @relation(fields: [venueId], references: [id])
+  photos       Photo[]
+  tasteSignals TasteSignal[]
+
+  @@index([authorId, createdAt(sort: Desc)])
+  @@index([binderId])
+  @@index([venueId])
+  @@index([type])
+  @@index([visibility, createdAt(sort: Desc)])
+  @@index([visibility, type, createdAt(sort: Desc)])
+  @@index([venueId, visibility])
+  @@index([authorId, visibility])
+  @@map("notes")
+}
+
+model Photo {
+  id         String   @id @default(cuid())
+  noteId     String?  @map("note_id")
+  uploaderId String   @map("uploader_id")
+  r2Key      String   @map("r2_key")
+  publicUrl  String   @map("public_url")
+  mimeType   String   @map("mime_type")
+  sizeBytes  Int      @map("size_bytes")
+  sortOrder  Int      @default(0) @map("sort_order")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  note     Note? @relation(fields: [noteId], references: [id], onDelete: SetNull)
+  uploader User  @relation(fields: [uploaderId], references: [id], onDelete: Cascade)
+
+  @@index([noteId])
+  @@index([uploaderId])
+  @@map("photos")
+}
+
+model Venue {
+  id            String   @id @default(cuid())
+  placeId       String   @unique @map("place_id")
+  name          String
+  address       String?
+  lat           Float?
+  lng           Float?
+  phone         String?
+  website       String?
+  googleRating  Float?   @map("google_rating")
+  priceLevel    Int?     @map("price_level")
+  types         String[] @default([])
+  hours         Json?
+  lastFetchedAt DateTime @default(now()) @map("last_fetched_at")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  notes         Note[]
+  pioneerBadges PioneerBadge[]
+
+  @@index([lat, lng])
+  @@map("venues")
+}
+
+model TagTaxonomy {
+  id       String      @id @default(cuid())
+  category TagCategory
+  name     String
+  group    String
+  emoji    String?
+
+  @@unique([category, name])
+  @@index([category])
+  @@map("tag_taxonomy")
+}
+
+// ─── Phase 2: Social Models ────────────────────────────
+
+model BinderFollow {
+  id         String   @id @default(cuid())
+  followerId String   @map("follower_id")
+  binderId   String   @map("binder_id")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  follower User   @relation("UserFollows", fields: [followerId], references: [id], onDelete: Cascade)
+  binder   Binder @relation(fields: [binderId], references: [id], onDelete: Cascade)
+
+  @@unique([followerId, binderId])
+  @@index([followerId])
+  @@index([binderId])
+  @@map("binder_follows")
+}
+
+model TasteSignal {
+  id           String     @id @default(cuid())
+  senderId     String     @map("sender_id")
+  noteId       String     @map("note_id")
+  signalType   SignalType @map("signal_type")
+  senderRating Int?       @map("sender_rating") @db.SmallInt
+  createdAt    DateTime   @default(now()) @map("created_at")
+
+  sender User @relation("UserSignalsSent", fields: [senderId], references: [id], onDelete: Cascade)
+  note   Note @relation(fields: [noteId], references: [id], onDelete: Cascade)
+
+  @@unique([senderId, noteId, signalType])
+  @@index([noteId])
+  @@index([senderId])
+  @@index([noteId, signalType])
+  @@map("taste_signals")
+}
+
+model TasteSimilarity {
+  id             String        @id @default(cuid())
+  userAId        String        @map("user_a_id")
+  userBId        String        @map("user_b_id")
+  category       TasteCategory
+  score          Float
+  overlapCount   Int           @map("overlap_count")
+  lastComputedAt DateTime      @map("last_computed_at")
+
+  userA User @relation("TasteSimilarityA", fields: [userAId], references: [id], onDelete: Cascade)
+  userB User @relation("TasteSimilarityB", fields: [userBId], references: [id], onDelete: Cascade)
+
+  @@unique([userAId, userBId, category])
+  @@index([userAId, score(sort: Desc)])
+  @@index([userBId, score(sort: Desc)])
+  @@index([userAId, category])
+  @@map("taste_similarities")
+}
+
+model GourmetFriendPin {
+  id         String          @id @default(cuid())
+  pinnerId   String          @map("pinner_id")
+  pinnedId   String          @map("pinned_id")
+  categories TasteCategory[]
+  createdAt  DateTime        @default(now()) @map("created_at")
+
+  pinner User @relation("UserPins", fields: [pinnerId], references: [id], onDelete: Cascade)
+  pinned User @relation("UserPinnedBy", fields: [pinnedId], references: [id], onDelete: Cascade)
+
+  @@unique([pinnerId, pinnedId])
+  @@index([pinnerId])
+  @@index([pinnedId])
+  @@map("gourmet_friend_pins")
+}
+
+// ─── Phase 3: Advisor Models ──────────────────────────
+
+model PushToken {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  token     String   @unique
+  platform  String   // 'ios' | 'android'
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("push_tokens")
+}
+
+model NotificationPreference {
+  id                String  @id @default(cuid())
+  userId            String  @unique @map("user_id")
+  newNoteInFollowed Boolean @default(true) @map("new_note_in_followed")
+  signalOnMyNote    Boolean @default(true) @map("signal_on_my_note")
+  newGourmetFriend  Boolean @default(true) @map("new_gourmet_friend")
+  pioneerAlert      Boolean @default(true) @map("pioneer_alert")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("notification_preferences")
+}
+
+model PioneerBadge {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  venueId   String   @map("venue_id")
+  awardedAt DateTime @default(now()) @map("awarded_at")
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  venue Venue @relation(fields: [venueId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, venueId])
+  @@index([userId])
+  @@map("pioneer_badges")
+}
