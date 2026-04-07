@@ -14,6 +14,8 @@
     "@mygourmetdiary/shared-api": "*",
     "@mygourmetdiary/shared-constants": "*",
     "@mygourmetdiary/shared-types": "*",
+    "@supabase/ssr": "^0.10.0",
+    "@supabase/supabase-js": "^2.101.1",
     "@tanstack/react-query": "^5.96.2",
     "@vis.gl/react-google-maps": "^1.5.2",
     "class-variance-authority": "^0.7.1",
