@@ -57,6 +57,10 @@ export async function signOut(): Promise<void> {
 
 export async function getIdToken(): Promise<string | null> {
   const supabase = createSupabaseBrowserClient();
+  // Use getUser() first to ensure token is valid and refreshed
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return null;
+  // After getUser() validates, getSession() will have the fresh token
   const { data: { session } } = await supabase.auth.getSession();
   return session?.access_token ?? null;
 }
