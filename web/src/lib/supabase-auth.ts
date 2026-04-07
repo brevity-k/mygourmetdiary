@@ -16,7 +16,7 @@ export async function signInWithGoogle(): Promise<AuthUser> {
   const supabase = createSupabaseBrowserClient();
   const { error } = await supabase.auth.signInWithOAuth({
     provider: 'google',
-    options: { redirectTo: `${window.location.origin}/auth/callback` },
+    options: { redirectTo: `${window.location.origin}/feed` },
   });
   if (error) throw error;
   return { uid: '', email: null, displayName: null };

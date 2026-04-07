@@ -1,12 +1,5 @@
-import { updateSession } from '@/lib/supabase/middleware';
-import type { NextRequest } from 'next/server';
+// Middleware intentionally left minimal.
+// Auth is handled client-side via Supabase JS SDK with localStorage.
+// No session cookie refresh needed.
 
-export async function middleware(request: NextRequest) {
-  return updateSession(request);
-}
-
-export const config = {
-  matcher: [
-    '/((?!_next/static|_next/image|favicon.ico|auth/callback|api/|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
-  ],
-};
+export { };
