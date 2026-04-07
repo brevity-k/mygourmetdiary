@@ -1,4 +1,4 @@
-import type { NoteType, Prisma, Venue } from '@prisma/client';
+import type { NoteType, Venue } from '@prisma/client';
 import { prisma } from '../clients/prisma';
 import { getJson, setJson } from '../clients/redis';
 import { tssCacheService } from './taste-matching/tss-cache.service';
@@ -66,70 +66,110 @@ export const areaExplorerService = {
       ? await tssCacheService.getPinnedFriendIds(userId)
       : [];
 
-    // Fetch notes for these venues
-    const noteWhere: Prisma.NoteWhereInput = {
-      venueId: { in: venueIds },
-      type: { in: typeFilter },
-      visibility: 'PUBLIC',
-    };
-    if (friendsOnly && friendIds.length > 0) {
-      noteWhere.authorId = { in: friendIds };
-    } else if (friendsOnly && friendIds.length === 0) {
+    if (friendsOnly && friendIds.length === 0) {
       await setJson(cacheKey, [], 300);
       return [];
     }
-
-    const notes = await prisma.note.findMany({
-      where: noteWhere,
-      include: {
-        author: { select: { id: true, displayName: true } },
-      },
-    });
 
     // Load all friend IDs for friend detection (if not friendsOnly)
     const friendSet = new Set(
       friendsOnly ? friendIds : await tssCacheService.getPinnedFriendIds(userId),
     );
 
-    // Group notes by venue
-    const venueMap = new Map<
-      string,
-      {
-        notes: typeof notes;
-        myNotes: typeof notes;
-        friendNotes: typeof notes;
-      }
-    >();
+    const baseWhere = {
+      venueId: { in: venueIds },
+      type: { in: typeFilter },
+      visibility: 'PUBLIC' as const,
+    };
 
-    for (const note of notes) {
-      if (!note.venueId) continue;
-      if (!venueMap.has(note.venueId)) {
-        venueMap.set(note.venueId, { notes: [], myNotes: [], friendNotes: [] });
+    // Use DB aggregates for general venue stats (noteCount + avgRating)
+    // This avoids loading all individual notes into memory just for counting/averaging
+    const [noteStatsByType, friendNotes, myNoteCounts] = await Promise.all([
+      // General stats via DB aggregate — grouped by venueId+type
+      friendsOnly
+        ? prisma.note.groupBy({
+            by: ['venueId', 'type'],
+            where: { ...baseWhere, authorId: { in: friendIds } },
+            _count: { id: true },
+            _avg: { rating: true },
+          })
+        : prisma.note.groupBy({
+            by: ['venueId', 'type'],
+            where: baseWhere,
+            _count: { id: true },
+            _avg: { rating: true },
+          }),
+      // Friend-specific notes — need individual records for names and ratings
+      friendSet.size > 0
+        ? prisma.note.findMany({
+            where: {
+              ...baseWhere,
+              authorId: { in: [...friendSet] },
+            },
+            select: {
+              venueId: true,
+              rating: true,
+              type: true,
+              author: { select: { displayName: true } },
+            },
+          })
+        : Promise.resolve([]),
+      // My note counts via DB aggregate
+      prisma.note.groupBy({
+        by: ['venueId'],
+        where: { ...baseWhere, authorId: userId },
+        _count: { id: true },
+      }),
+    ]);
+
+    // Merge per-type stats into per-venue totals
+    const statsMap = new Map<string | null, { count: number; avg: number | null; primaryType: NoteType }>();
+    for (const s of noteStatsByType) {
+      const existing = statsMap.get(s.venueId);
+      if (!existing) {
+        statsMap.set(s.venueId, { count: s._count.id, avg: s._avg.rating, primaryType: s.type });
+      } else {
+        // Combine counts, compute weighted average, keep the type with more notes
+        const totalCount = existing.count + s._count.id;
+        const combinedAvg =
+          existing.avg !== null && s._avg.rating !== null
+            ? (existing.avg * existing.count + s._avg.rating * s._count.id) / totalCount
+            : existing.avg ?? s._avg.rating;
+        const primaryType = s._count.id > existing.count ? s.type : existing.primaryType;
+        statsMap.set(s.venueId, { count: totalCount, avg: combinedAvg, primaryType });
       }
-      const entry = venueMap.get(note.venueId)!;
-      entry.notes.push(note);
-      if (note.authorId === userId) {
-        entry.myNotes.push(note);
+    }
+    const myCountMap = new Map(
+      myNoteCounts.map((c) => [c.venueId, c._count.id]),
+    );
+
+    // Group friend notes by venue (only these need JS processing)
+    const friendVenueMap = new Map<
+      string,
+      { ratings: number[]; names: Set<string>; type: string }
+    >();
+    for (const fn of friendNotes) {
+      if (!fn.venueId) continue;
+      if (!friendVenueMap.has(fn.venueId)) {
+        friendVenueMap.set(fn.venueId, { ratings: [], names: new Set(), type: fn.type });
       }
-      if (friendSet.has(note.authorId)) {
-        entry.friendNotes.push(note);
-      }
+      const entry = friendVenueMap.get(fn.venueId)!;
+      entry.ratings.push(fn.rating);
+      entry.names.add(fn.author.displayName);
     }
 
     // Build pins
     const pins: MapPin[] = [];
     for (const venue of venues) {
-      const entry = venueMap.get(venue.id);
-      if (!entry || entry.notes.length === 0) continue;
+      const stats = statsMap.get(venue.id);
+      if (!stats || stats.count === 0) continue;
 
-      const allRatings = entry.notes.map((n) => n.rating);
-      const friendRatings = entry.friendNotes.map((n) => n.rating);
+      const friendData = friendVenueMap.get(venue.id);
+      const friendRatings = friendData?.ratings ?? [];
 
-      const topFriendNames = [
-        ...new Set(entry.friendNotes.map((n) => n.author.displayName)),
-      ].slice(0, 3);
-
-      const noteType = entry.notes[0]?.type;
+      const topFriendNames = friendData
+        ? [...friendData.names].slice(0, 3)
+        : [];
 
       pins.push({
         venue: {
@@ -141,19 +181,19 @@ export const areaExplorerService = {
           lng: venue.lng,
           types: venue.types,
         },
-        noteCount: entry.notes.length,
-        myNoteCount: entry.myNotes.length,
-        friendNoteCount: entry.friendNotes.length,
+        noteCount: stats.count,
+        myNoteCount: myCountMap.get(venue.id) ?? 0,
+        friendNoteCount: friendRatings.length,
         avgRating:
-          allRatings.length > 0
-            ? Math.round((allRatings.reduce((a, b) => a + b, 0) / allRatings.length) * 10) / 10
+          stats.avg !== null
+            ? Math.round(stats.avg * 10) / 10
             : null,
         avgFriendRating:
           friendRatings.length > 0
             ? Math.round((friendRatings.reduce((a, b) => a + b, 0) / friendRatings.length) * 10) / 10
             : null,
         topFriendNames,
-        category: noteType === 'WINERY_VISIT' ? 'WINERY_VISIT' : 'RESTAURANT',
+        category: stats.primaryType === 'WINERY_VISIT' ? 'WINERY_VISIT' : 'RESTAURANT',
       });
     }
 
