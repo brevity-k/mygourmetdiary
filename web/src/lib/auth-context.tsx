@@ -9,7 +9,7 @@ import {
   type AuthUser,
   isDev,
   devSignIn,
-} from './firebase';
+} from './supabase-auth';
 import { authApi, usersApi, setOnUnauthorized } from './api';
 
 interface AuthContextValue {
@@ -101,7 +101,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (isDev && typeof window !== 'undefined') {
       const devToken = sessionStorage.getItem('dev_token');
       if (devToken && !firebaseUser) {
-        setFirebaseUser({ uid: 'test-firebase-uid', email: 'test@gourmet.dev', displayName: 'Test Gourmet' });
+        setFirebaseUser({ uid: 'test-supabase-uid', email: 'test@gourmet.dev', displayName: 'Test Gourmet' });
         registerAndFetchUser().then(() => setLoading(false));
       }
     }
