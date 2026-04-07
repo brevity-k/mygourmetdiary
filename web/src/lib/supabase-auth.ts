@@ -63,6 +63,21 @@ export async function getIdToken(): Promise<string | null> {
 
 export function onAuthStateChanged(callback: (user: AuthUser | null) => void): () => void {
   const supabase = createSupabaseBrowserClient();
+
+  // Check initial session (onAuthStateChange only fires on *changes*)
+  supabase.auth.getSession().then(({ data: { session } }) => {
+    if (session?.user) {
+      callback({
+        uid: session.user.id,
+        email: session.user.email ?? null,
+        displayName: session.user.user_metadata?.full_name ?? session.user.user_metadata?.name ?? null,
+      });
+    } else {
+      callback(null);
+    }
+  });
+
+  // Listen for subsequent changes (sign-in, sign-out, token refresh)
   const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
     if (session?.user) {
       callback({
