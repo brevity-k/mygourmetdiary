@@ -16,7 +16,10 @@ export async function signInWithGoogle(): Promise<AuthUser> {
   const supabase = createSupabaseBrowserClient();
   const { error } = await supabase.auth.signInWithOAuth({
     provider: 'google',
-    options: { redirectTo: `${window.location.origin}/feed` },
+    options: {
+      redirectTo: `${window.location.origin}/feed`,
+      queryParams: { prompt: 'select_account' },
+    },
   });
   if (error) throw error;
   return { uid: '', email: null, displayName: null };
