@@ -1,7 +1,7 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "crons": [
-    { "path": "/api/cron/tss-batch", "schedule": "*/5 2-4 * * *" },
-    { "path": "/api/cron/photo-cleanup", "schedule": "0 * * * *" }
+    { "path": "/api/cron/tss-batch", "schedule": "0 2 * * *" },
+    { "path": "/api/cron/photo-cleanup", "schedule": "0 3 * * *" }
   ]
 }
