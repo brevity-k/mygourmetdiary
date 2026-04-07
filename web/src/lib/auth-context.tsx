@@ -51,20 +51,42 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     router.push('/login');
   }, [router]);
 
+  // Only trigger signOut on 401 if user was previously authenticated.
+  // During initial OAuth flow, 401s are expected (token not ready yet).
+  const isAuthenticatedRef = React.useRef(false);
   useEffect(() => {
-    setOnUnauthorized(() => signOut());
+    setOnUnauthorized(() => {
+      if (isAuthenticatedRef.current) {
+        signOut();
+      }
+    });
   }, [signOut]);
 
   const registerAndFetchUser = useCallback(async () => {
+    // Wait for the token to be available before making API calls
+    const { getIdToken } = await import('./supabase-auth');
+    let token: string | null = null;
+    for (let i = 0; i < 10; i++) {
+      token = await getIdToken();
+      if (token) break;
+      await new Promise((r) => setTimeout(r, 500));
+    }
+    if (!token) {
+      console.warn('No auth token available after waiting');
+      return null;
+    }
+
     try {
       const registeredUser = await authApi.register();
       setUser(registeredUser);
+      isAuthenticatedRef.current = true;
       return registeredUser;
     } catch (registerErr) {
       console.warn('Auth register failed, trying getMe:', registerErr);
       try {
         const existingUser = await usersApi.getMe();
         setUser(existingUser);
+        isAuthenticatedRef.current = true;
         return existingUser;
       } catch (getMeErr) {
         console.warn('Failed to fetch existing user:', getMeErr);
