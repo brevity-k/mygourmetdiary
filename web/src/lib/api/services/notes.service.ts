@@ -70,7 +70,7 @@ export const notesService = {
       take: limit + 1,
     });
 
-    return paginateResults(notes, limit, (n) => n.createdAt.toISOString());
+    return paginateResults(notes, limit, (n: { createdAt: Date }) => n.createdAt.toISOString());
   },
 
   async findById(id: string, userId: string) {
@@ -207,7 +207,7 @@ export const notesService = {
       take: limit + 1,
     });
 
-    return paginateResults(notes, limit, (n) => n.createdAt.toISOString());
+    return paginateResults(notes, limit, (n: { createdAt: Date }) => n.createdAt.toISOString());
   },
 
   async socialFeed(userId: string, cursor?: string, limit = 20, type?: NoteType) {
@@ -216,7 +216,7 @@ export const notesService = {
       where: { followerId: userId },
       select: { binderId: true },
     });
-    const binderIds = follows.map((f) => f.binderId);
+    const binderIds = follows.map((f: { binderId: string }) => f.binderId);
 
     if (binderIds.length === 0) {
       return { items: [], nextCursor: null, hasMore: false };
@@ -240,7 +240,7 @@ export const notesService = {
       take: limit + 1,
     });
 
-    return paginateResults(notes, limit, (n) => n.createdAt.toISOString());
+    return paginateResults(notes, limit, (n: { createdAt: Date }) => n.createdAt.toISOString());
   },
 
   async findPublicById(id: string) {

@@ -140,7 +140,7 @@ export const areaExplorerService = {
       }
     }
     const myCountMap = new Map(
-      myNoteCounts.map((c) => [c.venueId, c._count.id]),
+      myNoteCounts.map((c: { venueId: string | null; _count: { id: number } }) => [c.venueId, c._count.id]),
     );
 
     // Group friend notes by venue (only these need JS processing)

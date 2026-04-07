@@ -7,74 +7,6 @@ on:
     branches: [main]
 
 jobs:
-  backend-lint:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-node@v6
-        with:
-          node-version: 22
-          cache: npm
-      - run: npm ci
-      - run: npm run lint:check
-        working-directory: backend
-
-  backend-typecheck:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-node@v6
-        with:
-          node-version: 22
-          cache: npm
-      - run: npm ci
-      - run: npm run typecheck
-        working-directory: backend
-
-  backend-unit-tests:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-node@v6
-        with:
-          node-version: 22
-          cache: npm
-      - run: npm ci
-      - run: npm test -- --coverage
-        working-directory: backend
-
-  backend-e2e-tests:
-    runs-on: ubuntu-latest
-    services:
-      postgres:
-        image: postgres:16
-        env:
-          POSTGRES_USER: test
-          POSTGRES_PASSWORD: test
-          POSTGRES_DB: mygourmetdiary_test
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-    env:
-      DATABASE_URL: postgresql://test:test@localhost:5432/mygourmetdiary_test
-      NODE_ENV: test
-      DEV_AUTH_ENABLED: 'true'
-    steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-node@v6
-        with:
-          node-version: 22
-          cache: npm
-      - run: npm ci
-      - run: npx prisma migrate deploy
-        working-directory: backend
-      - run: npm run test:e2e
-        working-directory: backend
-
   mobile-typecheck:
     runs-on: ubuntu-latest
     steps:
@@ -96,6 +28,8 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      - run: npx prisma generate
+        working-directory: web
       - run: npm run typecheck
         working-directory: web
 

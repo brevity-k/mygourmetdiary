@@ -39,7 +39,7 @@ export const syncService = {
     const result = paginateResults(
       notes,
       MAX_NOTES_PER_PAGE,
-      (n) => n.createdAt.toISOString(),
+      (n: { createdAt: Date }) => n.createdAt.toISOString(),
     );
 
     // Also include binders

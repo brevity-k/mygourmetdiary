@@ -33,7 +33,7 @@ export const pioneersService = {
     });
 
     const countMap = new Map<string | null, number>(
-      venueCounts.map((vc) => [vc.venueId, vc._count]),
+      venueCounts.map((vc: { venueId: string | null; _count: number }) => [vc.venueId, vc._count]),
     );
 
     // Filter to pioneer zones (< threshold notes)

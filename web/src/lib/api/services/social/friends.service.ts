@@ -130,7 +130,7 @@ export const friendsService = {
     }
 
     const categories: TasteCategory[] = ['RESTAURANT', 'WINE', 'SPIRIT'];
-    return pins.map((pin) => {
+    return pins.map((pin: { pinnedId: string; [key: string]: unknown }) => {
       const userScores = scoreMap.get(pin.pinnedId);
       const similarities = categories.map((category) => {
         const entry = userScores?.get(category);
@@ -231,7 +231,7 @@ export const friendsService = {
       where: { id: { in: userIds } },
       select: { id: true, displayName: true, avatarUrl: true, createdAt: true },
     });
-    const userLookup = new Map(users.map((u) => [u.id, u] as const));
+    const userLookup = new Map(users.map((u: { id: string; displayName: string; avatarUrl: string | null; createdAt: Date }) => [u.id, u] as const));
 
     return {
       items: paged

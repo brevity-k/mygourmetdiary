@@ -93,7 +93,7 @@ export const followsService = {
       take: limit + 1,
     });
 
-    return paginateResults(follows, limit, (f) => f.createdAt.toISOString());
+    return paginateResults(follows, limit, (f: { createdAt: Date }) => f.createdAt.toISOString());
   },
 
   async isFollowing(userId: string, binderId: string): Promise<boolean> {

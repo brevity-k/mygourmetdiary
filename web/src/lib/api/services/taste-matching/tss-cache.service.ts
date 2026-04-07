@@ -78,7 +78,7 @@ export const tssCacheService = {
     });
 
     const ids: string[] = [...new Set<string>(
-      rows.map((r) => (r.userAId === userId ? r.userBId : r.userAId)),
+      rows.map((r: { userAId: string; userBId: string }) => (r.userAId === userId ? r.userBId : r.userAId)),
     )];
     await setJson(cacheKey, ids, 86400);
     return ids;
@@ -98,7 +98,7 @@ export const tssCacheService = {
     });
 
     const ids: string[] = [...new Set<string>(
-      rows.map((r) => (r.userAId === userId ? r.userBId : r.userAId)),
+      rows.map((r: { userAId: string; userBId: string }) => (r.userAId === userId ? r.userBId : r.userAId)),
     )];
     await setJson(cacheKey, ids, 86400);
     return ids;
@@ -114,7 +114,7 @@ export const tssCacheService = {
       select: { pinnedId: true },
     });
 
-    const ids = pins.map((p) => p.pinnedId);
+    const ids = pins.map((p: { pinnedId: string }) => p.pinnedId);
     await setJson(cacheKey, ids, 3600); // 1h
     return ids;
   },

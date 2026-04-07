@@ -131,7 +131,7 @@ export const signalsService = {
         where: { senderId: viewerId, noteId },
         select: { signalType: true },
       });
-      mySignals = signals.map((s) => s.signalType);
+      mySignals = signals.map((s: { signalType: SignalType }) => s.signalType);
     }
 
     return { ...counts, mySignals };

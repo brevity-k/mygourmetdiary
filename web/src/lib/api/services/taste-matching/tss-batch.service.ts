@@ -94,7 +94,7 @@ export const tssBatchService = {
         LIMIT ${BATCH_SIZE + 1}
       `;
 
-      const safePairs = pairs.map((p) => ({
+      const safePairs = pairs.map((p: { user_a_id: string; user_b_id: string; overlap: bigint }) => ({
         user_a_id: p.user_a_id,
         user_b_id: p.user_b_id,
         overlap: Number(p.overlap),
@@ -106,7 +106,7 @@ export const tssBatchService = {
       // Process pairs in parallel
       let processed = 0;
       await Promise.all(
-        toProcess.map(async (pair) => {
+        toProcess.map(async (pair: { user_a_id: string; user_b_id: string; overlap: number }) => {
           try {
             await tssComputationService.recomputePair(pair.user_a_id, pair.user_b_id, category);
             processed++;

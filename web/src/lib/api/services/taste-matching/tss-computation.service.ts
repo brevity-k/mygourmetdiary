@@ -113,7 +113,7 @@ async function getRatedItemsForCategory(
   });
 
   return notes
-    .map((n) => {
+    .map((n: { id: string; authorId: string; rating: number; extension: unknown; venueId: string | null; experiencedAt: Date; type: NoteType }) => {
       const matchKey = buildMatchKey(n.type, n.extension as Record<string, unknown>, n.venueId);
       if (!matchKey) return null;
       return {
@@ -124,7 +124,7 @@ async function getRatedItemsForCategory(
         experiencedAt: n.experiencedAt,
       };
     })
-    .filter((item): item is RatedItem => item !== null);
+    .filter((item: RatedItem | null): item is RatedItem => item !== null);
 }
 
 export const tssComputationService = {
