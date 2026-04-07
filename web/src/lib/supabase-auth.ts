@@ -71,7 +71,7 @@ export function onAuthStateChanged(callback: (user: AuthUser | null) => void): (
   // onAuthStateChange fires INITIAL_SESSION on subscribe (Supabase v2),
   // then SIGNED_IN, SIGNED_OUT, TOKEN_REFRESHED on subsequent changes.
   // No need for a separate getSession() call.
-  const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+  const { data: { subscription } } = supabase.auth.onAuthStateChange((event: string, session: { user: { id: string; email?: string; user_metadata?: Record<string, string> } } | null) => {
     // Skip TOKEN_REFRESHED — session user hasn't changed, avoid unnecessary re-renders
     if (event === 'TOKEN_REFRESHED') return;
 
