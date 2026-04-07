@@ -51,16 +51,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     router.push('/login');
   }, [router]);
 
-  // Only trigger signOut on 401 if user was previously authenticated.
-  // During initial OAuth flow, 401s are expected (token not ready yet).
-  const isAuthenticatedRef = React.useRef(false);
+  // Disable auto-signOut on 401 — it causes session clearing during startup.
+  // Users can manually sign out via the UI.
   useEffect(() => {
     setOnUnauthorized(() => {
-      if (isAuthenticatedRef.current) {
-        signOut();
-      }
+      console.warn('API returned 401 — ignoring (user can sign out manually)');
     });
-  }, [signOut]);
+  }, []);
 
   const registerAndFetchUser = useCallback(async () => {
     // Wait for the token to be available before making API calls
@@ -79,14 +76,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const registeredUser = await authApi.register();
       setUser(registeredUser);
-      isAuthenticatedRef.current = true;
+      // User registered successfully
       return registeredUser;
     } catch (registerErr) {
       console.warn('Auth register failed, trying getMe:', registerErr);
       try {
         const existingUser = await usersApi.getMe();
         setUser(existingUser);
-        isAuthenticatedRef.current = true;
+        // User registered successfully
         return existingUser;
       } catch (getMeErr) {
         console.warn('Failed to fetch existing user:', getMeErr);
