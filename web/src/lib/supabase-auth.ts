@@ -57,6 +57,7 @@ export async function signUpWithEmail(email: string, password: string, displayNa
 }
 
 export async function signOut(): Promise<void> {
+  console.trace('[AUTH] signOut called');
   const supabase = createSupabaseBrowserClient();
   currentAccessToken = null;
   await supabase.auth.signOut();
@@ -77,6 +78,7 @@ export function onAuthStateChanged(callback: (user: AuthUser | null) => void): (
 
   const { data: { subscription } } = supabase.auth.onAuthStateChange(
     (event: string, session: { access_token?: string; user: { id: string; email?: string; user_metadata?: Record<string, string> } } | null) => {
+      console.log('[AUTH] onAuthStateChange:', event, 'session:', session ? 'YES' : 'NULL');
       // Always update the stored token
       currentAccessToken = session?.access_token ?? null;
 
