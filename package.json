@@ -2,7 +2,6 @@
   "name": "mygourmetdiary",
   "private": true,
   "workspaces": [
-    "backend",
     "mobile",
     "web",
     "packages/*"
@@ -34,7 +33,6 @@
     }
   },
   "dependencies": {
-    "class-validator": "^0.15.1",
     "expo": "~54.0.33",
     "next": "16.2.2",
     "react": "19.2.4",
@@ -46,9 +44,9 @@
   "scripts": {
     "android": "expo run:android",
     "ios": "expo run:ios",
-    "build": "npm run build --workspace=backend && npm run build --workspace=web",
-    "lint": "npm run lint:check --workspace=backend",
-    "typecheck": "npm run typecheck --workspace=backend && npm run typecheck --workspace=web && npx --workspace=mobile tsc --noEmit",
-    "test": "npm test --workspace=backend"
+    "build": "npm run build --workspace=web",
+    "lint": "npm run lint --workspace=web",
+    "typecheck": "npx --workspace=web tsc --noEmit && npx --workspace=mobile tsc --noEmit",
+    "test": "echo 'No test runner configured yet'"
   }
 }

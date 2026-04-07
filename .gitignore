@@ -47,8 +47,7 @@ yarn-error.log*
 coverage/
 
 # Prisma
-backend/prisma/migrations/**/migration_lock.toml
-backend/prisma/generated/
+web/prisma/generated/
 
 # Firebase config files
 GoogleService-Info.plist

@@ -7,8 +7,6 @@ mobile/android
 android
 coverage
 dist
-backend/coverage
-backend/dist
 *.md
 .DS_Store
 .github
