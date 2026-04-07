@@ -9,11 +9,10 @@ export function createSupabaseBrowserClient(): SupabaseClient {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       auth: {
-        // Use localStorage for session persistence (default for browsers)
-        // This avoids all cookie synchronization issues with SSR
         persistSession: true,
         autoRefreshToken: true,
-        detectSessionInUrl: true, // Auto-detect OAuth code/tokens in URL
+        detectSessionInUrl: true,
+        flowType: 'implicit', // Use implicit flow — tokens returned in URL hash, no PKCE code exchange needed
       },
     },
   );
