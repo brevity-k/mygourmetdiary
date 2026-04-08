@@ -10,7 +10,7 @@ import {
   createAreaExplorerApi,
   createSearchApi,
 } from '@mygourmetdiary/shared-api';
-import { getIdToken } from './firebase';
+import { getIdToken } from './supabase-auth';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api/v1';
 

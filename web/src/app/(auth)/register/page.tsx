@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { signUpWithEmail } from '@/lib/firebase';
+import { signUpWithEmail } from '@/lib/supabase-auth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -41,16 +41,15 @@ export default function RegisterPage() {
       await signUpWithEmail(email, password, displayName.trim());
       router.push('/feed');
     } catch (err: unknown) {
-      const firebaseErr = err as { code?: string; message?: string };
-      const code = firebaseErr.code;
-      if (code === 'auth/email-already-in-use') {
+      const msg = err instanceof Error ? err.message : String(err);
+      if (msg.includes('User already registered')) {
         setError('An account with this email already exists.');
-      } else if (code === 'auth/weak-password') {
+      } else if (msg.includes('Password should be')) {
         setError('Password is too weak. Use at least 6 characters.');
-      } else if (code === 'auth/invalid-email') {
+      } else if (msg.includes('invalid email')) {
         setError('Invalid email address.');
       } else {
-        setError(err instanceof Error ? err.message : String(err));
+        setError(msg);
       }
     } finally {
       setLoading(false);

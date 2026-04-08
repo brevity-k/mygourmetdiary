@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { signInWithGoogle, signInWithEmail, isDev } from '@/lib/firebase';
+import { signInWithGoogle, signInWithEmail, isDev } from '@/lib/supabase-auth';
 import { useAuth } from '@/lib/auth-context';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -22,10 +22,10 @@ export default function LoginPage() {
     setError(null);
     try {
       await signInWithGoogle();
-      router.push('/feed');
+      // OAuth redirects the page — router.push won't execute.
+      // The auth callback at /auth/callback handles the redirect.
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : String(err));
-    } finally {
       setLoading(false);
     }
   };
@@ -39,12 +39,11 @@ export default function LoginPage() {
       await signInWithEmail(email, password);
       router.push('/feed');
     } catch (err: unknown) {
-      const firebaseErr = err as { code?: string; message?: string };
-      const code = firebaseErr.code;
-      if (code === 'auth/user-not-found' || code === 'auth/wrong-password' || code === 'auth/invalid-credential') {
+      const msg = err instanceof Error ? err.message : String(err);
+      if (msg.includes('Invalid login credentials')) {
         setError('Invalid email or password.');
       } else {
-        setError(err instanceof Error ? err.message : String(err));
+        setError(msg);
       }
     } finally {
       setLoading(false);

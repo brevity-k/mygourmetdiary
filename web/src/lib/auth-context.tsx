@@ -9,7 +9,7 @@ import {
   type AuthUser,
   isDev,
   devSignIn,
-} from './firebase';
+} from './supabase-auth';
 import { authApi, usersApi, setOnUnauthorized } from './api';
 
 interface AuthContextValue {
@@ -51,20 +51,39 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     router.push('/login');
   }, [router]);
 
+  // Disable auto-signOut on 401 — it causes session clearing during startup.
+  // Users can manually sign out via the UI.
   useEffect(() => {
-    setOnUnauthorized(() => signOut());
-  }, [signOut]);
+    setOnUnauthorized(() => {
+      console.warn('API returned 401 — ignoring (user can sign out manually)');
+    });
+  }, []);
 
   const registerAndFetchUser = useCallback(async () => {
+    // Wait for the token to be available before making API calls
+    const { getIdToken } = await import('./supabase-auth');
+    let token: string | null = null;
+    for (let i = 0; i < 10; i++) {
+      token = await getIdToken();
+      if (token) break;
+      await new Promise((r) => setTimeout(r, 500));
+    }
+    if (!token) {
+      console.warn('No auth token available after waiting');
+      return null;
+    }
+
     try {
       const registeredUser = await authApi.register();
       setUser(registeredUser);
+      // User registered successfully
       return registeredUser;
     } catch (registerErr) {
       console.warn('Auth register failed, trying getMe:', registerErr);
       try {
         const existingUser = await usersApi.getMe();
         setUser(existingUser);
+        // User registered successfully
         return existingUser;
       } catch (getMeErr) {
         console.warn('Failed to fetch existing user:', getMeErr);
@@ -101,7 +120,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (isDev && typeof window !== 'undefined') {
       const devToken = sessionStorage.getItem('dev_token');
       if (devToken && !firebaseUser) {
-        setFirebaseUser({ uid: 'test-firebase-uid', email: 'test@gourmet.dev', displayName: 'Test Gourmet' });
+        setFirebaseUser({ uid: 'test-supabase-uid', email: 'test@gourmet.dev', displayName: 'Test Gourmet' });
         registerAndFetchUser().then(() => setLoading(false));
       }
     }

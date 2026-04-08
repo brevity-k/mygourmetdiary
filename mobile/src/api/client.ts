@@ -11,9 +11,9 @@ export const apiClient = axios.create({
   },
 });
 
-// Attach Firebase token to every request
+// Attach auth token to every request
 apiClient.interceptors.request.use(async (config) => {
-  const token = useAuthStore.getState().firebaseToken;
+  const token = useAuthStore.getState().accessToken;
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
