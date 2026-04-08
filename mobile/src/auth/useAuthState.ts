@@ -1,18 +1,18 @@
 import { useEffect } from 'react';
-import { onAuthStateChanged, getIdToken, autoDevSignIn, shouldAutoSkipOnboarding } from './firebase';
+import { onAuthStateChanged, getIdToken, autoDevSignIn, shouldAutoSkipOnboarding } from './supabase';
 import { useAuthStore } from '../store/auth.store';
 import { authApi } from '../api/endpoints';
 
 export function useAuthState() {
-  const { setUser, setFirebaseToken, setLoading, setOnboarded, isAuthenticated, isLoading, user, hasOnboarded } =
+  const { setUser, setAccessToken, setLoading, setOnboarded, isAuthenticated, isLoading, user, hasOnboarded } =
     useAuthStore();
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(async (firebaseUser) => {
-      if (firebaseUser) {
+    const unsubscribe = onAuthStateChanged(async (authUser) => {
+      if (authUser) {
         try {
           const token = await getIdToken();
-          setFirebaseToken(token);
+          setAccessToken(token);
 
           // Register/upsert with backend
           const backendUser = await authApi.register();
@@ -25,11 +25,11 @@ export function useAuthState() {
         } catch (error) {
           console.error('Auth state sync failed:', error);
           setUser(null);
-          setFirebaseToken(null);
+          setAccessToken(null);
         }
       } else {
         setUser(null);
-        setFirebaseToken(null);
+        setAccessToken(null);
       }
       setLoading(false);
     });
@@ -38,7 +38,7 @@ export function useAuthState() {
     autoDevSignIn();
 
     return unsubscribe;
-  }, [setUser, setFirebaseToken, setLoading]);
+  }, [setUser, setAccessToken, setLoading]);
 
   return {
     isAuthenticated: !!isAuthenticated,

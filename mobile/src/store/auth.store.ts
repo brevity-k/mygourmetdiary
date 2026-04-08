@@ -5,12 +5,12 @@ import { User } from '../types';
 
 interface AuthState {
   user: User | null;
-  firebaseToken: string | null;
+  accessToken: string | null;
   isAuthenticated: boolean;
   isLoading: boolean;
   hasOnboarded: boolean;
   setUser: (user: User | null) => void;
-  setFirebaseToken: (token: string | null) => void;
+  setAccessToken: (token: string | null) => void;
   setLoading: (loading: boolean) => void;
   setOnboarded: (onboarded: boolean) => void;
   logout: () => void;
@@ -20,14 +20,14 @@ export const useAuthStore = create<AuthState>()(
   persist(
     (set) => ({
       user: null,
-      firebaseToken: null,
+      accessToken: null,
       isAuthenticated: false,
       isLoading: true,
       hasOnboarded: false,
       setUser: (user) =>
         set({ user, isAuthenticated: !!user }),
-      setFirebaseToken: (firebaseToken) =>
-        set({ firebaseToken }),
+      setAccessToken: (accessToken) =>
+        set({ accessToken }),
       setLoading: (isLoading) =>
         set({ isLoading }),
       setOnboarded: (hasOnboarded) =>
@@ -35,7 +35,7 @@ export const useAuthStore = create<AuthState>()(
       logout: () =>
         set({
           user: null,
-          firebaseToken: null,
+          accessToken: null,
           isAuthenticated: false,
         }),
     }),

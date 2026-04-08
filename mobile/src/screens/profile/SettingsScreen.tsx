@@ -3,7 +3,7 @@ import { View, Text, Switch, Alert, TouchableOpacity, StyleSheet } from 'react-n
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { signOut as firebaseSignOut } from '../../auth/firebase';
+import { signOut as authSignOut } from '../../auth/supabase';
 import { usersApi, notificationsApi } from '../../api/endpoints';
 import { unregisterPushNotifications } from '../../services/notifications';
 import {
@@ -112,7 +112,7 @@ export function SettingsScreen() {
         style: 'destructive',
         onPress: async () => {
           await unregisterPushNotifications();
-          await firebaseSignOut();
+          await authSignOut();
           logout();
         },
       },

@@ -16,7 +16,7 @@ import {
   devSignIn,
   signInWithGoogle,
   signInWithApple,
-} from '../../auth/firebase';
+} from '../../auth/supabase';
 import { colors, typography, spacing } from '../../theme';
 
 WebBrowser.maybeCompleteAuthSession();
