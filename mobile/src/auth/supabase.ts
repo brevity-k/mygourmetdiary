@@ -44,12 +44,8 @@ export async function devSignIn(): Promise<AuthUser> {
 export let shouldAutoSkipOnboarding = false;
 
 export function autoDevSignIn(): void {
-  if (__DEV__ && !currentDevUser) {
-    shouldAutoSkipOnboarding = true;
-    setTimeout(() => {
-      devSignIn();
-    }, 500);
-  }
+  // Disabled — use real Google sign-in even in dev mode
+  // since the API is on production Vercel (no dev token support)
 }
 
 // ── Production auth functions ────────────────────────────────────────
