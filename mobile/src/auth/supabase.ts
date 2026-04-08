@@ -85,20 +85,11 @@ export async function signInWithApple(
 }
 
 export async function signOut(): Promise<void> {
-  if (__DEV__) {
-    currentDevUser = null;
-    notifyDevListeners();
-    return;
-  }
   currentAccessToken = null;
   await supabase.auth.signOut();
 }
 
 export async function getIdToken(): Promise<string | null> {
-  if (__DEV__) {
-    if (!currentDevUser) return null;
-    return `dev:${currentDevUser.uid}`;
-  }
   // Return stored token from onAuthStateChange (available immediately)
   if (currentAccessToken) return currentAccessToken;
   // Fallback: try getSession
@@ -109,14 +100,6 @@ export async function getIdToken(): Promise<string | null> {
 }
 
 export function onAuthStateChanged(callback: AuthStateCallback): () => void {
-  if (__DEV__) {
-    authStateListeners.push(callback);
-    callback(currentDevUser);
-    return () => {
-      authStateListeners = authStateListeners.filter((cb) => cb !== callback);
-    };
-  }
-
   const {
     data: { subscription },
   } = supabase.auth.onAuthStateChange((_event, session) => {
