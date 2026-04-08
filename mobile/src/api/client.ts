@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { useAuthStore } from '../store/auth.store';
+import { getIdToken } from '../auth/supabase';
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000/api/v1';
 
@@ -11,21 +11,21 @@ export const apiClient = axios.create({
   },
 });
 
-// Attach auth token to every request
+// Attach auth token to every request — get directly from Supabase
 apiClient.interceptors.request.use(async (config) => {
-  const token = useAuthStore.getState().accessToken;
+  const token = await getIdToken();
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
   return config;
 });
 
-// Handle 401 — clear auth state
+// Handle 401 — log only, don't clear session (prevents clearing during startup)
 apiClient.interceptors.response.use(
   (response) => response,
   async (error) => {
     if (error.response?.status === 401) {
-      useAuthStore.getState().logout();
+      console.warn('API returned 401');
     }
     return Promise.reject(error);
   },
