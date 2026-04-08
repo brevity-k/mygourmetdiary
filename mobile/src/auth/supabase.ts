@@ -9,6 +9,9 @@
 
 import { supabase } from '../lib/supabase';
 
+// Store the current access token from onAuthStateChange
+let currentAccessToken: string | null = null;
+
 // ── Shared types ─────────────────────────────────────────────────────
 export interface AuthUser {
   uid: string;
@@ -91,6 +94,7 @@ export async function signOut(): Promise<void> {
     notifyDevListeners();
     return;
   }
+  currentAccessToken = null;
   await supabase.auth.signOut();
 }
 
@@ -99,6 +103,9 @@ export async function getIdToken(): Promise<string | null> {
     if (!currentDevUser) return null;
     return `dev:${currentDevUser.uid}`;
   }
+  // Return stored token from onAuthStateChange (available immediately)
+  if (currentAccessToken) return currentAccessToken;
+  // Fallback: try getSession
   const {
     data: { session },
   } = await supabase.auth.getSession();
@@ -117,6 +124,8 @@ export function onAuthStateChanged(callback: AuthStateCallback): () => void {
   const {
     data: { subscription },
   } = supabase.auth.onAuthStateChange((_event, session) => {
+    // Store token immediately so getIdToken() can return it
+    currentAccessToken = session?.access_token ?? null;
     if (session?.user) {
       callback({
         uid: session.user.id,
