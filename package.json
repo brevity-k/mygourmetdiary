@@ -35,9 +35,6 @@
   "dependencies": {
     "expo": "~54.0.33",
     "next": "16.2.2",
-    "react": "19.2.4",
-    "react-dom": "19.2.4",
-    "react-native": "0.81.5",
     "react-native-worklets": "0.5.1"
   },
   "version": "1.0.0",
