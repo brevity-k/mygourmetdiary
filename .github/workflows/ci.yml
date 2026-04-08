@@ -42,5 +42,6 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm install
+      - run: npm rebuild @tailwindcss/oxide || true
       - run: npm run build
         working-directory: web
