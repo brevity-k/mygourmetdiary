@@ -27,6 +27,8 @@ export function WelcomeScreen() {
   const [_request, response, promptAsync] = Google.useAuthRequest({
     iosClientId: process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID,
     webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
+    // Use web client ID for the ID token audience so Supabase accepts it
+    clientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
   });
 
   React.useEffect(() => {
