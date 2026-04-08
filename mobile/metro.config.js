@@ -15,4 +15,12 @@ config.resolver.nodeModulesPaths = [
   path.resolve(monorepoRoot, 'node_modules'),
 ];
 
+// Force react/react-native to resolve from mobile's node_modules
+// to avoid version mismatch with web's hoisted versions
+config.resolver.extraNodeModules = {
+  react: path.resolve(projectRoot, 'node_modules/react'),
+  'react-native': path.resolve(projectRoot, 'node_modules/react-native'),
+  'react-native-worklets': path.resolve(projectRoot, 'node_modules/react-native-worklets'),
+};
+
 module.exports = config;
