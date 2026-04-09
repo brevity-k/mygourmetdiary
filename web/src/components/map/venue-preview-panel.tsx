@@ -163,7 +163,7 @@ export function VenuePreviewPanel({ pin, onClose }: VenuePreviewPanelProps) {
 
       <div className="p-4 border-t border-border-light flex gap-2">
         <Link
-          href={`/search?q=${encodeURIComponent(venue.name)}`}
+          href={`/venues/${venue.placeId}`}
           className={cn(buttonVariants({ variant: 'outline' }), 'flex-1')}
         >
           <FileText className="h-4 w-4 mr-2" />
@@ -226,7 +226,7 @@ export function VenuePreviewBottomPanel({ pin, onClose }: VenuePreviewPanelProps
 
       <div className="p-4 border-t border-border-light shrink-0 flex gap-2">
         <Link
-          href={`/search?q=${encodeURIComponent(venue.name)}`}
+          href={`/venues/${venue.placeId}`}
           className={cn(buttonVariants({ size: 'sm', variant: 'outline' }), 'flex-1')}
         >
           View Notes

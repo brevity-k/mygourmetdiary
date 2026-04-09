@@ -14,6 +14,7 @@ import {
   EyeOff,
   ThumbsUp,
   ThumbsDown,
+  Wine,
 } from 'lucide-react';
 import { NoteType, Visibility } from '@mygourmetdiary/shared-types';
 import { NOTE_TYPE_LABELS, SERVING_METHODS } from '@mygourmetdiary/shared-constants';
@@ -141,11 +142,28 @@ export default function NoteDetailPage({ params }: { params: Promise<{ noteId: s
 
         {note.venue && (
           <div className="flex items-center gap-2 text-muted-foreground">
-            <MapPin className="h-4 w-4" />
-            <span>{note.venue.name}</span>
+            <Link
+              href={`/venues/${note.venue.placeId}`}
+              className="flex items-center gap-1 text-primary hover:underline"
+            >
+              <MapPin className="h-4 w-4" />
+              {note.venue.name}
+            </Link>
             {note.venue.address && (
               <span className="text-sm">· {note.venue.address}</span>
             )}
+          </div>
+        )}
+
+        {note.product && (
+          <div className="flex items-center gap-2 text-muted-foreground">
+            <Link
+              href={`/products/${note.product.id}`}
+              className="flex items-center gap-1 text-primary hover:underline"
+            >
+              <Wine className="h-4 w-4" />
+              {note.product.name}
+            </Link>
           </div>
         )}
 
