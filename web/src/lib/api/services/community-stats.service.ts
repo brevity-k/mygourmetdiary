@@ -33,18 +33,26 @@ export function computeStats(
 }
 
 export const communityStatsService = {
-  async getStats(subjectType: CommunitySubjectType, subjectId: string, noteField: string) {
-    const cacheKey = `community-stats:${subjectType}:${subjectId}`;
+  async getStats(subjectType: CommunitySubjectType, subjectId: string, noteField: string, viewerId?: string) {
+    const cacheKey = viewerId
+      ? `community-stats:${subjectType}:${subjectId}:${viewerId}`
+      : `community-stats:${subjectType}:${subjectId}`;
     const cached = await getJson<ReturnType<typeof computeStats> & { ratingDistribution: Record<string, number> }>(cacheKey);
     if (cached) return cached;
 
-    const publicWhere = { [noteField]: subjectId, visibility: 'PUBLIC' as const };
+    // Include PUBLIC notes + viewer's own notes (any visibility)
+    const visibleWhere = {
+      [noteField]: subjectId,
+      OR: viewerId
+        ? [{ visibility: 'PUBLIC' as const }, { authorId: viewerId }]
+        : [{ visibility: 'PUBLIC' as const }],
+    };
 
     const [count, gourmets, avg, ratings] = await Promise.all([
-      prisma.note.count({ where: publicWhere }),
-      prisma.note.groupBy({ by: ['authorId'], where: publicWhere, _count: { id: true } }),
-      prisma.note.aggregate({ where: publicWhere, _avg: { rating: true } }),
-      prisma.note.groupBy({ by: ['rating'], where: publicWhere, _count: { id: true } }),
+      prisma.note.count({ where: visibleWhere }),
+      prisma.note.groupBy({ by: ['authorId'], where: visibleWhere, _count: { id: true } }),
+      prisma.note.aggregate({ where: visibleWhere, _avg: { rating: true } }),
+      prisma.note.groupBy({ by: ['rating'], where: visibleWhere, _count: { id: true } }),
     ]);
 
     const stats = {

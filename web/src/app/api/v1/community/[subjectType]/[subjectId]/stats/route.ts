@@ -9,7 +9,7 @@ const SUBJECT_CONFIG = {
   product: { noteField: 'productId' },
 } as const;
 
-export const GET = withAuth(async (req: NextRequest) => {
+export const GET = withAuth(async (req: NextRequest, user) => {
   const parts = req.nextUrl.pathname.split('/');
   // /api/v1/community/[subjectType]/[subjectId]/stats
   const subjectType = parts.at(-3) as string;
@@ -31,6 +31,7 @@ export const GET = withAuth(async (req: NextRequest) => {
     subjectType as 'venue' | 'product',
     subjectId,
     config.noteField,
+    user.id,
   );
   return apiSuccess(stats);
 });
