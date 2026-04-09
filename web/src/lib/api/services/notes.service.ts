@@ -1,6 +1,8 @@
 import { NoteType, Prisma } from '@prisma/client';
 import { prisma } from '../clients/prisma';
 import { validateExtension } from '../validators/notes';
+import { invalidateCommunityCache } from './community-cache';
+import { productsService } from './products.service';
 import { venuesService } from './venues.service';
 
 // ─── Pagination helpers ────────────────────────────────
@@ -32,6 +34,7 @@ interface CreateNoteInput {
   tagIds?: string[];
   extension: Record<string, unknown>;
   venueId?: string;
+  productId?: string;
   experiencedAt: string;
   photoIds?: string[];
 }
@@ -117,6 +120,14 @@ export const notesService = {
       resolvedVenueId = venue.id;
     }
 
+    // Product resolution for wine/spirit types
+    let resolvedProductId: string | null = null;
+    if (input.productId) {
+      const product = await productsService.getById(input.productId);
+      if (!product) throw new Error('Product not found');
+      resolvedProductId = product.id;
+    }
+
     const note = await prisma.note.create({
       data: {
         authorId: userId,
@@ -129,6 +140,7 @@ export const notesService = {
         tagIds: input.tagIds || [],
         extension: input.extension as unknown as Prisma.InputJsonValue,
         venueId: resolvedVenueId,
+        productId: resolvedProductId,
         experiencedAt: new Date(input.experiencedAt),
       },
       include: { photos: true, venue: true },
@@ -145,6 +157,10 @@ export const notesService = {
         data: { noteId: note.id },
       });
     }
+
+    // Invalidate community caches for the linked venue/product
+    if (resolvedVenueId) invalidateCommunityCache('venue', resolvedVenueId);
+    if (resolvedProductId) invalidateCommunityCache('product', resolvedProductId);
 
     return notesService.findById(note.id, userId);
   },
@@ -181,6 +197,10 @@ export const notesService = {
       include: { photos: { orderBy: { sortOrder: 'asc' } }, venue: true },
     });
 
+    // Invalidate community caches for the linked venue/product
+    if (note.venueId) invalidateCommunityCache('venue', note.venueId);
+    if (note.productId) invalidateCommunityCache('product', note.productId);
+
     return updated;
   },
 
@@ -189,6 +209,10 @@ export const notesService = {
     if (note.authorId !== userId) throw new Error('Forbidden');
 
     await prisma.note.delete({ where: { id } });
+
+    // Invalidate community caches for the linked venue/product
+    if (note.venueId) invalidateCommunityCache('venue', note.venueId);
+    if (note.productId) invalidateCommunityCache('product', note.productId);
   },
 
   async publicFeed(cursor?: string, limit = 20, type?: NoteType) {

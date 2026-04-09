@@ -2,7 +2,7 @@ import Redis from 'ioredis';
 
 const globalForRedis = globalThis as unknown as { redis: Redis };
 
-function getRedis(): Redis {
+export function getRedis(): Redis {
   if (globalForRedis.redis) return globalForRedis.redis;
 
   const url = process.env.REDIS_URL;
