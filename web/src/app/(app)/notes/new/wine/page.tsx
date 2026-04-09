@@ -1,10 +1,11 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { NoteType } from '@mygourmetdiary/shared-types';
+import { NoteType, ProductCategory } from '@mygourmetdiary/shared-types';
 import { WINE_TYPES, WINE_FINISHES, PURCHASE_CONTEXTS } from '@mygourmetdiary/shared-constants';
 import { useNoteForm } from '@/hooks/use-note-form';
 import { NoteFormLayout } from '@/components/note-form-layout';
+import { ProductSearchInput } from '@/components/forms/product-search-input';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select } from '@/components/ui/select';
@@ -29,6 +30,22 @@ export default function NewWineNotePage() {
       showVenue={false}
     >
       <div className="space-y-4">
+        <ProductSearchInput
+          value={
+            form.formData.productId
+              ? { id: form.formData.productId, name: form.formData.extension.wineName || '' }
+              : null
+          }
+          onChange={(product) => {
+            form.updateField('productId', product?.id ?? null);
+            if (product) {
+              form.updateExtension('wineName', product.name);
+            }
+          }}
+          category={ProductCategory.WINE}
+          label="Wine (search or create)"
+        />
+
         <div className="space-y-2">
           <Label htmlFor="wineName">Wine Name *</Label>
           <Input

@@ -1,10 +1,11 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { NoteType } from '@mygourmetdiary/shared-types';
+import { NoteType, ProductCategory } from '@mygourmetdiary/shared-types';
 import { SPIRIT_TYPES, SERVING_METHODS } from '@mygourmetdiary/shared-constants';
 import { useNoteForm } from '@/hooks/use-note-form';
 import { NoteFormLayout } from '@/components/note-form-layout';
+import { ProductSearchInput } from '@/components/forms/product-search-input';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select } from '@/components/ui/select';
@@ -28,6 +29,22 @@ export default function NewSpiritNotePage() {
       showVenue={false}
     >
       <div className="space-y-4">
+        <ProductSearchInput
+          value={
+            form.formData.productId
+              ? { id: form.formData.productId, name: form.formData.extension.spiritName || '' }
+              : null
+          }
+          onChange={(product) => {
+            form.updateField('productId', product?.id ?? null);
+            if (product) {
+              form.updateExtension('spiritName', product.name);
+            }
+          }}
+          category={ProductCategory.SPIRIT}
+          label="Spirit (search or create)"
+        />
+
         <div className="space-y-2">
           <Label htmlFor="spiritName">Spirit Name *</Label>
           <Input

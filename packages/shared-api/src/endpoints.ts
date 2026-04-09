@@ -26,6 +26,7 @@ export interface CreateNoteInput {
   tagIds: string[];
   extension: NoteExtension | Record<string, unknown>;
   venueId: string | null;
+  productId?: string | null;
   experiencedAt: string;
   photoIds?: string[];
 }

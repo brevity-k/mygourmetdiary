@@ -10,12 +10,12 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select } from '@/components/ui/select';
-import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { RatingInput } from '@/components/rating-input';
 import { VenueSearch } from '@/components/venue-search';
 import { PhotoUploader, type PhotoFile } from '@/components/photo-uploader';
 import { TagSelector } from '@/components/tag-selector';
+import { VisibilitySelector } from '@/components/forms/visibility-selector';
 import type { Venue } from '@mygourmetdiary/shared-types';
 
 interface NoteFormLayoutProps {
@@ -160,15 +160,10 @@ export function NoteFormLayout({
         </div>
 
         {/* Visibility */}
-        <div className="flex items-center justify-between">
-          <Label>Public note</Label>
-          <Switch
-            checked={formData.visibility === Visibility.PUBLIC}
-            onCheckedChange={(checked) =>
-              updateField('visibility', checked ? Visibility.PUBLIC : Visibility.PRIVATE)
-            }
-          />
-        </div>
+        <VisibilitySelector
+          value={formData.visibility}
+          onChange={(v) => updateField('visibility', v)}
+        />
 
         <Button type="submit" className="w-full" disabled={isSubmitting || !formData.title || formData.rating === 0 || !formData.binderId}>
           {isSubmitting ? 'Saving...' : 'Save Note'}

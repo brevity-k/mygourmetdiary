@@ -30,7 +30,7 @@ interface CreateNoteInput {
   binderId: string;
   rating: number;
   freeText?: string;
-  visibility?: 'PUBLIC' | 'PRIVATE';
+  visibility?: 'PUBLIC' | 'PRIVATE' | 'FRIENDS';
   tagIds?: string[];
   extension: Record<string, unknown>;
   venueId?: string;
@@ -44,7 +44,7 @@ interface UpdateNoteInput {
   binderId?: string;
   rating?: number;
   freeText?: string;
-  visibility?: 'PUBLIC' | 'PRIVATE';
+  visibility?: 'PUBLIC' | 'PRIVATE' | 'FRIENDS';
   tagIds?: string[];
   extension?: Record<string, unknown>;
   experiencedAt?: string;

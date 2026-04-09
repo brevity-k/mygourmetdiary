@@ -81,7 +81,7 @@ export function validateExtension(type: string, extension: unknown): { success: 
 // ─── Note Schemas ──────────────────────────────────────
 
 const noteTypeEnum = z.enum(['RESTAURANT', 'WINE', 'SPIRIT', 'WINERY_VISIT']);
-const visibilityEnum = z.enum(['PUBLIC', 'PRIVATE']);
+const visibilityEnum = z.enum(['PUBLIC', 'PRIVATE', 'FRIENDS']);
 
 export const createNoteSchema = z.object({
   type: noteTypeEnum,
@@ -93,6 +93,7 @@ export const createNoteSchema = z.object({
   tagIds: z.array(z.string()).optional(),
   extension: z.record(z.string(), z.unknown()),
   venueId: z.string().optional(),
+  productId: z.string().optional(),
   experiencedAt: z.string().datetime({ offset: true }).or(z.string().date()),
   photoIds: z.array(z.string()).optional(),
 });

@@ -20,6 +20,7 @@ export interface NoteFormData {
   tagIds: string[];
   extension: Record<string, any>;
   venueId: string | null;
+  productId: string | null;
   experiencedAt: string;
 }
 
@@ -66,6 +67,7 @@ export function useNoteForm(type: NoteType, onSuccess: () => void) {
     tagIds: [],
     extension: getDefaultExtension(type),
     venueId: null,
+    productId: null,
     experiencedAt: new Date().toISOString().split('T')[0],
   });
 
@@ -138,6 +140,7 @@ export function useNoteForm(type: NoteType, onSuccess: () => void) {
 
       return notesApi.create({
         ...formData,
+        productId: formData.productId ?? undefined,
         extension: cleanExtension(formData.extension),
         experiencedAt: new Date(formData.experiencedAt).toISOString(),
         photoIds,
