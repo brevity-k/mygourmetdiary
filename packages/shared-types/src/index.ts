@@ -17,6 +17,7 @@ export enum BinderCategory {
 export enum Visibility {
   PUBLIC = 'PUBLIC',
   PRIVATE = 'PRIVATE',
+  FRIENDS = 'FRIENDS',
 }
 
 export enum DishCategory {
@@ -391,3 +392,8 @@ export interface PioneerZone {
   venue: Venue;
   noteCount: number;
 }
+
+// ─── Community Types ───────────────────────────────────
+
+export { ProductCategory } from './community';
+export type { CommunitySubjectType, Product, CommunityStats, CommunityGourmet } from './community';

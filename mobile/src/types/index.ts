@@ -50,4 +50,10 @@ export {
   type NotificationPreferences,
   type PioneerBadge,
   type PioneerZone,
+  // Community
+  ProductCategory,
+  type CommunitySubjectType,
+  type Product,
+  type CommunityStats,
+  type CommunityGourmet,
 } from '@mygourmetdiary/shared-types';
