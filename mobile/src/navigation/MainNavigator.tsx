@@ -101,17 +101,15 @@ export function MainNavigator() {
       </Tab.Navigator>
 
       {showCreate && (
-        <View style={StyleSheet.absoluteFill}>
-          <TouchableOpacity
-            style={styles.overlay}
-            activeOpacity={1}
-            onPress={closeCreate}
-          />
-          <NavigationIndependentTree>
-            <NavigationContainer>
-              <NoteCreationNavigator onClose={closeCreate} />
-            </NavigationContainer>
-          </NavigationIndependentTree>
+        <View style={StyleSheet.absoluteFill} pointerEvents="box-none">
+          <View style={styles.overlay} />
+          <View style={styles.creationContainer}>
+            <NavigationIndependentTree>
+              <NavigationContainer>
+                <NoteCreationNavigator onClose={closeCreate} />
+              </NavigationContainer>
+            </NavigationIndependentTree>
+          </View>
         </View>
       )}
     </>
@@ -136,5 +134,9 @@ const styles = StyleSheet.create({
   overlay: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: colors.overlay,
+  },
+  creationContainer: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: colors.background,
   },
 });

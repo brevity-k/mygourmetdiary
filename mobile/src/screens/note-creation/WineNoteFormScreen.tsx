@@ -1,10 +1,11 @@
 import React from 'react';
-import { ScrollView, View, Text, Switch, StyleSheet } from 'react-native';
+import { ScrollView, View, Text, Switch, StyleSheet, KeyboardAvoidingView, Platform } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useQuery } from '@tanstack/react-query';
 import { useNoteForm } from '../../hooks/useNoteForm';
 import { NoteType, Visibility } from '../../types';
 import { bindersApi, tagsApi } from '../../api/endpoints';
+import { useUIStore } from '../../store/ui.store';
 import { Input } from '../../components/common/Input';
 import { Button } from '../../components/common/Button';
 import { RatingInput } from '../../components/forms/RatingInput';
@@ -17,6 +18,7 @@ import { colors, typography, spacing, borderRadius } from '../../theme';
 
 export function WineNoteFormScreen() {
   const navigation = useNavigation();
+  const closeNoteCreation = useUIStore((s) => s.closeNoteCreation);
 
   const {
     formData,
@@ -28,9 +30,7 @@ export function WineNoteFormScreen() {
     submit,
     isSubmitting,
     confirmDiscard,
-  } = useNoteForm(NoteType.WINE, () => {
-    navigation.getParent()?.goBack();
-  });
+  } = useNoteForm(NoteType.WINE, closeNoteCreation);
 
   const { data: binders = [] } = useQuery({
     queryKey: ['binders'],
@@ -56,6 +56,10 @@ export function WineNoteFormScreen() {
   }, [navigation, confirmDiscard]);
 
   return (
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+    >
     <ScrollView
       style={styles.container}
       contentContainerStyle={styles.content}
@@ -251,6 +255,7 @@ export function WineNoteFormScreen() {
         style={styles.saveButton}
       />
     </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 
