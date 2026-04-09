@@ -1,0 +1,265 @@
+# Libraries
+
+- `backend/prisma/generated/client/internal/class.ts`
+  - function getPrismaClientClass: () => PrismaClientConstructor
+  - interface PrismaClientConstructor
+  - interface PrismaClient
+  - type LogOptions
+- `ios/Pods/Target Support Files/Pods-mygourmetdiary/ExpoModulesProvider.swift` — class ExpoModulesProvider
+- `ios/mygourmetdiary/AppDelegate.swift` — class AppDelegate
+- `mobile/ios/MyGourmetDiary/AppDelegate.swift` — class AppDelegate
+- `mobile/ios/Pods/Google-Maps-iOS-Utils/Sources/GoogleMapsUtils/GeometryUtils/MapPoint.swift` — class MapPoint
+- `mobile/ios/Pods/Google-Maps-iOS-Utils/Sources/GoogleMapsUtils/Heatmap/HeatmapInterpolationPoints.swift`
+  - class HeatmapInterpolationPoints
+  - function addWeightedLatLngs
+  - function addWeightedLatLng
+  - function removeAllData
+  - function generatePoints
+- `mobile/ios/Pods/GoogleMaps/SwiftExample/GoogleMapsSwiftXCFrameworkDemos/Swift/Samples/UIViewController+Extensions.swift` — function showToast, function promptForMapID
+- `mobile/ios/Pods/PurchasesHybridCommon/ios/PurchasesHybridCommon/PurchasesHybridCommon/IOSAPIAvailabilityChecker.swift`
+  - class IOSAPIAvailabilityChecker
+  - function isWinBackOfferAPIAvailable
+  - function isEnableAdServicesAttributionTokenCollectionAPIAvailable
+  - function isCodeRedemptionSheetAPIAvailable
+  - function isAdTrackingAPIAvailable
+  - function isCustomPaywallTrackingAPIAvailable
+- `mobile/ios/Pods/RevenueCat/Sources/Ads/AdTracker.swift` — class AdTracker
+- `mobile/ios/Pods/RevenueCat/Sources/Attribution/AttributionNetwork.swift` — function encode
+- `mobile/ios/Pods/RevenueCat/Sources/Caching/Checksum.swift` — class Checksum, enum Algorithm
+- `mobile/ios/Pods/RevenueCat/Sources/CodableExtensions/PeriodType+Extensions.swift` — function encode
+- `mobile/ios/Pods/RevenueCat/Sources/CodableExtensions/PurchaseOwnershipType+Extensions.swift` — function encode
+- `mobile/ios/Pods/RevenueCat/Sources/CodableExtensions/Store+Extensions.swift` — function encode
+- `mobile/ios/Pods/RevenueCat/Sources/CustomerCenter/CustomerCenterPresentationMode.swift` — enum CustomerCenterPresentationMode, function encode
+- `mobile/ios/Pods/RevenueCat/Sources/CustomerCenter/Events/CustomerCenterEvent.swift` — class Data
+- `mobile/ios/Pods/RevenueCat/Sources/Identity/CustomerInfo.swift` — function encode
+- `mobile/ios/Pods/RevenueCat/Sources/LocalReceiptParsing/BasicTypes/AppleReceipt.swift` — class AppleReceipt, enum Environment
+- `mobile/ios/Pods/RevenueCat/Sources/LocalReceiptParsing/BasicTypes/InAppPurchase.swift` — class InAppPurchase, enum ProductType
+- `mobile/ios/Pods/RevenueCat/Sources/LocalReceiptParsing/PurchasesReceiptParser.swift` — class PurchasesReceiptParser, function parse
+- `mobile/ios/Pods/RevenueCat/Sources/Misc/Obsoletions.swift`
+  - enum RCPaymentMode
+  - class PromotionalOfferEligibility
+  - enum RCBackendErrorCode
+  - class RCPurchasesErrorUtils
+- `mobile/ios/Pods/RevenueCat/Sources/Misc/PlatformInfo.swift` — class PlatformInfo
+- `mobile/ios/Pods/RevenueCat/Sources/Networking/Responses/RevenueCatUI/PaywallComponentsData.swift`
+  - class PaywallComponentsData
+  - class ComponentsConfig
+  - class PaywallComponentsConfig
+  - enum LocalizationData
+  - class EquatableError
+  - function encode
+- `mobile/ios/Pods/RevenueCat/Sources/Networking/Responses/RevenueCatUI/UIConfig.swift`
+  - class UIConfig
+  - class AppConfig
+  - class FontsConfig
+  - class VariableConfig
+  - class CustomVariableDefinition
+  - class UIConfig
+- `mobile/ios/Pods/RevenueCat/Sources/Paywalls/Components/Common/Background.swift` — function encode
+- `mobile/ios/Pods/RevenueCat/Sources/Paywalls/Components/Common/ComponentOverrides.swift`
+  - interface PaywallPartialComponent
+  - enum ConditionValue
+  - enum EqualityOperator
+  - enum ArrayOperator
+  - function encode
+  - function toCondition
+- `mobile/ios/Pods/RevenueCat/Sources/Paywalls/Components/Common/Dimension.swift`
+  - function encode
+  - function horizontal
+  - function vertical
+- `mobile/ios/Pods/RevenueCat/Sources/Paywalls/Components/Common/PaywallComponentBase.swift`
+  - interface PaywallComponentBase
+  - enum PaywallComponent
+  - enum ComponentType
+  - function encode
+- `mobile/ios/Pods/RevenueCat/Sources/Paywalls/Components/Common/PaywallComponentLocalization.swift` — function string, function image
+- `mobile/ios/Pods/RevenueCat/Sources/Paywalls/Components/Common/PaywallComponentPropertyTypes.swift` — function encode, function hash
+- `mobile/ios/Pods/RevenueCat/Sources/Paywalls/Components/PaywallButtonComponent.swift`
+  - enum Action
+  - enum Destination
+  - enum URLMethod
+  - class Sheet
+  - function encode
+  - function hash
+- `mobile/ios/Pods/RevenueCat/Sources/Paywalls/Components/PaywallCarouselComponent.swift`
+  - class AutoAdvanceSlides
+  - enum AutoAdvanceTransitionType
+  - class PageControl
+  - enum Position
+  - class PageControlIndicator
+  - function hash
+- `mobile/ios/Pods/RevenueCat/Sources/Paywalls/Components/PaywallCountdownComponent.swift`
+  - enum CountdownStyle
+  - enum CountFrom
+  - function encode
+  - function hash
+- `mobile/ios/Pods/RevenueCat/Sources/Paywalls/Components/PaywallIconComponent.swift` — function hash
+- `mobile/ios/Pods/RevenueCat/Sources/Paywalls/Components/PaywallImageComponent.swift` — function hash
+- `mobile/ios/Pods/RevenueCat/Sources/Paywalls/Components/PaywallPackageComponent.swift` — function hash
+- `mobile/ios/Pods/RevenueCat/Sources/Paywalls/Components/PaywallPurchaseButtonComponent.swift`
+  - enum Action
+  - enum Method
+  - class WebCheckout
+  - class CustomWebCheckout
+  - class CustomURL
+  - function encode
+  - _...1 more_
+- `mobile/ios/Pods/RevenueCat/Sources/Paywalls/Components/PaywallStackComponent.swift` — enum Overflow, function hash
+- `mobile/ios/Pods/RevenueCat/Sources/Paywalls/Components/PaywallStickyFooterComponent.swift` — function hash
+- `mobile/ios/Pods/RevenueCat/Sources/Paywalls/Components/PaywallTabsComponent.swift` — enum TabControlType, function hash
+- `mobile/ios/Pods/RevenueCat/Sources/Paywalls/Components/PaywallTextComponent.swift` — function encode, function hash
+- `mobile/ios/Pods/RevenueCat/Sources/Paywalls/Components/PaywallTimelineComponent.swift`
+  - class Item
+  - class Connector
+  - enum IconAlignment
+  - function hash
+- `mobile/ios/Pods/RevenueCat/Sources/Paywalls/Components/PaywallVideoComponent.swift`
+  - class VideoComponent
+  - class PartialVideoComponent
+  - function hash
+- `mobile/ios/Pods/RevenueCat/Sources/Paywalls/Events/CustomPaywallImpressionParams.swift` — class CustomPaywallImpressionParams
+- `mobile/ios/Pods/RevenueCat/Sources/Paywalls/Events/PaywallEvent.swift`
+  - enum ExitOfferType
+  - enum PaywallEvent
+  - class CreationData
+  - class Data
+  - class ExitOfferData
+  - function withPurchaseInfo
+- `mobile/ios/Pods/RevenueCat/Sources/Paywalls/ExitOffer.swift` — class ExitOffer, class ExitOffers
+- `mobile/ios/Pods/RevenueCat/Sources/Paywalls/PaywallColor.swift`
+  - class PaywallColor
+  - enum ColorScheme
+  - function hash
+  - function encode
+- `mobile/ios/Pods/RevenueCat/Sources/Paywalls/PaywallData.swift`
+  - class PaywallData
+  - interface PaywallLocalizedConfiguration
+  - class ZeroDecimalPlaceCountries
+  - class LocalizedConfiguration
+  - class Feature
+  - class OfferOverride
+  - _...7 more_
+- `mobile/ios/Pods/RevenueCat/Sources/Paywalls/PaywallViewMode.swift` — enum PaywallViewMode, function encode
+- `mobile/ios/Pods/RevenueCat/Sources/Purchasing/Configuration.swift` — enum EntitlementVerificationMode, function with
+- `mobile/ios/Pods/RevenueCat/Sources/Purchasing/NonSubscriptionTransaction.swift` — class NonSubscriptionTransaction
+- `mobile/ios/Pods/RevenueCat/Sources/Purchasing/Offering.swift` — class PaywallComponents, function getMetadataValue
+- `mobile/ios/Pods/RevenueCat/Sources/Purchasing/PackageType.swift` — function encode
+- `mobile/ios/Pods/RevenueCat/Sources/Purchasing/Purchases/Purchases.swift`
+  - function switchUser
+  - function isPurchaseAllowedByRestoreBehavior
+  - function overridePreferredUILocale
+  - function eligibleWinBackOffers
+- `mobile/ios/Pods/RevenueCat/Sources/Purchasing/StoreKit2/StoreKit2PromotionalOfferPurchaseOptions.swift` — class StoreKit2PromotionalOfferPurchaseOptions
+- `mobile/ios/Pods/RevenueCat/Sources/Purchasing/StoreKitAbstractions/PromotionalOffer.swift` — class PromotionalOffer
+- `mobile/ios/Pods/RevenueCat/Sources/Purchasing/StoreKitAbstractions/StoreProductDiscount.swift`
+  - class StoreProductDiscount
+  - enum PaymentMode
+  - enum DiscountType
+  - class Data
+  - function encode
+- `mobile/ios/Pods/RevenueCat/Sources/Purchasing/StoreKitAbstractions/Storefront.swift` — class Storefront
+- `mobile/ios/Pods/RevenueCat/Sources/Purchasing/StoreKitAbstractions/SubscriptionPeriod.swift` — class SubscriptionPeriod, enum Unit
+- `mobile/ios/Pods/RevenueCat/Sources/Purchasing/StoreKitAbstractions/Test Data/TestStoreProduct.swift` — class TestStoreProduct, function toStoreProduct
+- `mobile/ios/Pods/RevenueCat/Sources/Purchasing/StoreKitAbstractions/Test Data/TestStoreProductDiscount.swift` — class TestStoreProductDiscount, function toStoreProductDiscount
+- `mobile/ios/Pods/RevenueCat/Sources/Purchasing/StoreKitAbstractions/WinBackOffer.swift` — class WinBackOffer
+- `mobile/ios/Pods/RevenueCat/Sources/Support/DebugUI/DebugViewController.swift` — class DebugViewController, function presentDebugRevenueCatOverlay
+- `mobile/ios/Pods/RevenueCat/Sources/Support/PaywallExtensions.swift` — function forOffering
+- `mobile/ios/Pods/RevenueCat/Sources/Support/PurchasesDiagnostics.swift`
+  - class PurchasesDiagnostics
+  - enum ProductStatus
+  - class ProductDiagnosticsPayload
+  - class InvalidBundleIdErrorPayload
+  - enum SDKHealthCheckStatus
+  - class OfferingDiagnosticsPayload
+  - _...8 more_
+- `mobile/ios/Pods/RevenueCat/Sources/Virtual Currencies/VirtualCurrency.swift` — class VirtualCurrency
+- `mobile/ios/Pods/Target Support Files/Pods-MyGourmetDiary/ExpoModulesProvider.swift` — class ExpoModulesProvider
+- `mobile/src/auth/supabase.ts`
+  - function devSignIn: () => Promise<AuthUser>
+  - function autoDevSignIn: () => void
+  - function signInWithGoogle: (idToken) => Promise<AuthUser>
+  - function signInWithApple: (identityToken, nonce) => Promise<AuthUser>
+  - function signOut: () => Promise<void>
+  - function getIdToken: () => Promise<string | null>
+  - _...2 more_
+- `mobile/src/auth/useAuthState.ts` — function useAuthState: () => void
+- `mobile/src/hooks/useNoteForm.ts` — function useNoteForm: (type, onSuccess) => void
+- `mobile/src/hooks/useNotifications.ts` — function useNotifications: () => void
+- `mobile/src/hooks/useOfflineNotes.ts`
+  - function useIsOffline: () => void
+  - function useOfflineNotes: (binderId?, type?) => void
+  - function useOfflineNoteDetail: (noteId) => void
+- `mobile/src/lib/supabase.ts` — function getSupabase: () => SupabaseClient, const supabase
+- `mobile/src/services/notifications.ts` — function registerForPushNotifications: () => Promise<string | null>, function unregisterPushNotifications: () => Promise<void>
+- `mobile/src/services/offline/database.ts`
+  - function getDatabase: () => Promise<SQLite.SQLiteDatabase>
+  - function clearDatabase: () => Promise<void>
+  - function getSyncMeta: (key) => Promise<string | null>
+  - function setSyncMeta: (key, value) => Promise<void>
+  - function getOfflineNotes: (binderId?, type?) => void
+  - function getOfflineNoteById: (id) => void
+  - _...7 more_
+- `mobile/src/services/offline/sync.service.ts`
+  - function downloadNotesForOffline: (onProgress?, hasMore) => void
+  - function replayPendingMutations: () => Promise<
+  - function clearOfflineData: () => Promise<void>
+  - function getOfflineStorageSize: () => Promise<number>
+- `mobile/src/services/purchases.ts`
+  - function initPurchases: (appUserId?) => void
+  - function getOfferings: () => Promise<PurchasesOffering | null>
+  - function purchasePackage: (pkg) => Promise<CustomerInfo | null>
+  - function restorePurchases: () => Promise<CustomerInfo | null>
+  - function checkSubscriptionStatus: () => Promise<void>
+- `packages/shared-api/src/client.ts` — function createApiClient: (config) => AxiosInstance, interface ApiClientConfig
+- `packages/shared-api/src/endpoints.ts`
+  - function createAuthApi: (client) => void
+  - function createUsersApi: (client) => void
+  - function createBindersApi: (client) => void
+  - function createTagsApi: (client) => void
+  - function createVenuesApi: (client) => void
+  - function createPhotosApi: (client) => void
+  - _...5 more_
+- `web/src/hooks/use-click-outside.ts` — function useClickOutside: (ref, handler) => void
+- `web/src/hooks/use-debounce.ts` — function useDebounce: (value, delay) => T
+- `web/src/hooks/use-intersection-observer.ts` — function useIntersectionObserver: (options?) => void
+- `web/src/hooks/use-note-form.ts` — function useNoteForm: (type, onSuccess) => void, interface NoteFormData
+- `web/src/lib/api/clients/redis.ts`
+  - function getJson: (key) => Promise<T | null>
+  - function setJson: (key, value, ttlSeconds) => Promise<void>
+  - const redis
+- `web/src/lib/api/clients/supabase-server.ts` — function getSupabaseAdmin: () => SupabaseClient, const supabaseAdmin
+- `web/src/lib/api/middleware.ts`
+  - function withAuth: (handler) => void
+  - function withPremium: (handler) => void
+  - function withCron: (handler) => void
+- `web/src/lib/api/response.ts` — function apiSuccess: (data, status) => void, function apiError: (message, status) => void
+- `web/src/lib/api/services/geo.ts` — function computeBoundingBox: (lat, lng, radiusKm) => BoundingBox, interface BoundingBox
+- `web/src/lib/api/services/users.service.ts` — function sanitizeUser: (user) => SanitizedUser, const usersService
+- `web/src/lib/api/validators/notes.ts`
+  - function validateExtension: (type, extension) => void
+  - const restaurantExtensionSchema
+  - const wineExtensionSchema
+  - const spiritExtensionSchema
+  - const wineryVisitExtensionSchema
+  - const createNoteSchema
+  - _...2 more_
+- `web/src/lib/api.ts`
+  - function setOnUnauthorized: (cb) => void
+  - const apiClient
+  - const authApi
+  - const usersApi
+  - const bindersApi
+  - const tagsApi
+  - _...5 more_
+- `web/src/lib/supabase/client.ts` — function createSupabaseBrowserClient: () => SupabaseClient
+- `web/src/lib/supabase/middleware.ts` — function updateSession: (request) => void
+- `web/src/lib/supabase/server.ts` — function createSupabaseServerClient: () => void
+- `web/src/lib/supabase-auth.ts`
+  - function signInWithGoogle: () => Promise<AuthUser>
+  - function signInWithEmail: (email, password) => Promise<AuthUser>
+  - function signUpWithEmail: (email, password, displayName) => Promise<AuthUser>
+  - function signOut: () => Promise<void>
+  - function getIdToken: () => Promise<string | null>
+  - function onAuthStateChanged: (callback) => void
+  - _...3 more_
+- `web/src/lib/utils.ts` — function cn: (...inputs) => void
