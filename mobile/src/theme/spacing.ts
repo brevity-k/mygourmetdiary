@@ -8,10 +8,10 @@ export const spacing = {
 } as const;
 
 export const borderRadius = {
-  sm: 6,
-  md: 12,
-  lg: 16,
-  pill: 20,
-  xl: 24,
-  full: 9999,
+  sm: 8,      // Was 6. Buttons, inputs.
+  md: 12,     // Compact cards. No change.
+  lg: 16,     // Full cards. No change.
+  pill: 9999, // Was 20. True pill for badges.
+  xl: 24,     // No change.
+  full: 9999, // No change.
 } as const;

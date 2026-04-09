@@ -1,19 +1,24 @@
 import { TextStyle } from 'react-native';
 
 export const fonts = {
-  heading: 'System', // Will swap for Cormorant when custom fonts load
-  body: 'System', // Will swap for DM Sans
+  heading: 'Cormorant_700Bold',
+  headingSemiBold: 'Cormorant_600SemiBold',
+  body: 'DMSans_400Regular',
+  bodyMedium: 'DMSans_500Medium',
+  bodySemiBold: 'DMSans_600SemiBold',
 } as const;
 
-type TypographyStyle = Pick<TextStyle, 'fontSize' | 'fontWeight' | 'lineHeight' | 'letterSpacing'>;
+type TypographyStyle = Pick<TextStyle, 'fontSize' | 'fontWeight' | 'lineHeight' | 'letterSpacing' | 'fontFamily'>;
 
 export const typography: Record<string, TypographyStyle> = {
-  h1: { fontSize: 28, fontWeight: '700', lineHeight: 36 },
-  h2: { fontSize: 22, fontWeight: '600', lineHeight: 28 },
-  h3: { fontSize: 18, fontWeight: '600', lineHeight: 24 },
-  body: { fontSize: 16, fontWeight: '400', lineHeight: 24 },
-  bodySmall: { fontSize: 14, fontWeight: '400', lineHeight: 20 },
-  caption: { fontSize: 12, fontWeight: '400', lineHeight: 16 },
-  label: { fontSize: 14, fontWeight: '500', lineHeight: 18 },
-  button: { fontSize: 16, fontWeight: '600', lineHeight: 20, letterSpacing: 0.3 },
+  h1: { fontSize: 24, fontFamily: 'Cormorant_700Bold', lineHeight: 30, letterSpacing: -0.3 },
+  h2: { fontSize: 20, fontFamily: 'Cormorant_600SemiBold', lineHeight: 26, letterSpacing: -0.2 },
+  h3: { fontSize: 16, fontFamily: 'DMSans_600SemiBold', lineHeight: 22 },
+  body: { fontSize: 15, fontFamily: 'DMSans_400Regular', lineHeight: 22.5 },
+  bodyMedium: { fontSize: 15, fontFamily: 'DMSans_500Medium', lineHeight: 22.5 },
+  bodySmall: { fontSize: 13, fontFamily: 'DMSans_400Regular', lineHeight: 18.2 },
+  caption: { fontSize: 13, fontFamily: 'DMSans_400Regular', lineHeight: 18.2 },
+  label: { fontSize: 13, fontFamily: 'DMSans_500Medium', lineHeight: 18.2 },
+  badge: { fontSize: 11, fontFamily: 'DMSans_600SemiBold', lineHeight: 14.3, letterSpacing: 0.5 },
+  button: { fontSize: 15, fontFamily: 'DMSans_600SemiBold', lineHeight: 15, letterSpacing: 0.3 },
 } as const;
