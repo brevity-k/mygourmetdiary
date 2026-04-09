@@ -368,3 +368,32 @@ export const syncApi = {
       .then((r) => r.data.data);
   },
 };
+
+// ─── Community ─────────────────────────────────────────
+
+export const communityApi = {
+  getStats: (subjectType: string, subjectId: string) =>
+    apiClient.get(`/community/${subjectType}/${subjectId}/stats`).then((r) => r.data.data),
+  getGourmets: (subjectType: string, subjectId: string, limit?: number) => {
+    const params = limit ? `?limit=${limit}` : '';
+    return apiClient.get(`/community/${subjectType}/${subjectId}/gourmets${params}`).then((r) => r.data.data);
+  },
+  getNotes: (subjectType: string, subjectId: string, cursor?: string, limit?: number) => {
+    const searchParams = new URLSearchParams();
+    if (cursor) searchParams.set('cursor', cursor);
+    if (limit) searchParams.set('limit', String(limit));
+    const qs = searchParams.toString();
+    return apiClient.get(`/community/${subjectType}/${subjectId}/notes${qs ? `?${qs}` : ''}`).then((r) => r.data.data);
+  },
+};
+
+// ─── Products ──────────────────────────────────────────
+
+export const productsApi = {
+  search: (query: string, category?: string) =>
+    apiClient.post('/products/search', { query, category }).then((r) => r.data.data),
+  create: (data: { name: string; category: string; subType?: string; producer?: string; vintage?: number; region?: string; abv?: number }) =>
+    apiClient.post('/products', data).then((r) => r.data.data),
+  get: (id: string) =>
+    apiClient.get(`/products/${id}`).then((r) => r.data.data),
+};

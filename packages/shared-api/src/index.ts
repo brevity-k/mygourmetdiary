@@ -9,4 +9,6 @@ export {
   createNotesApi,
   createAreaExplorerApi,
   createSearchApi,
+  createCommunityApi,
+  createProductsApi,
 } from './endpoints';

@@ -9,6 +9,8 @@ import {
   createNotesApi,
   createAreaExplorerApi,
   createSearchApi,
+  createCommunityApi,
+  createProductsApi,
 } from '@mygourmetdiary/shared-api';
 import { getIdToken } from './supabase-auth';
 
@@ -42,3 +44,5 @@ export const photosApi = createPhotosApi(apiClient);
 export const notesApi = createNotesApi(apiClient);
 export const areaExplorerApi = createAreaExplorerApi(apiClient);
 export const searchApi = createSearchApi(apiClient);
+export const communityApi = createCommunityApi(apiClient);
+export const productsApi = createProductsApi(apiClient);

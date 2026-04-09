@@ -204,3 +204,32 @@ export function createSearchApi(client: AxiosInstance) {
     },
   };
 }
+
+export function createCommunityApi(client: AxiosInstance) {
+  return {
+    getStats: (subjectType: string, subjectId: string) =>
+      client.get(`/community/${subjectType}/${subjectId}/stats`).then((r) => r.data.data),
+    getGourmets: (subjectType: string, subjectId: string, limit?: number) => {
+      const params = limit ? `?limit=${limit}` : '';
+      return client.get(`/community/${subjectType}/${subjectId}/gourmets${params}`).then((r) => r.data.data);
+    },
+    getNotes: (subjectType: string, subjectId: string, cursor?: string, limit?: number) => {
+      const searchParams = new URLSearchParams();
+      if (cursor) searchParams.set('cursor', cursor);
+      if (limit) searchParams.set('limit', String(limit));
+      const qs = searchParams.toString();
+      return client.get(`/community/${subjectType}/${subjectId}/notes${qs ? `?${qs}` : ''}`).then((r) => r.data.data);
+    },
+  };
+}
+
+export function createProductsApi(client: AxiosInstance) {
+  return {
+    search: (query: string, category?: string) =>
+      client.post('/products/search', { query, category }).then((r) => r.data.data),
+    create: (data: { name: string; category: string; subType?: string; producer?: string; vintage?: number; region?: string; abv?: number }) =>
+      client.post('/products', data).then((r) => r.data.data),
+    get: (id: string) =>
+      client.get(`/products/${id}`).then((r) => r.data.data),
+  };
+}
