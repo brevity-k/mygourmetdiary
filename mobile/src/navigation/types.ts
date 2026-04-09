@@ -42,7 +42,8 @@ export type SearchStackParamList = {
   Explore: undefined;
   Discover: undefined;
   AreaExplorer: undefined;
-  VenueNotes: { venueId: string; venueName: string };
+  VenueCommunity: { venueId: string; venueName: string };
+  ProductCommunity: { productId: string; productName: string };
   MenuDecider: { venueId: string; venueName: string };
   UserProfile: { userId: string };
   PinGourmetFriend: { userId: string };

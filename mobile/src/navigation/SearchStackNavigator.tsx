@@ -8,7 +8,8 @@ import { UserProfileScreen } from '../screens/social/UserProfileScreen';
 import { PinGourmetFriendScreen } from '../screens/social/PinGourmetFriendScreen';
 import { MenuDeciderScreen } from '../screens/menu-decider/MenuDeciderScreen';
 import { AreaExplorerScreen } from '../screens/map/AreaExplorerScreen';
-import { VenueNotesScreen } from '../screens/map/VenueNotesScreen';
+import { VenueCommunityScreen } from '../screens/community/VenueCommunityScreen';
+import { ProductCommunityScreen } from '../screens/community/ProductCommunityScreen';
 import { SearchStackParamList } from './types';
 import { colors, typography } from '../theme';
 
@@ -59,9 +60,14 @@ export function SearchStackNavigator() {
         options={{ title: 'Area Explorer' }}
       />
       <Stack.Screen
-        name="VenueNotes"
-        component={VenueNotesScreen}
-        options={{ title: 'Venue Notes' }}
+        name="VenueCommunity"
+        component={VenueCommunityScreen}
+        options={{ title: 'Venue' }}
+      />
+      <Stack.Screen
+        name="ProductCommunity"
+        component={ProductCommunityScreen}
+        options={{ title: 'Product' }}
       />
       <Stack.Screen
         name="MenuDecider"
