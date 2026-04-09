@@ -1,6 +1,7 @@
 import { NoteType, Prisma } from '@prisma/client';
 import { prisma } from '../clients/prisma';
 import { validateExtension } from '../validators/notes';
+import { venuesService } from './venues.service';
 
 // ─── Pagination helpers ────────────────────────────────
 
@@ -102,17 +103,16 @@ export const notesService = {
       throw new Error('Invalid binder');
     }
 
-    // Venue check for restaurant/winery types
+    // Venue resolution for restaurant/winery types — fetch from Google Places
+    // and upsert to Postgres if not already cached, so the map can find it later
     let resolvedVenueId: string | null = null;
     if (
       input.venueId &&
       (input.type === NoteType.RESTAURANT || input.type === NoteType.WINERY_VISIT)
     ) {
-      const venue = await prisma.venue.findUnique({
-        where: { placeId: input.venueId },
-      });
+      const venue = await venuesService.getByPlaceId(input.venueId);
       if (!venue) {
-        throw new Error('Venue not found. Search for it first.');
+        throw new Error('Venue not found');
       }
       resolvedVenueId = venue.id;
     }

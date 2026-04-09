@@ -1,5 +1,5 @@
 import { createHash } from 'crypto';
-import { Prisma } from '@prisma/client';
+import { Prisma, Venue } from '@prisma/client';
 import { prisma } from '../clients/prisma';
 import { getJson, setJson } from '../clients/redis';
 import { googlePlaces } from '../clients/google-places';
@@ -32,7 +32,7 @@ export const venuesService = {
   async getByPlaceId(placeId: string) {
     // Layer 1: Redis cache
     const cacheKey = `venue:${placeId}`;
-    const cached = await getJson(cacheKey);
+    const cached = await getJson<Venue>(cacheKey);
     if (cached) return cached;
 
     // Layer 2: PostgreSQL
