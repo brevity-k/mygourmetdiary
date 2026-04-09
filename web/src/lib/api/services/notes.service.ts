@@ -69,7 +69,7 @@ export const notesService = {
 
     const notes = await prisma.note.findMany({
       where,
-      include: { photos: { orderBy: { sortOrder: 'asc' } }, venue: true },
+      include: { photos: { orderBy: { sortOrder: 'asc' } }, venue: true, product: true },
       orderBy: { createdAt: 'desc' },
       take: limit + 1,
     });
@@ -80,7 +80,7 @@ export const notesService = {
   async findById(id: string, userId: string) {
     const note = await prisma.note.findUnique({
       where: { id },
-      include: { photos: { orderBy: { sortOrder: 'asc' } }, venue: true },
+      include: { photos: { orderBy: { sortOrder: 'asc' } }, venue: true, product: true },
     });
 
     if (!note) throw new Error('Note not found');
@@ -143,7 +143,7 @@ export const notesService = {
         productId: resolvedProductId,
         experiencedAt: new Date(input.experiencedAt),
       },
-      include: { photos: true, venue: true },
+      include: { photos: true, venue: true, product: true },
     });
 
     // Attach photos if provided
@@ -194,7 +194,7 @@ export const notesService = {
           ? new Date(input.experiencedAt)
           : undefined,
       },
-      include: { photos: { orderBy: { sortOrder: 'asc' } }, venue: true },
+      include: { photos: { orderBy: { sortOrder: 'asc' } }, venue: true, product: true },
     });
 
     // Invalidate community caches for the linked venue/product
@@ -225,6 +225,7 @@ export const notesService = {
       include: {
         photos: { orderBy: { sortOrder: 'asc' } },
         venue: true,
+        product: true,
         author: { select: { id: true, displayName: true, avatarUrl: true } },
       },
       orderBy: { createdAt: 'desc' },
@@ -258,6 +259,7 @@ export const notesService = {
       include: {
         photos: { orderBy: { sortOrder: 'asc' } },
         venue: true,
+        product: true,
         author: { select: { id: true, displayName: true, avatarUrl: true } },
       },
       orderBy: { createdAt: 'desc' },
@@ -273,6 +275,7 @@ export const notesService = {
       include: {
         photos: { orderBy: { sortOrder: 'asc' } },
         venue: true,
+        product: true,
         author: { select: { id: true, displayName: true, avatarUrl: true } },
       },
     });

@@ -117,10 +117,31 @@ export function NoteDetailScreen() {
         </View>
 
         {note.venue && (
-          <View style={styles.meta}>
-            <MaterialIcons name="place" size={14} color={colors.textTertiary} />
-            <Text style={styles.metaText}>{note.venue.name}</Text>
-          </View>
+          <TouchableOpacity
+            style={styles.meta}
+            onPress={() => navigation.navigate('VenueCommunity' as any, {
+              venueId: note.venue!.id,
+              venueName: note.venue!.name,
+            })}
+          >
+            <MaterialIcons name="place" size={14} color={colors.primary} />
+            <Text style={[styles.metaText, { color: colors.primary }]}>{note.venue.name}</Text>
+            <MaterialIcons name="chevron-right" size={14} color={colors.primary} />
+          </TouchableOpacity>
+        )}
+
+        {note.product && (
+          <TouchableOpacity
+            style={styles.meta}
+            onPress={() => navigation.navigate('ProductCommunity' as any, {
+              productId: note.product!.id,
+              productName: note.product!.name,
+            })}
+          >
+            <MaterialIcons name="local-bar" size={14} color={colors.primary} />
+            <Text style={[styles.metaText, { color: colors.primary }]}>{note.product.name}</Text>
+            <MaterialIcons name="chevron-right" size={14} color={colors.primary} />
+          </TouchableOpacity>
         )}
 
         {/* Rating */}

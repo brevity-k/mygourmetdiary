@@ -24,6 +24,8 @@ export type HomeStackParamList = {
   UserProfile: { userId: string };
   PinGourmetFriend: { userId: string };
   MenuDecider: { venueId: string; venueName: string };
+  VenueCommunity: { venueId: string; venueName: string };
+  ProductCommunity: { productId: string; productName: string };
 };
 
 export type BindersStackParamList = {
@@ -32,6 +34,8 @@ export type BindersStackParamList = {
   NoteDetail: { noteId: string };
   FollowedBinders: undefined;
   MenuDecider: { venueId: string; venueName: string };
+  VenueCommunity: { venueId: string; venueName: string };
+  ProductCommunity: { productId: string; productName: string };
   UserProfile: { userId: string };
   PinGourmetFriend: { userId: string };
 };

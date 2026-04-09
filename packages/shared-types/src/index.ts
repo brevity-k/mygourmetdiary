@@ -1,3 +1,5 @@
+import type { Product } from './community';
+
 // ─── Enums ──────────────────────────────────────────────
 
 export enum NoteType {
@@ -168,11 +170,13 @@ export interface Note {
   tagIds: string[];
   extension: Record<string, any>;
   venueId: string | null;
+  productId: string | null;
   experiencedAt: string;
   createdAt: string;
   updatedAt: string;
   photos: Photo[];
   venue: Venue | null;
+  product: Product | null;
 }
 
 export interface SocialNote extends Note {

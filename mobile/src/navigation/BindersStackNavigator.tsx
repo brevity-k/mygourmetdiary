@@ -7,6 +7,8 @@ import { NoteDetailScreen } from '../screens/home/NoteDetailScreen';
 import { UserProfileScreen } from '../screens/social/UserProfileScreen';
 import { PinGourmetFriendScreen } from '../screens/social/PinGourmetFriendScreen';
 import { MenuDeciderScreen } from '../screens/menu-decider/MenuDeciderScreen';
+import { VenueCommunityScreen } from '../screens/community/VenueCommunityScreen';
+import { ProductCommunityScreen } from '../screens/community/ProductCommunityScreen';
 import { BindersStackParamList } from './types';
 import { colors, typography } from '../theme';
 
@@ -50,6 +52,16 @@ export function BindersStackNavigator() {
         name="PinGourmetFriend"
         component={PinGourmetFriendScreen}
         options={{ title: 'Pin Friend' }}
+      />
+      <Stack.Screen
+        name="VenueCommunity"
+        component={VenueCommunityScreen}
+        options={{ title: 'Venue' }}
+      />
+      <Stack.Screen
+        name="ProductCommunity"
+        component={ProductCommunityScreen}
+        options={{ title: 'Product' }}
       />
       <Stack.Screen
         name="MenuDecider"
