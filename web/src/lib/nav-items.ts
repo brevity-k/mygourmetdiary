@@ -1,4 +1,4 @@
-import { Home, BookOpen, PlusCircle, Search, Map } from 'lucide-react';
+import { Home, BookOpen, PlusCircle, Search, Users, Map } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
 export interface NavItem {
@@ -13,5 +13,6 @@ export const NAV_ITEMS: NavItem[] = [
   { href: '/binders', label: 'Binders', icon: BookOpen },
   { href: '/notes/new', label: 'New Note', icon: PlusCircle },
   { href: '/search', label: 'Search', icon: Search },
+  { href: '/friends', label: 'Friends', icon: Users },
   { href: '/explore', label: 'Explore', icon: Map },
 ];

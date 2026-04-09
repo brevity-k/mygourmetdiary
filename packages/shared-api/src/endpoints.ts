@@ -234,3 +234,58 @@ export function createProductsApi(client: AxiosInstance) {
       client.get(`/products/${id}`).then((r) => r.data.data),
   };
 }
+
+export function createSocialApi(client: AxiosInstance) {
+  return {
+    // Gourmet Friends
+    listFriends: () =>
+      client.get<ApiResponse<any[]>>('/social/friends').then((r) => r.data.data),
+    getCompatibility: (userId: string) =>
+      client.get<ApiResponse<any>>(`/social/friends?userId=${userId}`).then((r) => r.data.data),
+    canPin: (userId: string) =>
+      client.get<ApiResponse<any>>(`/social/friends?userId=${userId}&action=can-pin`).then((r) => r.data.data),
+    pinFriend: (pinnedId: string, categories: string[]) =>
+      client.post<ApiResponse<any>>('/social/friends', { pinnedId, categories }).then((r) => r.data.data),
+    unpinFriend: (pinnedId: string) =>
+      client.delete(`/social/friends?pinnedId=${pinnedId}`),
+
+    // Discover
+    discoverUsers: (category?: string, limit?: number, offset?: number) => {
+      const params = new URLSearchParams();
+      if (category) params.set('category', category);
+      if (limit) params.set('limit', String(limit));
+      if (offset) params.set('offset', String(offset));
+      const qs = params.toString();
+      return client
+        .get<ApiResponse<any>>(`/social/friends/discover${qs ? `?${qs}` : ''}`)
+        .then((r) => r.data.data);
+    },
+
+    // Follows
+    listFollowing: (cursor?: string, limit?: number) => {
+      const params = new URLSearchParams();
+      if (cursor) params.set('cursor', cursor);
+      if (limit) params.set('limit', String(limit));
+      const qs = params.toString();
+      return client
+        .get<ApiResponse<any>>(`/social/follows${qs ? `?${qs}` : ''}`)
+        .then((r) => r.data.data);
+    },
+    followBinder: (binderId: string) =>
+      client.post<ApiResponse<any>>('/social/follows', { binderId }).then((r) => r.data.data),
+    unfollowBinder: (binderId: string) =>
+      client.delete(`/social/follows?binderId=${binderId}`),
+
+    // Signals
+    getSignalSummary: (noteId: string) =>
+      client.get<ApiResponse<any>>(`/social/signals?noteId=${noteId}`).then((r) => r.data.data),
+    sendSignal: (noteId: string, signalType: string, senderRating?: number) =>
+      client.post<ApiResponse<any>>('/social/signals', { noteId, signalType, senderRating }).then((r) => r.data.data),
+    removeSignal: (noteId: string, signalType: string) =>
+      client.delete(`/social/signals?noteId=${noteId}&signalType=${signalType}`),
+
+    // User profiles
+    getPublicProfile: (userId: string) =>
+      client.get<ApiResponse<any>>(`/users/${userId}`).then((r) => r.data.data),
+  };
+}

@@ -11,4 +11,5 @@ export {
   createSearchApi,
   createCommunityApi,
   createProductsApi,
+  createSocialApi,
 } from './endpoints';
