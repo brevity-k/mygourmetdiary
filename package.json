@@ -48,6 +48,6 @@
     "build": "npm run build --workspace=web",
     "lint": "npm run lint --workspace=web",
     "typecheck": "npx --workspace=web tsc --noEmit && npx --workspace=mobile tsc --noEmit",
-    "test": "echo 'No test runner configured yet'"
+    "test": "npm run test --workspace=web"
   }
 }

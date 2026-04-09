@@ -283,10 +283,10 @@ export const discoveryApi = {
 // ─── Phase 3: Advisor APIs ──────────────────────────────
 
 export const subscriptionsApi = {
-  getStatus: () => {
-    // No backend route exists yet — return a stub
-    return Promise.resolve({ tier: 'free', active: false } as unknown as SubscriptionStatus);
-  },
+  getStatus: () =>
+    apiClient
+      .get<ApiResponse<SubscriptionStatus>>('/subscriptions/status')
+      .then((r) => r.data.data),
 };
 
 export const menuDeciderApi = {

@@ -1,6 +1,6 @@
 import * as SQLite from 'expo-sqlite';
 
-const DB_NAME = 'mygourmatdiary_offline.db';
+const DB_NAME = 'mygourmetdiary_offline.db';
 
 let db: SQLite.SQLiteDatabase | null = null;
 
