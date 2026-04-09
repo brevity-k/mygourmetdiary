@@ -3,7 +3,7 @@ import { ScrollView, View, Text, Switch, StyleSheet, KeyboardAvoidingView, Platf
 import { useNavigation } from '@react-navigation/native';
 import { useQuery } from '@tanstack/react-query';
 import { useNoteForm } from '../../hooks/useNoteForm';
-import { NoteType, Visibility } from '../../types';
+import { NoteType } from '../../types';
 import { bindersApi } from '../../api/endpoints';
 import { useUIStore } from '../../store/ui.store';
 import { Input } from '../../components/common/Input';
@@ -13,6 +13,7 @@ import { PhotoPicker } from '../../components/forms/PhotoPicker';
 import { VenueSearchInput } from '../../components/forms/VenueSearchInput';
 import { BinderSelector } from '../../components/forms/BinderSelector';
 import { DateInput } from '../../components/forms/DateInput';
+import { VisibilitySelector } from '../../components/forms/VisibilitySelector';
 import { colors, typography, spacing } from '../../theme';
 
 export function WineryVisitNoteFormScreen() {
@@ -148,18 +149,10 @@ export function WineryVisitNoteFormScreen() {
         onChange={(id) => updateField('binderId', id)}
       />
 
-      <View style={styles.switchRow}>
-        <Text style={styles.label}>
-          {formData.visibility === Visibility.PUBLIC ? 'Public' : 'Private'}
-        </Text>
-        <Switch
-          value={formData.visibility === Visibility.PUBLIC}
-          onValueChange={(v) =>
-            updateField('visibility', v ? Visibility.PUBLIC : Visibility.PRIVATE)
-          }
-          trackColor={{ true: colors.primary }}
-        />
-      </View>
+      <VisibilitySelector
+        value={formData.visibility}
+        onChange={(v) => updateField('visibility', v)}
+      />
 
       <DateInput
         label="Date of Visit"

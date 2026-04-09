@@ -26,6 +26,7 @@ interface NoteFormData {
   tagIds: string[];
   extension: Record<string, any>;
   venueId: string | null;
+  productId: string | null;
   experiencedAt: string;
 }
 
@@ -47,6 +48,7 @@ export function useNoteForm(type: NoteType, onSuccess: () => void) {
     tagIds: [],
     extension: {},
     venueId: null,
+    productId: null,
     experiencedAt: new Date().toISOString(),
   });
 

@@ -1,9 +1,9 @@
 import React from 'react';
-import { ScrollView, View, Text, Switch, StyleSheet, KeyboardAvoidingView, Platform } from 'react-native';
+import { ScrollView, View, Text, StyleSheet, KeyboardAvoidingView, Platform } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useQuery } from '@tanstack/react-query';
 import { useNoteForm } from '../../hooks/useNoteForm';
-import { NoteType, Visibility } from '../../types';
+import { NoteType, ProductCategory } from '../../types';
 import { bindersApi, tagsApi } from '../../api/endpoints';
 import { useUIStore } from '../../store/ui.store';
 import { Input } from '../../components/common/Input';
@@ -13,6 +13,8 @@ import { TagSelector } from '../../components/forms/TagSelector';
 import { PhotoPicker } from '../../components/forms/PhotoPicker';
 import { BinderSelector } from '../../components/forms/BinderSelector';
 import { DateInput } from '../../components/forms/DateInput';
+import { VisibilitySelector } from '../../components/forms/VisibilitySelector';
+import { ProductSearchInput } from '../../components/forms/ProductSearchInput';
 import { SPIRIT_TYPES, SERVING_METHODS } from '../../constants/tags.constants';
 import { colors, typography, spacing, borderRadius } from '../../theme';
 
@@ -67,6 +69,16 @@ export function SpiritNoteFormScreen() {
     >
       {/* ── The Spirit ── */}
       <Text style={styles.sectionHeader}>The Spirit</Text>
+
+      <ProductSearchInput
+        value={formData.productId ? { id: formData.productId, name: formData.extension.productName || '' } : null}
+        onChange={(product) => {
+          updateField('productId', product?.id || null);
+          updateExtension('productName', product?.name || '');
+        }}
+        category={ProductCategory.SPIRIT}
+        label="Spirit (search or create)"
+      />
 
       <Input
         label="Spirit Name *"
@@ -210,18 +222,10 @@ export function SpiritNoteFormScreen() {
         onChange={(id) => updateField('binderId', id)}
       />
 
-      <View style={styles.switchRow}>
-        <Text style={styles.label}>
-          {formData.visibility === Visibility.PUBLIC ? 'Public' : 'Private'}
-        </Text>
-        <Switch
-          value={formData.visibility === Visibility.PUBLIC}
-          onValueChange={(v) =>
-            updateField('visibility', v ? Visibility.PUBLIC : Visibility.PRIVATE)
-          }
-          trackColor={{ true: colors.primary }}
-        />
-      </View>
+      <VisibilitySelector
+        value={formData.visibility}
+        onChange={(v) => updateField('visibility', v)}
+      />
 
       <DateInput
         label="Date of Experience"
@@ -271,12 +275,6 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primaryLight,
     borderColor: colors.primary,
     color: colors.textInverse,
-  },
-  switchRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: spacing.md,
   },
   inlineRow: { flexDirection: 'row', gap: spacing.md },
   half: { flex: 1 },
