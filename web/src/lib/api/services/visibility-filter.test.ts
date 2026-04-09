@@ -21,7 +21,7 @@ describe('buildVisibilityFilter', () => {
     );
     expect(friendsClause).toEqual({
       visibility: 'FRIENDS',
-      author: { pinnedFriends: { some: { pinnedId: viewerId } } },
+      author: { gourmetFriendPins: { some: { pinnedId: viewerId } } },
     });
   });
 

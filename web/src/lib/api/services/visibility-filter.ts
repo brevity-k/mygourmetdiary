@@ -5,7 +5,7 @@ export function buildVisibilityFilter(viewerId: string) {
       { authorId: viewerId },
       {
         visibility: 'FRIENDS' as const,
-        author: { pinnedFriends: { some: { pinnedId: viewerId } } },
+        author: { gourmetFriendPins: { some: { pinnedId: viewerId } } },
       },
     ],
   };
