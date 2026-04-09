@@ -76,10 +76,17 @@ export const areaExplorerService = {
       friendsOnly ? friendIds : await tssCacheService.getPinnedFriendIds(userId),
     );
 
-    const baseWhere = {
+    const publicWhere = {
       venueId: { in: venueIds },
       type: { in: typeFilter },
       visibility: 'PUBLIC' as const,
+    };
+
+    // Own notes are visible regardless of visibility setting
+    const myWhere = {
+      venueId: { in: venueIds },
+      type: { in: typeFilter },
+      authorId: userId,
     };
 
     // Use DB aggregates for general venue stats (noteCount + avgRating)
@@ -89,13 +96,20 @@ export const areaExplorerService = {
       friendsOnly
         ? prisma.note.groupBy({
             by: ['venueId', 'type'],
-            where: { ...baseWhere, authorId: { in: friendIds } },
+            where: { ...publicWhere, authorId: { in: friendIds } },
             _count: { id: true },
             _avg: { rating: true },
           })
         : prisma.note.groupBy({
             by: ['venueId', 'type'],
-            where: baseWhere,
+            where: {
+              venueId: { in: venueIds },
+              type: { in: typeFilter },
+              OR: [
+                { visibility: 'PUBLIC' },
+                { authorId: userId },
+              ],
+            },
             _count: { id: true },
             _avg: { rating: true },
           }),
@@ -103,7 +117,7 @@ export const areaExplorerService = {
       friendSet.size > 0
         ? prisma.note.findMany({
             where: {
-              ...baseWhere,
+              ...publicWhere,
               authorId: { in: [...friendSet] },
             },
             select: {
@@ -114,10 +128,10 @@ export const areaExplorerService = {
             },
           })
         : Promise.resolve([]),
-      // My note counts via DB aggregate
+      // My note counts — include all my notes regardless of visibility
       prisma.note.groupBy({
         by: ['venueId'],
-        where: { ...baseWhere, authorId: userId },
+        where: myWhere,
         _count: { id: true },
       }),
     ]);
