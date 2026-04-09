@@ -215,7 +215,10 @@ export function AreaExplorerScreen() {
             <VenuePreviewCard
               pin={selectedPin}
               onViewNotes={() =>
-                navigation.navigate('NoteDetail', { noteId: selectedPin.venue.id })
+                navigation.navigate('VenueNotes', {
+                  venueId: selectedPin.venue.id,
+                  venueName: selectedPin.venue.name,
+                })
               }
               onWriteNote={() =>
                 openNoteCreation({

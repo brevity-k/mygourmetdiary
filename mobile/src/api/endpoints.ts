@@ -315,6 +315,12 @@ export const areaExplorerApi = {
       .get<ApiResponse<MapPin[]>>(`/explore/map?${searchParams}`)
       .then((r) => r.data.data);
   },
+  getVenueNotes: (venueId: string, limit?: number) => {
+    const params = limit ? `?limit=${limit}` : '';
+    return apiClient
+      .get<ApiResponse<Note[]>>(`/explore/venue/${venueId}/notes${params}`)
+      .then((r) => r.data.data);
+  },
 };
 
 export const notificationsApi = {
