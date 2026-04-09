@@ -35,7 +35,7 @@ export const authApi = {
   register: () =>
     apiClient.post<ApiResponse<User>>('/auth/register').then((r) => r.data.data),
   me: () =>
-    apiClient.get<ApiResponse<User>>('/auth/me').then((r) => r.data.data),
+    apiClient.get<ApiResponse<User>>('/users/me').then((r) => r.data.data),
 };
 
 // ─── Users ──────────────────────────────────────────────
@@ -165,7 +165,7 @@ export const exploreApi = {
     if (params.limit) searchParams.set('limit', String(params.limit));
     if (params.type) searchParams.set('type', params.type);
     return apiClient
-      .get<ApiResponse<PaginatedResponse<SocialNote>>>(`/notes/public/feed?${searchParams}`)
+      .get<ApiResponse<PaginatedResponse<SocialNote>>>(`/notes/feed?feed=public&${searchParams}`)
       .then((r) => r.data.data);
   },
   followedFeed: (params: { cursor?: string; limit?: number; type?: NoteType }) => {
@@ -174,7 +174,7 @@ export const exploreApi = {
     if (params.limit) searchParams.set('limit', String(params.limit));
     if (params.type) searchParams.set('type', params.type);
     return apiClient
-      .get<ApiResponse<PaginatedResponse<SocialNote>>>(`/notes/social/feed?${searchParams}`)
+      .get<ApiResponse<PaginatedResponse<SocialNote>>>(`/notes/feed?feed=social&${searchParams}`)
       .then((r) => r.data.data);
   },
 };
@@ -185,7 +185,7 @@ export const socialSearchApi = {
     if (type) params.set('type', type);
     if (limit) params.set('limit', String(limit));
     return apiClient
-      .get<ApiResponse<TieredSearchResult>>(`/search/public?${params}`)
+      .get<ApiResponse<TieredSearchResult>>(`/search/all?${params}`)
       .then((r) => r.data.data);
   },
 };
@@ -193,7 +193,7 @@ export const socialSearchApi = {
 export const profilesApi = {
   getProfile: (userId: string) =>
     apiClient
-      .get<ApiResponse<PublicProfile>>(`/users/${userId}/profile`)
+      .get<ApiResponse<PublicProfile>>(`/users/${userId}`)
       .then((r) => r.data.data),
   getPublicBinders: (userId: string) =>
     apiClient
@@ -204,28 +204,28 @@ export const profilesApi = {
     if (cursor) params.set('cursor', cursor);
     if (limit) params.set('limit', String(limit));
     return apiClient
-      .get<ApiResponse<PaginatedResponse<Note>>>(`/notes/public/feed?authorId=${userId}&${params}`)
+      .get<ApiResponse<PaginatedResponse<Note>>>(`/notes/feed?feed=public&authorId=${userId}&${params}`)
       .then((r) => r.data.data);
   },
   getTasteSimilarity: (userId: string) =>
     apiClient
-      .get<ApiResponse<TasteSimilarity[]>>(`/friends/${userId}/compatibility`)
+      .get<ApiResponse<TasteSimilarity[]>>(`/social/friends?userId=${userId}`)
       .then((r) => r.data.data),
 };
 
 export const binderFollowsApi = {
   follow: (binderId: string) =>
     apiClient
-      .post<ApiResponse<any>>(`/binders/${binderId}/follow`)
+      .post<ApiResponse<any>>('/social/follows', { binderId })
       .then((r) => r.data.data),
   unfollow: (binderId: string) =>
-    apiClient.delete(`/binders/${binderId}/follow`),
+    apiClient.delete(`/social/follows?binderId=${binderId}`),
   listFollowed: (cursor?: string, limit?: number) => {
     const params = new URLSearchParams();
     if (cursor) params.set('cursor', cursor);
     if (limit) params.set('limit', String(limit));
     return apiClient
-      .get<ApiResponse<PaginatedResponse<{ binder: PublicBinder }>>>(`/users/me/following?${params}`)
+      .get<ApiResponse<PaginatedResponse<{ binder: PublicBinder }>>>(`/social/follows?${params}`)
       .then((r) => r.data.data);
   },
 };
@@ -233,37 +233,38 @@ export const binderFollowsApi = {
 export const tasteSignalsApi = {
   send: (noteId: string, signalType: TasteSignalType, senderRating?: number) =>
     apiClient
-      .post<ApiResponse<TasteSignal>>(`/notes/${noteId}/signals`, {
+      .post<ApiResponse<TasteSignal>>('/social/signals', {
+        noteId,
         signalType,
         senderRating,
       })
       .then((r) => r.data.data),
   remove: (noteId: string, signalType: TasteSignalType) =>
-    apiClient.delete(`/notes/${noteId}/signals/${signalType}`),
+    apiClient.delete(`/social/signals?noteId=${noteId}&signalType=${signalType}`),
   getSummary: (noteId: string) =>
     apiClient
-      .get<ApiResponse<TasteSignalSummary>>(`/notes/${noteId}/signals`)
+      .get<ApiResponse<TasteSignalSummary>>(`/social/signals?noteId=${noteId}`)
       .then((r) => r.data.data),
 };
 
 export const gourmetFriendsApi = {
   list: () =>
     apiClient
-      .get<ApiResponse<GourmetFriend[]>>('/friends')
+      .get<ApiResponse<GourmetFriend[]>>('/social/friends')
       .then((r) => r.data.data),
   pin: (pinnedId: string, categories: TasteCategory[]) =>
     apiClient
-      .post<ApiResponse<any>>('/friends/pin', { pinnedId, categories })
+      .post<ApiResponse<any>>('/social/friends', { pinnedId, categories })
       .then((r) => r.data.data),
   unpin: (pinnedId: string) =>
-    apiClient.delete(`/friends/pin/${pinnedId}`),
+    apiClient.delete(`/social/friends?pinnedId=${pinnedId}`),
   updateCategories: (pinnedId: string, categories: TasteCategory[]) =>
     apiClient
-      .patch<ApiResponse<any>>(`/friends/pin/${pinnedId}`, { categories })
+      .post<ApiResponse<any>>('/social/friends', { _action: 'update', pinnedId, categories })
       .then((r) => r.data.data),
   canPin: (userId: string) =>
     apiClient
-      .get<ApiResponse<CanPinResult>>(`/friends/${userId}/can-pin`)
+      .get<ApiResponse<CanPinResult>>(`/social/friends?userId=${userId}&action=can-pin`)
       .then((r) => r.data.data),
 };
 
@@ -274,7 +275,7 @@ export const discoveryApi = {
     if (limit) params.set('limit', String(limit));
     if (offset) params.set('offset', String(offset));
     return apiClient
-      .get<ApiResponse<{ items: UserSuggestion[]; total: number }>>(`/discover/similar-users?${params}`)
+      .get<ApiResponse<{ items: UserSuggestion[]; total: number }>>(`/social/friends/discover?${params}`)
       .then((r) => r.data.data);
   },
 };
@@ -282,10 +283,10 @@ export const discoveryApi = {
 // ─── Phase 3: Advisor APIs ──────────────────────────────
 
 export const subscriptionsApi = {
-  getStatus: () =>
-    apiClient
-      .get<ApiResponse<SubscriptionStatus>>('/subscriptions/status')
-      .then((r) => r.data.data),
+  getStatus: () => {
+    // No backend route exists yet — return a stub
+    return Promise.resolve({ tier: 'free', active: false } as unknown as SubscriptionStatus);
+  },
 };
 
 export const menuDeciderApi = {
@@ -319,10 +320,10 @@ export const areaExplorerApi = {
 export const notificationsApi = {
   registerToken: (token: string, platform: string) =>
     apiClient
-      .post('/notifications/token', { token, platform })
+      .post('/notifications/tokens', { token, platform })
       .then((r) => r.data.data),
   removeToken: () =>
-    apiClient.delete('/notifications/token'),
+    apiClient.delete('/notifications/tokens'),
   getPreferences: () =>
     apiClient
       .get<ApiResponse<NotificationPreferences>>('/notifications/preferences')
@@ -336,27 +337,28 @@ export const notificationsApi = {
 export const pioneersApi = {
   getZones: (lat: number, lng: number, radiusKm?: number) => {
     const params = new URLSearchParams({
+      action: 'zones',
       lat: String(lat),
       lng: String(lng),
     });
     if (radiusKm) params.set('radiusKm', String(radiusKm));
     return apiClient
-      .get<ApiResponse<PioneerZone[]>>(`/pioneers/zones?${params}`)
+      .get<ApiResponse<PioneerZone[]>>(`/pioneers?${params}`)
       .then((r) => r.data.data);
   },
   getBadges: () =>
     apiClient
-      .get<ApiResponse<PioneerBadge[]>>('/pioneers/badges')
+      .get<ApiResponse<PioneerBadge[]>>('/pioneers?action=badges')
       .then((r) => r.data.data),
 };
 
 export const syncApi = {
   exportNotes: (since?: string, cursor?: string) => {
-    const params = new URLSearchParams();
-    if (since) params.set('since', since);
-    if (cursor) params.set('cursor', cursor);
+    const body: Record<string, string> = {};
+    if (since) body.since = since;
+    if (cursor) body.cursor = cursor;
     return apiClient
-      .get<ApiResponse<any>>(`/sync/export?${params}`)
+      .post<ApiResponse<any>>('/sync', body)
       .then((r) => r.data.data);
   },
 };

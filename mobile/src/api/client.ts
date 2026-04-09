@@ -14,7 +14,6 @@ export const apiClient = axios.create({
 // Attach auth token to every request — get directly from Supabase
 apiClient.interceptors.request.use(async (config) => {
   const token = await getIdToken();
-  console.log('[API]', config.method?.toUpperCase(), config.url, 'token:', token ? 'YES(' + token.substring(0, 20) + ')' : 'NULL');
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }

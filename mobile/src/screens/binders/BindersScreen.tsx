@@ -79,6 +79,7 @@ export function BindersScreen() {
 
       {segment === 'mine' ? (
         <FlatList
+          key="mine-grid"
           data={binders}
           keyExtractor={(item) => item.id}
           numColumns={2}
@@ -125,6 +126,7 @@ export function BindersScreen() {
         />
       ) : (
         <FlatList
+          key="followed-list"
           data={followedBinders}
           keyExtractor={(item) => item.binder.id}
           contentContainerStyle={[
