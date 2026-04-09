@@ -58,5 +58,6 @@ CLAUDE.md
 COMPETITIVE_ANALYSIS.md
 DRAFT.md
 TECHNICAL_FEASIBILITY.md
+.private/
 .vercel
 backend/
