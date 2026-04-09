@@ -103,18 +103,57 @@ export function AreaExplorerScreen() {
     bottomSheetRef.current?.snapToIndex(0);
   }, [pins, handleMarkerPress]);
 
-  const handleVenueFromSearch = useCallback((venue: VenueSelection) => {
-    setSelectedPoi(venue);
-    setSelectedPin(null);
-    bottomSheetRef.current?.snapToIndex(0);
-    if (venue.coordinate) {
-      mapRef.current?.animateToRegion({
-        ...venue.coordinate,
-        latitudeDelta: 0.01,
-        longitudeDelta: 0.01,
-      }, 500);
-    }
-  }, []);
+  const handleVenueFromSearch = useCallback(
+    async (venue: VenueSelection) => {
+      // Animate the map to the searched venue regardless of match outcome
+      if (venue.coordinate) {
+        mapRef.current?.animateToRegion(
+          {
+            ...venue.coordinate,
+            latitudeDelta: 0.01,
+            longitudeDelta: 0.01,
+          },
+          500,
+        );
+      }
+
+      // Fast path: venue is already in the current pin set
+      const existingPin = pins.find((p) => p.venue.placeId === venue.placeId);
+      if (existingPin) {
+        handleMarkerPress(existingPin);
+        return;
+      }
+
+      // Slow path: venue may be outside the currently-fetched bounding box.
+      // Ask the backend for pins centered on the venue and check again.
+      if (venue.coordinate) {
+        try {
+          const nearbyPins = await areaExplorerApi.getMapPins({
+            lat: venue.coordinate.latitude,
+            lng: venue.coordinate.longitude,
+            radiusKm: 1,
+            category,
+            friendsOnly,
+          });
+          const match = nearbyPins.find(
+            (p) => p.venue.placeId === venue.placeId,
+          );
+          if (match) {
+            handleMarkerPress(match);
+            return;
+          }
+        } catch {
+          // Fall through to POI mode on failure
+        }
+      }
+
+      // No notes found — show as a POI with the "be the first" prompt
+      setSelectedPoi(venue);
+      setSelectedPin(null);
+      bottomSheetRef.current?.snapToIndex(0);
+    },
+    [pins, category, friendsOnly, handleMarkerPress],
+  );
 
   const toggleFriendsOnly = () => {
     if (!isConnoisseur && !friendsOnly) return;
