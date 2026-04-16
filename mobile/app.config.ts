@@ -9,7 +9,6 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   orientation: 'portrait',
   icon: './assets/icon.png',
   userInterfaceStyle: 'light',
-  newArchEnabled: true,
   splash: {
     image: './assets/splash-icon.png',
     resizeMode: 'contain',
@@ -29,7 +28,6 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       backgroundColor: '#FDF8F0',
     },
     package: 'com.mygourmetdiary.app',
-    edgeToEdgeEnabled: true,
   },
   plugins: [
     'expo-apple-authentication',
