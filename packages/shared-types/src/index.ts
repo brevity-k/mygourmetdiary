@@ -99,7 +99,7 @@ export enum SubscriptionTier {
 
 export interface User {
   id: string;
-  firebaseUid: string;
+  supabaseId: string;
   email: string;
   displayName: string;
   avatarUrl: string | null;

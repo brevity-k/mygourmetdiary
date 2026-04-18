@@ -1,14 +1,14 @@
 # MyGourmetDiary — Full Supabase Migration Design
 
 > **Date:** 2026-04-06
-> **Status:** Draft — pending user approval
+> **Status:** Completed — migration fully applied as of 2026-04-08
 > **Goal:** Migrate from NestJS + Firebase + Meilisearch + R2 (7 vendors) to Next.js API Routes + Supabase (4 vendors). Priority: cost reduction > operational simplicity > scale readiness.
 
 ---
 
 ## 1. Current vs. Target Architecture
 
-### Current (7 vendors)
+### Before Migration (7 vendors, decommissioned)
 
 ```
 Web (Vercel) ──→ NestJS API (Railway) ──→ PostgreSQL (managed)
@@ -20,7 +20,7 @@ Mobile (EAS) ──→                          Redis (Upstash)
                                           Google Places API
 ```
 
-### Target (4 vendors)
+### After Migration (4 vendors, current as of 2026-04-08)
 
 ```
 Web (Vercel) ──→ Next.js API Routes (Vercel, same deployment)
