@@ -4,6 +4,8 @@
 
 **Goal:** Migrate MyGourmetDiary from NestJS + Firebase + Meilisearch + R2 (7 vendors) to Next.js API Routes + Supabase (4 vendors), reducing cost by ~60% and operational complexity by half.
 
+**Status:** Completed — migration fully applied as of 2026-04-08.
+
 **Architecture:** All backend logic moves from a standalone NestJS app on Railway into Next.js API route handlers on Vercel. Supabase replaces Firebase Auth, Meilisearch, Cloudflare R2, and the managed PostgreSQL instance. Upstash Redis stays on free tier for TSS caching and rate limiting.
 
 **Tech Stack:** Next.js 16 (App Router + API Routes), Supabase (PostgreSQL + Auth + Storage), Prisma ORM, Upstash Redis, Zod validation, Vercel Cron.
