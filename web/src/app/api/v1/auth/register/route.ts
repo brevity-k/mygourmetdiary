@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { prisma } from '@/lib/api/clients/prisma';
 import { apiSuccess, apiError } from '@/lib/api/response';
+import { AUTH_LIMIT, limitByIp } from '@/lib/api/ratelimit';
 
 const DEFAULT_BINDERS = [
   { name: 'My Restaurant Notes', category: 'RESTAURANT' as const },
@@ -12,6 +13,9 @@ const DEFAULT_BINDERS = [
 
 export async function POST(req: NextRequest) {
   try {
+    const limited = await limitByIp(AUTH_LIMIT, req);
+    if (limited) return limited;
+
     const token = req.headers.get('authorization')?.replace('Bearer ', '');
     if (!token) return apiError('Unauthorized', 401);
 
