@@ -15,13 +15,6 @@ export async function POST(req: NextRequest) {
     const token = req.headers.get('authorization')?.replace('Bearer ', '');
     if (!token) return apiError('Unauthorized', 401);
 
-    // Dev bypass
-    if (process.env.NODE_ENV === 'development' && token.startsWith('dev:')) {
-      const uid = token.substring(4);
-      const user = await upsertUser(uid, `${uid}@gourmet.local`, 'Dev User', null);
-      return apiSuccess(user, 201);
-    }
-
     const supabase = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.SUPABASE_SERVICE_ROLE_KEY!,
