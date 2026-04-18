@@ -45,6 +45,8 @@ yarn-error.log*
 
 # Test
 coverage/
+playwright-report/
+test-results/
 
 # Prisma
 web/prisma/generated/
@@ -60,4 +62,10 @@ DRAFT.md
 TECHNICAL_FEASIBILITY.md
 .private/
 .vercel
-backend/
+
+# Agent tooling (local only)
+.claude/
+.omc/
+.superpowers/
+mobile/.omc/
+.env.vercel-check
