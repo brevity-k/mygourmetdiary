@@ -239,6 +239,7 @@ export const areaExplorerService = {
       take: limit,
     });
 
+    await photosService.attachSignedUrlsToItems(notes);
     return notes;
   },
 };

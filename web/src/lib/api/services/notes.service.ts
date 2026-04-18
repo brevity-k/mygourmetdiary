@@ -2,6 +2,7 @@ import { NoteType, Prisma } from '@prisma/client';
 import { prisma } from '../clients/prisma';
 import { validateExtension } from '../validators/notes';
 import { invalidateCommunityCache } from './community-cache';
+import { photosService } from './photos.service';
 import { productsService } from './products.service';
 import { venuesService } from './venues.service';
 import { buildVisibilityFilter } from './visibility-filter';
@@ -75,6 +76,7 @@ export const notesService = {
       take: limit + 1,
     });
 
+    await photosService.attachSignedUrlsToItems(notes);
     return paginateResults(notes, limit, (n: { createdAt: Date }) => n.createdAt.toISOString());
   },
 
@@ -86,7 +88,7 @@ export const notesService = {
 
     if (!note) throw new Error('Note not found');
 
-    return note;
+    return photosService.attachSignedUrlsToItem(note);
   },
 
   async create(userId: string, input: CreateNoteInput) {
@@ -199,7 +201,7 @@ export const notesService = {
     if (note.venueId) invalidateCommunityCache('venue', note.venueId);
     if (note.productId) invalidateCommunityCache('product', note.productId);
 
-    return updated;
+    return photosService.attachSignedUrlsToItem(updated);
   },
 
   async remove(id: string, userId: string) {
@@ -230,6 +232,7 @@ export const notesService = {
       take: limit + 1,
     });
 
+    await photosService.attachSignedUrlsToItems(notes);
     return paginateResults(notes, limit, (n: { createdAt: Date }) => n.createdAt.toISOString());
   },
 
@@ -264,6 +267,7 @@ export const notesService = {
       take: limit + 1,
     });
 
+    await photosService.attachSignedUrlsToItems(notes);
     return paginateResults(notes, limit, (n: { createdAt: Date }) => n.createdAt.toISOString());
   },
 
@@ -280,7 +284,7 @@ export const notesService = {
 
     if (!note) throw new Error('Note not found');
 
-    return note;
+    return photosService.attachSignedUrlsToItem(note);
   },
 
   async attachPhotos(noteId: string, userId: string, photoIds: string[]) {

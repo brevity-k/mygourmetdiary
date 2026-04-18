@@ -1,4 +1,5 @@
 import { prisma } from '../clients/prisma';
+import { photosService } from './photos.service';
 
 const VALID_NOTE_TYPES = ['RESTAURANT', 'WINE', 'SPIRIT', 'WINERY_VISIT'];
 
@@ -39,6 +40,7 @@ export const notesSearchService = {
       prisma.note.count({ where }),
     ]);
 
+    await photosService.attachSignedUrlsToItems(notes);
     return { hits: notes, total, limit, offset };
   },
 
@@ -87,6 +89,7 @@ export const notesSearchService = {
       prisma.note.count({ where }),
     ]);
 
+    await photosService.attachSignedUrlsToItems(notes);
     return { hits: notes, total, limit, offset };
   },
 
@@ -141,6 +144,7 @@ export const notesSearchService = {
       prisma.note.count({ where }),
     ]);
 
+    await photosService.attachSignedUrlsToItems(notes);
     return { hits: notes, total, limit, offset };
   },
 };

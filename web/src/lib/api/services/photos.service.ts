@@ -11,7 +11,47 @@ const MIME_TO_EXT: Record<string, string> = {
 
 const SIGNED_URL_TTL_SECONDS = 60 * 5;
 
+type PhotoLike = { r2Key: string; publicUrl: string };
+type WithPhotos = { photos?: PhotoLike[] };
+
+async function batchSignPhotoUrls(keys: string[]): Promise<Map<string, string>> {
+  if (keys.length === 0) return new Map();
+  const { data, error } = await supabaseAdmin.storage
+    .from('photos')
+    .createSignedUrls(Array.from(new Set(keys)), SIGNED_URL_TTL_SECONDS);
+  if (error || !data) return new Map();
+  const out = new Map<string, string>();
+  for (const entry of data) {
+    if (entry.path && entry.signedUrl) out.set(entry.path, entry.signedUrl);
+  }
+  return out;
+}
+
+async function attachSignedUrlsToItems<T extends WithPhotos>(items: T[]): Promise<T[]> {
+  const keys: string[] = [];
+  for (const item of items) {
+    for (const p of item.photos ?? []) keys.push(p.r2Key);
+  }
+  const signed = await batchSignPhotoUrls(keys);
+  if (signed.size === 0) return items;
+  for (const item of items) {
+    for (const p of item.photos ?? []) {
+      const url = signed.get(p.r2Key);
+      if (url) p.publicUrl = url;
+    }
+  }
+  return items;
+}
+
+async function attachSignedUrlsToItem<T extends WithPhotos>(item: T): Promise<T> {
+  await attachSignedUrlsToItems([item]);
+  return item;
+}
+
 export const photosService = {
+  attachSignedUrlsToItems,
+  attachSignedUrlsToItem,
+
   async presign(uploaderId: string, mimeType: string, sizeBytes: number) {
     const ext = MIME_TO_EXT[mimeType] || 'jpg';
     const key = `${uploaderId}/${randomUUID()}.${ext}`;
@@ -24,7 +64,10 @@ export const photosService = {
       throw new Error(`Failed to create upload URL: ${error?.message}`);
     }
 
-    const publicUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/photos/${key}`;
+    const signedRead = await supabaseAdmin.storage
+      .from('photos')
+      .createSignedUrl(key, SIGNED_URL_TTL_SECONDS);
+    const publicUrl = signedRead.data?.signedUrl ?? '';
 
     const photo = await prisma.photo.create({
       data: {
