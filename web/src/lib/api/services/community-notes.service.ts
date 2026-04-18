@@ -1,6 +1,7 @@
 import type { CommunitySubjectType } from '@mygourmetdiary/shared-types';
 import { prisma } from '../clients/prisma';
 import { getJson, setJson } from '../clients/redis';
+import { photosService } from './photos.service';
 import { buildVisibilityFilter } from './visibility-filter';
 import { tssCacheService } from './taste-matching/tss-cache.service';
 
@@ -67,6 +68,8 @@ export const communityNotesService = {
 
     const hasMore = notes.length > limit;
     const trimmed = hasMore ? notes.slice(0, limit) : notes;
+
+    await photosService.attachSignedUrlsToItems(trimmed);
 
     // Get author IDs for tier assignment
     const authorIds = [...new Set(trimmed.map((n) => n.authorId))];

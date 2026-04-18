@@ -1,5 +1,6 @@
 import type { Prisma } from '@prisma/client';
 import { prisma } from '../clients/prisma';
+import { photosService } from './photos.service';
 
 const MAX_NOTES_PER_PAGE = 500;
 
@@ -36,6 +37,7 @@ export const syncService = {
       take: MAX_NOTES_PER_PAGE + 1,
     });
 
+    await photosService.attachSignedUrlsToItems(notes);
     const result = paginateResults(
       notes,
       MAX_NOTES_PER_PAGE,

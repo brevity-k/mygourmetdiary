@@ -1,6 +1,7 @@
 import type { NoteType, Venue } from '@prisma/client';
 import { prisma } from '../clients/prisma';
 import { getJson, setJson } from '../clients/redis';
+import { photosService } from './photos.service';
 import { tssCacheService } from './taste-matching/tss-cache.service';
 import { computeBoundingBox } from './geo';
 
@@ -239,6 +240,7 @@ export const areaExplorerService = {
       take: limit,
     });
 
+    await photosService.attachSignedUrlsToItems(notes);
     return notes;
   },
 };

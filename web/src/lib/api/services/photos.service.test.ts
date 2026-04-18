@@ -2,16 +2,28 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 const {
   mockCreateSignedUploadUrl,
+  mockCreateSignedUrl,
+  mockCreateSignedUrls,
   mockStorageRemove,
   mockStorageFrom,
 } = vi.hoisted(() => {
   const mockCreateSignedUploadUrl = vi.fn();
+  const mockCreateSignedUrl = vi.fn();
+  const mockCreateSignedUrls = vi.fn();
   const mockStorageRemove = vi.fn();
   const mockStorageFrom = vi.fn(() => ({
     createSignedUploadUrl: mockCreateSignedUploadUrl,
+    createSignedUrl: mockCreateSignedUrl,
+    createSignedUrls: mockCreateSignedUrls,
     remove: mockStorageRemove,
   }));
-  return { mockCreateSignedUploadUrl, mockStorageRemove, mockStorageFrom };
+  return {
+    mockCreateSignedUploadUrl,
+    mockCreateSignedUrl,
+    mockCreateSignedUrls,
+    mockStorageRemove,
+    mockStorageFrom,
+  };
 });
 
 vi.mock('../clients/prisma', () => ({
@@ -52,6 +64,10 @@ describe('photosService.presign', () => {
   const setupPresignMocks = () => {
     mockCreateSignedUploadUrl.mockResolvedValueOnce({
       data: { signedUrl: 'https://upload.url', token: 'upload-token' },
+      error: null,
+    });
+    mockCreateSignedUrl.mockResolvedValueOnce({
+      data: { signedUrl: 'https://read.url/token' },
       error: null,
     });
     mockPhotoCreate.mockImplementationOnce(({ data }: { data: Record<string, unknown> }) =>
