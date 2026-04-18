@@ -4,6 +4,7 @@ import { validateExtension } from '../validators/notes';
 import { invalidateCommunityCache } from './community-cache';
 import { productsService } from './products.service';
 import { venuesService } from './venues.service';
+import { buildVisibilityFilter } from './visibility-filter';
 
 // ─── Pagination helpers ────────────────────────────────
 
@@ -78,15 +79,12 @@ export const notesService = {
   },
 
   async findById(id: string, userId: string) {
-    const note = await prisma.note.findUnique({
-      where: { id },
+    const note = await prisma.note.findFirst({
+      where: { AND: [{ id }, buildVisibilityFilter(userId)] },
       include: { photos: { orderBy: { sortOrder: 'asc' } }, venue: true, product: true },
     });
 
     if (!note) throw new Error('Note not found');
-    if (note.authorId !== userId && note.visibility === 'PRIVATE') {
-      throw new Error('Forbidden');
-    }
 
     return note;
   },
@@ -270,8 +268,8 @@ export const notesService = {
   },
 
   async findPublicById(id: string) {
-    const note = await prisma.note.findUnique({
-      where: { id },
+    const note = await prisma.note.findFirst({
+      where: { id, visibility: 'PUBLIC' },
       include: {
         photos: { orderBy: { sortOrder: 'asc' } },
         venue: true,
@@ -281,7 +279,6 @@ export const notesService = {
     });
 
     if (!note) throw new Error('Note not found');
-    if (note.visibility === 'PRIVATE') throw new Error('Forbidden');
 
     return note;
   },
