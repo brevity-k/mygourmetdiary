@@ -9,6 +9,8 @@ const MIME_TO_EXT: Record<string, string> = {
   'image/heic': 'heic',
 };
 
+const SIGNED_URL_TTL_SECONDS = 60 * 5;
+
 export const photosService = {
   async presign(uploaderId: string, mimeType: string, sizeBytes: number) {
     const ext = MIME_TO_EXT[mimeType] || 'jpg';
@@ -48,6 +50,50 @@ export const photosService = {
 
     await supabaseAdmin.storage.from('photos').remove([photo.r2Key]);
     await prisma.photo.delete({ where: { id } });
+  },
+
+  async getSignedReadUrl(photoId: string, viewerId: string) {
+    const photo = await prisma.photo.findUnique({
+      where: { id: photoId },
+      include: {
+        note: {
+          select: {
+            authorId: true,
+            visibility: true,
+            author: {
+              select: {
+                gourmetFriendPins: { where: { pinnedId: viewerId }, select: { id: true } },
+              },
+            },
+          },
+        },
+      },
+    });
+    if (!photo) throw new Error('Photo not found');
+
+    const canView = (() => {
+      if (photo.uploaderId === viewerId) return true;
+      if (!photo.note) return false;
+      if (photo.note.visibility === 'PUBLIC') return true;
+      if (photo.note.authorId === viewerId) return true;
+      if (photo.note.visibility === 'FRIENDS' && photo.note.author.gourmetFriendPins.length > 0) {
+        return true;
+      }
+      return false;
+    })();
+    if (!canView) throw new Error('Photo not found');
+
+    const { data, error } = await supabaseAdmin.storage
+      .from('photos')
+      .createSignedUrl(photo.r2Key, SIGNED_URL_TTL_SECONDS);
+    if (error || !data) {
+      throw new Error(`Failed to sign URL: ${error?.message}`);
+    }
+
+    return {
+      url: data.signedUrl,
+      expiresAt: Math.floor(Date.now() / 1000) + SIGNED_URL_TTL_SECONDS,
+    };
   },
 
   async cleanupOrphans() {
