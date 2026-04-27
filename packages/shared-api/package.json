@@ -9,6 +9,6 @@
   },
   "dependencies": {
     "@mygourmetdiary/shared-types": "*",
-    "axios": "^1.7.0"
+    "axios": "^1.15.2"
   }
 }
