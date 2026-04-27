@@ -17,7 +17,7 @@
     "@mygourmetdiary/shared-constants": "*",
     "@mygourmetdiary/shared-types": "*",
     "@react-native-async-storage/async-storage": "^2.2.0",
-    "@react-native-community/datetimepicker": "8.6.0",
+    "@react-native-community/datetimepicker": "9.1.0",
     "@react-native-community/netinfo": "11.5.2",
     "@react-navigation/bottom-tabs": "^7.15.10",
     "@react-navigation/native": "^7.1.28",
