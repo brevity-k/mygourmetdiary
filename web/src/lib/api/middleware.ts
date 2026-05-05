@@ -1,3 +1,4 @@
+import { timingSafeEqual } from 'crypto';
 import { NextRequest } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import type { User } from '@prisma/client';
@@ -47,10 +48,18 @@ export function withPremium(handler: AuthHandler) {
   });
 }
 
+function safeEqual(a: string, b: string): boolean {
+  const ab = Buffer.from(a);
+  const bb = Buffer.from(b);
+  if (ab.length !== bb.length) return false;
+  return timingSafeEqual(ab, bb);
+}
+
 export function withCron(handler: CronHandler) {
   return async (req: NextRequest) => {
-    const authHeader = req.headers.get('authorization');
-    if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+    const authHeader = req.headers.get('authorization') ?? '';
+    const secret = process.env.CRON_SECRET;
+    if (!secret || !safeEqual(authHeader, `Bearer ${secret}`)) {
       return apiError('Unauthorized', 401);
     }
     return handler(req);

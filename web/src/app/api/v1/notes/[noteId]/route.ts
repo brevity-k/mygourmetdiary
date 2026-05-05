@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server';
 import { withAuth } from '@/lib/api/middleware';
 import { apiSuccess, apiError } from '@/lib/api/response';
+import { DEFAULT_WRITE_LIMIT, limitByUser } from '@/lib/api/ratelimit';
 import { notesService } from '@/lib/api/services/notes.service';
 import { updateNoteSchema } from '@/lib/api/validators/notes';
 
@@ -27,6 +28,9 @@ export const GET = withAuth(async (req: NextRequest, user) => {
 });
 
 export const PATCH = withAuth(async (req: NextRequest, user) => {
+  const limited = await limitByUser(DEFAULT_WRITE_LIMIT, user.id);
+  if (limited) return limited;
+
   const noteId = extractNoteId(req);
   const parsed = updateNoteSchema.safeParse(await req.json());
   if (!parsed.success) {
@@ -51,6 +55,9 @@ export const PATCH = withAuth(async (req: NextRequest, user) => {
 });
 
 export const DELETE = withAuth(async (req: NextRequest, user) => {
+  const limited = await limitByUser(DEFAULT_WRITE_LIMIT, user.id);
+  if (limited) return limited;
+
   const noteId = extractNoteId(req);
   try {
     await notesService.remove(noteId, user.id);

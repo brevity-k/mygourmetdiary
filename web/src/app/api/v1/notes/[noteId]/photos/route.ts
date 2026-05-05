@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server';
 import { withAuth } from '@/lib/api/middleware';
 import { apiSuccess, apiError } from '@/lib/api/response';
+import { DEFAULT_WRITE_LIMIT, limitByUser } from '@/lib/api/ratelimit';
 import { notesService } from '@/lib/api/services/notes.service';
 import { attachPhotosSchema } from '@/lib/api/validators/notes';
 
@@ -12,6 +13,9 @@ function extractNoteId(req: NextRequest): string {
 }
 
 export const POST = withAuth(async (req: NextRequest, user) => {
+  const limited = await limitByUser(DEFAULT_WRITE_LIMIT, user.id);
+  if (limited) return limited;
+
   const noteId = extractNoteId(req);
   const parsed = attachPhotosSchema.safeParse(await req.json());
   if (!parsed.success) {

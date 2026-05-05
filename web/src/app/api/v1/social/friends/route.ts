@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server';
 import type { TasteCategory } from '@prisma/client';
 import { withAuth } from '@/lib/api/middleware';
 import { apiSuccess, apiError } from '@/lib/api/response';
+import { DEFAULT_WRITE_LIMIT, limitByUser } from '@/lib/api/ratelimit';
 import { friendsService } from '@/lib/api/services/social/friends.service';
 import { pinFriendSchema, updatePinSchema } from '@/lib/api/validators/social';
 
@@ -25,6 +26,9 @@ export const GET = withAuth(async (req: NextRequest, user) => {
 });
 
 export const POST = withAuth(async (req: NextRequest, user) => {
+  const limited = await limitByUser(DEFAULT_WRITE_LIMIT, user.id);
+  if (limited) return limited;
+
   const body = await req.json();
 
   // Check if this is an update (PATCH-like operation via POST)

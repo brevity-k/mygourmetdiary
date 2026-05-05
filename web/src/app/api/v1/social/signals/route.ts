@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server';
 import type { SignalType } from '@prisma/client';
 import { withAuth } from '@/lib/api/middleware';
 import { apiSuccess, apiError } from '@/lib/api/response';
+import { DEFAULT_WRITE_LIMIT, limitByUser } from '@/lib/api/ratelimit';
 import { signalsService } from '@/lib/api/services/social/signals.service';
 import { createSignalSchema } from '@/lib/api/validators/social';
 
@@ -14,6 +15,9 @@ export const GET = withAuth(async (req: NextRequest, user) => {
 });
 
 export const POST = withAuth(async (req: NextRequest, user) => {
+  const limited = await limitByUser(DEFAULT_WRITE_LIMIT, user.id);
+  if (limited) return limited;
+
   const body = await req.json();
   const noteId = body.noteId as string | undefined;
   if (!noteId) return apiError('noteId is required', 400);
